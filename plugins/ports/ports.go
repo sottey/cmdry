@@ -2,7 +2,6 @@ package ports
 
 import (
 	"bufio"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -46,6 +45,56 @@ func ParseSS(input string) []Port {
 	}
 	return result
 }
+
+// ParseLsof parses the machine-readable fields emitted by:
+// lsof -nP -FpcPnT -iTCP -sTCP:LISTEN
+// lsof -nP -FpcPnT -iUDP
+// Connected UDP sockets are excluded because they are clients, not listeners.
+func ParseLsof(input string) []Port {
+	var result []Port
+	var pid *int
+	var process, protocol, endpoint string
+	haveFile := false
+	appendCurrent := func() {
+		if !haveFile || (protocol != "TCP" && protocol != "UDP") || strings.Contains(endpoint, "->") {
+			return
+		}
+		address, port, ok := splitAddress(endpoint)
+		if !ok {
+			return
+		}
+		result = append(result, Port{Port: port, Protocol: protocol, Address: address, Process: process, PID: pid})
+	}
+	for _, line := range strings.Split(input, "\n") {
+		if len(line) < 2 {
+			continue
+		}
+		switch line[0] {
+		case 'p':
+			appendCurrent()
+			haveFile = false
+			process, protocol, endpoint = "", "", ""
+			value, err := strconv.Atoi(line[1:])
+			if err != nil {
+				pid = nil
+			} else {
+				pid = &value
+			}
+		case 'c':
+			process = line[1:]
+		case 'f':
+			appendCurrent()
+			haveFile = true
+			protocol, endpoint = "", ""
+		case 'P':
+			protocol = strings.ToUpper(line[1:])
+		case 'n':
+			endpoint = line[1:]
+		}
+	}
+	appendCurrent()
+	return result
+}
 func splitAddress(value string) (string, int, bool) {
 	idx := strings.LastIndex(value, ":")
 	if idx < 0 {
@@ -82,4 +131,3 @@ func Summary(ports []Port) (int, int) {
 	}
 	return tcp, udp
 }
-func FormatCommandError(err error) error { return fmt.Errorf("unable to execute ss: %w", err) }

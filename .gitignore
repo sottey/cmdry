@@ -31,4 +31,8 @@ go.work.sum
 # .idea/
 # .vscode/
 .DS_Store
-go.sum
+.cmdry-data/
+codex_resume.txt
+.gitignore
+cmdry-ports
+cmdry

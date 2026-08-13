@@ -1,23 +1,21 @@
 package main
 
 import (
-	"os/exec"
 	"sort"
 	"strconv"
 
-	"github.com/sottey/cmdry/plugin-sdk/go"
+	cmdry "github.com/sottey/cmdry/plugin-sdk/go"
 	"github.com/sottey/cmdry/plugins/ports"
 )
 
 func main() {
-	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "ports", Name: "Port Inspector", Version: "0.1.0", Description: "Inspect listening network ports and their owning processes.", Category: "system", Icon: "network", Pages: []cmdry.Page{{ID: "overview", Name: "Ports", Default: true, Action: "list"}}, Permissions: []string{"network.read", "process.read"}, Actions: []cmdry.Action{{ID: "list", Name: "List ports", Method: "read"}}}, Actions: map[string]cmdry.Handler{"list": listPorts}})
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.port.inspector", Name: "Port Inspector", Version: "0.2.0", Description: "Inspect listening network ports and their owning processes.", Category: "system", Icon: "network", Pages: []cmdry.Page{{ID: "overview", Name: "Ports", Default: true, Action: "list"}}, Permissions: []string{"network.read", "process.read"}, Actions: []cmdry.Action{{ID: "list", Name: "List ports", Method: "read"}}}, Actions: map[string]cmdry.Handler{"list": listPorts}})
 }
 func listPorts(_ cmdry.Request) (cmdry.View, error) {
-	out, err := exec.Command("ss", "-H", "-l", "-n", "-t", "-u", "-p").Output()
+	items, err := ports.CollectListeningPorts()
 	if err != nil {
-		return cmdry.View{}, ports.FormatCommandError(err)
+		return cmdry.View{}, err
 	}
-	items := ports.ParseSS(string(out))
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].Port == items[j].Port {
 			return items[i].Protocol < items[j].Protocol

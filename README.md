@@ -28,9 +28,28 @@ Open `http://127.0.0.1:8080`. Cmdry binds to localhost by default. If you expose
 
 Port Inspector requires `ss`, normally supplied by the `iproute2` package. It returns port data even when `ss` cannot reveal an owning process.
 
+## Run natively on macOS
+
+Cmdry and Port Inspector run natively on macOS. The plugin uses the built-in
+`lsof` command: TCP results are listening sockets, while UDP results are
+unconnected sockets with an assigned local port. macOS may hide processes that
+the current user cannot inspect; Cmdry preserves missing process and PID values.
+
+```bash
+go build -o cmdry .
+go build -o cmdry-ports ./plugins/ports/cmd/cmdry-ports
+mkdir -p .cmdry-data
+CMDRY_PLUGIN_DIR="$PWD" CMDRY_DATA_DIR="$PWD/.cmdry-data" ./cmdry serve
+```
+
+Open `http://127.0.0.1:8080`. This must run directly on the Mac: Docker Desktop
+uses a Linux VM, so its host-network mode cannot inspect the macOS host network.
+
 ## Docker
 
-The provided Compose file uses Linux host networking so Port Inspector sees the host’s network namespace rather than the container’s. This is intentional. It listens on host port `8087`:
+The provided Compose file is for a Linux Docker host. It uses host networking so
+Port Inspector sees that host’s network namespace rather than the container’s.
+This is intentional. It listens on host port `8087`:
 
 ```bash
 sudo mkdir -p /home/sottey/docker-data/cmdry/{data,plugins}
@@ -38,7 +57,10 @@ go build -o /home/sottey/docker-data/cmdry/plugins/cmdry-ports ./plugins/ports/c
 docker compose up --build -d
 ```
 
-Then use `http://host:8087`. Host networking is designed for a Linux Docker host. Do not use a conventional isolated container and interpret its container-local port list as the host’s port list.
+Then use `http://host:8087`. Build the plugin on that Linux host so it is a Linux
+executable. Do not use a conventional isolated container and interpret its
+container-local port list as the host’s port list. Docker Desktop on macOS does
+not provide macOS host port inspection.
 
 ## Configuration
 
@@ -83,6 +105,10 @@ cmdry.Run(cmdry.Plugin{
 ```
 
 Build a future plugin separately, place the executable in `CMDRY_PLUGIN_DIR`, and restart Cmdry. No Cmdry core modification is needed.
+
+See the [plugin development guide](docs/plugin-development.md) for the complete
+v1 manifest, response contract, SDK example, local development workflow, and
+troubleshooting steps.
 
 ## Security model
 
