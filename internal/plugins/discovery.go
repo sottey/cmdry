@@ -17,12 +17,25 @@ type Discoverer struct {
 	Logger    *slog.Logger
 }
 
-func (d Discoverer) Discover(ctx context.Context, registry *Registry) {
+// Discover scans the plugin directory and atomically replaces the registry only
+// after a complete scan succeeds.
+func (d Discoverer) Discover(ctx context.Context, registry *Registry) error {
+	fresh, err := d.Scan(ctx)
+	if err != nil {
+		return err
+	}
+	registry.Replace(fresh.All())
+	return nil
+}
+
+// Scan discovers valid plugins into an isolated registry.
+func (d Discoverer) Scan(ctx context.Context) (*Registry, error) {
 	entries, err := os.ReadDir(d.Directory)
 	if err != nil {
 		d.Logger.Warn("plugin directory unavailable", "directory", d.Directory, "error", err)
-		return
+		return nil, err
 	}
+	registry := NewRegistry()
 	for _, entry := range entries {
 		info, e := entry.Info()
 		if e != nil || info.IsDir() || info.Mode()&0111 == 0 || !strings.HasPrefix(entry.Name(), "cmdry-") {
@@ -40,6 +53,7 @@ func (d Discoverer) Discover(ctx context.Context, registry *Registry) {
 			d.Logger.Info("plugin registered", "id", m.ID, "path", path)
 		}
 	}
+	return registry, nil
 }
 func (d Discoverer) readManifest(parent context.Context, path string) (Manifest, error) {
 	ctx, cancel := context.WithTimeout(parent, d.Timeout)

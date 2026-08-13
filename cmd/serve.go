@@ -34,7 +34,7 @@ var serveCmd = &cobra.Command{
 		logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))
 		registry := plugins.NewRegistry()
 		discovery := plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}
-		discovery.Discover(context.Background(), registry)
+		_ = discovery.Discover(context.Background(), registry)
 
 		app, err := server.New(cfg, registry, logger)
 		if err != nil {

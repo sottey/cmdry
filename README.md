@@ -12,13 +12,13 @@ Cmdry is an extensible way to expose a focused Linux CLI utility through a local
 
 ## Run on a Linux host
 
-Build both executables:
+Build the core and bundled plugins:
 
 ```bash
-go build -o cmdry .
-go build -o cmdry-ports ./plugins/ports/cmd/cmdry-ports
-sudo install -Dm755 cmdry /usr/local/bin/cmdry
-sudo install -Dm755 cmdry-ports /opt/cmdry/plugins/cmdry-ports
+./scripts/build.sh
+sudo install -Dm755 dist/cmdry /usr/local/bin/cmdry
+sudo install -Dm755 dist/plugins/cmdry-ports /opt/cmdry/plugins/cmdry-ports
+sudo install -Dm755 dist/plugins/cmdry-journal /opt/cmdry/plugins/cmdry-journal
 sudo mkdir -p /opt/cmdry/data
 sudo chown "$USER" /opt/cmdry/data
 CMDRY_ADDR=127.0.0.1:8080 cmdry serve
@@ -26,7 +26,7 @@ CMDRY_ADDR=127.0.0.1:8080 cmdry serve
 
 Open `http://127.0.0.1:8080`. Cmdry binds to localhost by default. If you expose it on a network, put it behind access controls you manage; each installed plugin can execute a host command.
 
-Port Inspector requires `ss`, normally supplied by the `iproute2` package. It returns port data even when `ss` cannot reveal an owning process.
+Port Inspector requires `ss`, normally supplied by the `iproute2` package. It returns port data even when `ss` cannot reveal an owning process. Journal Viewer requires `journalctl` and is available only on Linux.
 
 ## Run natively on macOS
 
@@ -36,10 +36,8 @@ unconnected sockets with an assigned local port. macOS may hide processes that
 the current user cannot inspect; Cmdry preserves missing process and PID values.
 
 ```bash
-go build -o cmdry .
-go build -o cmdry-ports ./plugins/ports/cmd/cmdry-ports
-mkdir -p .cmdry-data
-CMDRY_PLUGIN_DIR="$PWD" CMDRY_DATA_DIR="$PWD/.cmdry-data" ./cmdry serve
+./scripts/build.sh
+./scripts/run.sh
 ```
 
 Open `http://127.0.0.1:8080`. This must run directly on the Mac: Docker Desktop
@@ -53,12 +51,14 @@ This is intentional. It listens on host port `8087`:
 
 ```bash
 sudo mkdir -p /home/sottey/docker-data/cmdry/{data,plugins}
-go build -o /home/sottey/docker-data/cmdry/plugins/cmdry-ports ./plugins/ports/cmd/cmdry-ports
+./scripts/build.sh
+sudo install -Dm755 dist/plugins/cmdry-ports /home/sottey/docker-data/cmdry/plugins/cmdry-ports
+sudo install -Dm755 dist/plugins/cmdry-journal /home/sottey/docker-data/cmdry/plugins/cmdry-journal
 docker compose up --build -d
 ```
 
-Then use `http://host:8087`. Build the plugin on that Linux host so it is a Linux
-executable. Do not use a conventional isolated container and interpret its
+Then use `http://host:8087`. Run the build script on that Linux host so the
+plugins are Linux executables. Do not use a conventional isolated container and interpret its
 container-local port list as the host’s port list. Docker Desktop on macOS does
 not provide macOS host port inspection.
 
@@ -126,6 +126,48 @@ go build ./...
 
 Parser tests use representative `ss` fixtures and never depend on your host’s live ports. On Linux, manually verify discovery, the Ports page, a removed plugin, malformed plugin JSON, and a missing `ss` binary before a release.
 
+## Included plugins
+
+- **Port Inspector**: read-only listening TCP and UDP ports, using `ss` on
+  Linux and `lsof` on macOS.
+- **Journal Viewer**: the 100 newest local journal entries on Linux, using
+  `journalctl`. It reports a clear unsupported-platform error on macOS.
+- **Process Resource Snapshot**: visible local processes with CPU, memory,
+  state, and parent PID, using `ps` on Linux and macOS.
+
+## Build bundled binaries
+
+Build the Cmdry core into `dist/` and stage every bundled plugin in
+`dist/plugins/`, which is ready to use as `CMDRY_PLUGIN_DIR`:
+
+```bash
+./scripts/build.sh
+```
+
+Set `CMDRY_BUILD_DIR` to use a different output directory. To stage plugins
+directly into an existing Cmdry installation, set `CMDRY_PLUGIN_DIR` to that
+installation's configured plugin directory; the script needs write permission
+to it. Restart Cmdry after rebuilding.
+
+Run the locally built core with staged plugins using `./scripts/run.sh`. It
+defaults to `127.0.0.1:8080`, `dist/plugins/`, and `.cmdry-data/`; override
+those locations with `CMDRY_ADDR`, `CMDRY_PLUGIN_DIR`, `CMDRY_DATA_DIR`, or
+`CMDRY_BUILD_DIR`. Extra arguments are passed to `cmdry serve`, for example:
+
+```bash
+./scripts/run.sh --addr 127.0.0.1:8090
+```
+
+Use **Refresh plugins** on the Plugins page after adding, replacing, or removing
+a plugin binary. Cmdry scans and atomically replaces its in-memory registry;
+if the plugin directory cannot be scanned, it keeps the existing registry.
+
 ## Future ideas
 
-Journal Viewer, Systemd Manager, SMART Monitor, RAID Manager, Rsync Manager, Rclone Manager, Samba Manager, Mount Manager, Fail2ban Manager, SSH Config Manager, Restic Manager, and Cron Manager are possible future plugins. None are currently implemented.
+Systemd Manager, SMART Monitor, RAID Manager, Rsync Manager, Rclone Manager,
+Samba Manager, Mount Manager, Fail2ban Manager, SSH Config Manager, Restic
+Manager, and Cron Manager are possible future plugins. None are currently
+implemented.
+
+See [ROADMAP.md](docs/ROADMAP.md) for proposed core improvements and candidate plugin
+scopes. It is a planning document, not a release commitment.

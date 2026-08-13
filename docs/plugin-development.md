@@ -5,8 +5,10 @@ manifest and returns JSON views for actions. It can be written in Go or any
 language that can read standard input, write standard output, and run as an
 executable on the same operating system and CPU architecture as Cmdry.
 
-This guide describes the current version-1 protocol. Cmdry loads plugins only
-at startup, so restart Cmdry after installing, replacing, or removing one.
+This guide describes the current version-1 protocol. Cmdry loads plugins at
+startup and can rescan while running from the **Refresh plugins** button on the
+Plugins page. Use that button after installing, replacing, or removing a
+plugin; a failed scan preserves the currently registered plugin set.
 
 ## Before you begin
 

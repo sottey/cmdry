@@ -19,6 +19,7 @@ var assets embed.FS
 type App struct {
 	cfg       config.Config
 	registry  *plugins.Registry
+	discovery plugins.Discoverer
 	runner    plugins.Runner
 	logger    *slog.Logger
 	templates *template.Template
@@ -29,6 +30,7 @@ type pageData struct {
 	Current        *plugins.Registered
 	View           *plugins.View
 	Error          string
+	Message        string
 }
 
 func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*App, error) {
@@ -41,7 +43,7 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*A
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -58,6 +60,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.dashboard(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/plugins":
 		a.pluginList(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/refresh":
+		a.refreshPlugins(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
@@ -84,7 +88,21 @@ func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 }
 func (a *App) pluginList(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Installed plugins", "Plugins")
+	if r.URL.Query().Get("refreshed") == "1" {
+		d.Message = "Plugin scan completed."
+	} else if r.URL.Query().Get("refresh") == "failed" {
+		d.Error = "Plugin scan failed. Existing registered plugins were kept. Check the server logs and plugin directory."
+	}
 	a.render(w, http.StatusOK, "plugins.html", d)
+}
+func (a *App) refreshPlugins(w http.ResponseWriter, r *http.Request) {
+	if err := a.discovery.Discover(r.Context(), a.registry); err != nil {
+		a.logger.Warn("plugin refresh failed", "error", err)
+		http.Redirect(w, r, "/plugins?refresh=failed", http.StatusSeeOther)
+		return
+	}
+	a.logger.Info("plugins refreshed", "plugins", a.registry.Len())
+	http.Redirect(w, r, "/plugins?refreshed=1", http.StatusSeeOther)
 }
 func (a *App) settings(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Settings", "Settings")

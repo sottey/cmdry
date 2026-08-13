@@ -32,6 +32,7 @@ go.work.sum
 # .vscode/
 .DS_Store
 .cmdry-data/
+dist/
 codex_resume.txt
 .gitignore
 cmdry-ports
