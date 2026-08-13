@@ -136,6 +136,8 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   state, and parent PID, using `ps` on Linux and macOS.
 - **Filesystem Inspector**: mounted filesystem capacity and available space,
   using portable `df` output on Linux and macOS.
+- **Network Interface Inspector**: local interfaces, assigned addresses, and
+  the default gateway, using native network tools on Linux and macOS.
 
 ## Build bundled binaries
 

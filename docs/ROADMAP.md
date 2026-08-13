@@ -94,6 +94,7 @@ separate security and interaction review.
 
 | Done? | Candidate | Initial read-only scope | Likely host command(s) | Notes |
 | --- | --- | --- | --- | --- |
+| TRUE | Port Inspector | Scans ports |`lsof`, `ss` | macos, linux supported. |
 | TRUE | Journal Viewer | Recent system events, severity, and service filters | `journalctl` | Linux-only; pagination is important. |
 | FALSE | Systemd Status | Unit status, failures, dependencies, and logs | `systemctl`, `journalctl` | Do not add start/stop/restart controls initially. |
 | FALSE | SMART Monitor | Disk identity, health attributes, self-test history | `smartctl` | Hardware access and elevated permissions need careful deployment docs. |
@@ -106,7 +107,7 @@ separate security and interaction review.
 | FALSE | Fail2ban Status | Jails, current bans, and recent events | `fail2ban-client` | Read-only first; unban actions require explicit audit/confirmation design. |
 | FALSE | SSH Configuration Inspector | Effective daemon settings and listening status | `sshd -T`, `ss` | Do not expose private keys or enable arbitrary config editing. |
 | FALSE | Cron and Timer Viewer | System/user cron entries and systemd timers | `crontab`, `systemctl list-timers` | Scope visibility carefully by service account permissions. |
-| FALSE | Network Interface Inspector | Addresses, routes, interfaces, and DNS state | `ip`, `networksetup`, `scutil` | Needs separate Linux and macOS collectors like Port Inspector. |
+| TRUE | Network Interface Inspector | Interfaces, assigned addresses, and default gateway | `ifconfig`, `route`, `ip` | Cross-platform read-only baseline; DNS and traffic counters remain deferred. |
 | TRUE | Process Resource Snapshot | Selected process CPU, memory, and state | `ps` | Keep filtering bounded; it is not a task manager or process killer. |
 
 ## Candidate selection criteria
