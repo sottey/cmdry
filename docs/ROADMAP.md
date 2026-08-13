@@ -106,7 +106,8 @@ separate security and interaction review.
 | FALSE | Samba Inspector | Service state and configured shares | `testparm`, `smbstatus` | Display configuration safely; no share editing in an initial version. |
 | FALSE | Fail2ban Status | Jails, current bans, and recent events | `fail2ban-client` | Read-only first; unban actions require explicit audit/confirmation design. |
 | FALSE | SSH Configuration Inspector | Effective daemon settings and listening status | `sshd -T`, `ss` | Do not expose private keys or enable arbitrary config editing. |
-| FALSE | Cron and Timer Viewer | System/user cron entries and systemd timers | `crontab`, `systemctl list-timers` | Scope visibility carefully by service account permissions. |
+| TR
+Ue | Cron and Timer Viewer | System/user cron entries and systemd timers | `crontab`, `systemctl list-timers` | Scope visibility carefully by service account permissions. |
 | TRUE | Network Interface Inspector | Interfaces, assigned addresses, and default gateway | `ifconfig`, `route`, `ip` | Cross-platform read-only baseline; DNS and traffic counters remain deferred. |
 | TRUE | System Information | OS, uptime, CPU, memory, and hardware facts | `sw_vers`, `sysctl`, `/proc` | Cross-platform read-only baseline; protected fields remain explicitly unavailable. |
 | TRUE | Process Resource Snapshot | Selected process CPU, memory, and state | `ps` | Keep filtering bounded; it is not a task manager or process killer. |
