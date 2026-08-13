@@ -140,6 +140,9 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   the default gateway, using native network tools on Linux and macOS.
 - **System Information**: local OS, kernel, uptime, CPU, memory, and hardware
   facts, using native system sources on Linux and macOS.
+- **Scheduled Tasks**: user cron jobs plus Linux systemd timers or macOS launchd
+  configuration files. It remains read-only and explicitly reports unavailable
+  sources.
 
 ## Build bundled binaries
 
