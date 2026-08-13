@@ -108,6 +108,7 @@ separate security and interaction review.
 | FALSE | SSH Configuration Inspector | Effective daemon settings and listening status | `sshd -T`, `ss` | Do not expose private keys or enable arbitrary config editing. |
 | FALSE | Cron and Timer Viewer | System/user cron entries and systemd timers | `crontab`, `systemctl list-timers` | Scope visibility carefully by service account permissions. |
 | TRUE | Network Interface Inspector | Interfaces, assigned addresses, and default gateway | `ifconfig`, `route`, `ip` | Cross-platform read-only baseline; DNS and traffic counters remain deferred. |
+| TRUE | System Information | OS, uptime, CPU, memory, and hardware facts | `sw_vers`, `sysctl`, `/proc` | Cross-platform read-only baseline; protected fields remain explicitly unavailable. |
 | TRUE | Process Resource Snapshot | Selected process CPU, memory, and state | `ps` | Keep filtering bounded; it is not a task manager or process killer. |
 
 ## Candidate selection criteria

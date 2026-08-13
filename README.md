@@ -138,6 +138,8 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   using portable `df` output on Linux and macOS.
 - **Network Interface Inspector**: local interfaces, assigned addresses, and
   the default gateway, using native network tools on Linux and macOS.
+- **System Information**: local OS, kernel, uptime, CPU, memory, and hardware
+  facts, using native system sources on Linux and macOS.
 
 ## Build bundled binaries
 
