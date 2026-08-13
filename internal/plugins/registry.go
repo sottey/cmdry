@@ -51,6 +51,30 @@ func (r *Registry) All() []Registered {
 	sort.Slice(out, func(i, j int) bool { return out[i].Manifest.Name < out[j].Manifest.Name })
 	return out
 }
+
+// Ordered returns entries in the persisted order first; newly discovered IDs
+// not in that order retain alphabetical ordering after them.
+func (r *Registry) Ordered(ids []string) []Registered {
+	all := r.All()
+	byID := make(map[string]Registered, len(all))
+	for _, entry := range all {
+		byID[entry.Manifest.ID] = entry
+	}
+	result := make([]Registered, 0, len(all))
+	seen := make(map[string]bool, len(all))
+	for _, id := range ids {
+		if entry, ok := byID[id]; ok {
+			result = append(result, entry)
+			seen[id] = true
+		}
+	}
+	for _, entry := range all {
+		if !seen[entry.Manifest.ID] {
+			result = append(result, entry)
+		}
+	}
+	return result
+}
 func (r *Registry) Len() int {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

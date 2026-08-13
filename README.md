@@ -134,6 +134,8 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   `journalctl`. It reports a clear unsupported-platform error on macOS.
 - **Process Resource Snapshot**: visible local processes with CPU, memory,
   state, and parent PID, using `ps` on Linux and macOS.
+- **Filesystem Inspector**: mounted filesystem capacity and available space,
+  using portable `df` output on Linux and macOS.
 
 ## Build bundled binaries
 
@@ -161,6 +163,10 @@ those locations with `CMDRY_ADDR`, `CMDRY_PLUGIN_DIR`, `CMDRY_DATA_DIR`, or
 Use **Refresh plugins** on the Plugins page after adding, replacing, or removing
 a plugin binary. Cmdry scans and atomically replaces its in-memory registry;
 if the plugin directory cannot be scanned, it keeps the existing registry.
+
+Drag installed-tool links in the sidebar to reorder them. Cmdry saves the order
+to `plugin-order.json` in `CMDRY_DATA_DIR` and restores it on future starts and
+plugin refreshes. Newly discovered plugins appear after the saved entries.
 
 ## Future ideas
 

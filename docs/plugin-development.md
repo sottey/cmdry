@@ -10,6 +10,10 @@ startup and can rescan while running from the **Refresh plugins** button on the
 Plugins page. Use that button after installing, replacing, or removing a
 plugin; a failed scan preserves the currently registered plugin set.
 
+Administrators can drag installed plugins in the sidebar to set a persistent
+display order. Plugins omitted from a saved order, including newly installed
+ones, follow those ordered entries alphabetically.
+
 ## Before you begin
 
 Plugins are executable code running with the Cmdry process's operating-system
@@ -83,7 +87,7 @@ Required fields and rules:
 | Field | Rule |
 | --- | --- |
 | `protocol_version` | Must be the number `1`. |
-| `id` | Unique among installed plugins; lowercase letters/digits followed by lowercase letters, digits, `_`, or `-`. |
+| `id` | Unique among installed plugins; lowercase letters/digits followed by lowercase letters, digits, `_`, `-`, or `.`. Reverse-domain IDs such as `com.sottey.example` are supported. |
 | `name` | Non-empty display name. |
 | `version` | Semantic-style version such as `0.1.0` or `v1.2.3-beta.1`. |
 | `pages` | At least one page; each needs a unique safe `id` and non-empty `name`. One page should be `default: true`. |

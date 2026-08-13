@@ -6,7 +6,9 @@ import (
 	"strings"
 )
 
-var idPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]*$`)
+// IDs are URL-path-safe lowercase identifiers. Periods allow reverse-domain
+// names such as com.sottey.port-inspector without permitting path separators.
+var idPattern = regexp.MustCompile(`^[a-z0-9][a-z0-9_.-]*$`)
 var versionPattern = regexp.MustCompile(`^v?[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$`)
 
 func ValidateManifest(m Manifest) error {

@@ -11,7 +11,7 @@ import (
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
 		ProtocolVersion: 1,
-		ID:              "processes",
+		ID:              "com.sottey.processes",
 		Name:            "Process Resource Snapshot",
 		Version:         "0.1.0",
 		Description:     "Inspect CPU and memory usage of visible local processes.",

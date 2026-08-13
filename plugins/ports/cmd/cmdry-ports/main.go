@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "ports", Name: "Port Inspector", Version: "0.2.0", Description: "Inspect listening network ports and their owning processes.", Category: "system", Icon: "network", Pages: []cmdry.Page{{ID: "overview", Name: "Ports", Default: true, Action: "list"}}, Permissions: []string{"network.read", "process.read"}, Actions: []cmdry.Action{{ID: "list", Name: "List ports", Method: "read"}}}, Actions: map[string]cmdry.Handler{"list": listPorts}})
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.ports", Name: "Port Inspector", Version: "0.2.0", Description: "Inspect listening network ports and their owning processes.", Category: "system", Icon: "network", Pages: []cmdry.Page{{ID: "overview", Name: "Ports", Default: true, Action: "list"}}, Permissions: []string{"network.read", "process.read"}, Actions: []cmdry.Action{{ID: "list", Name: "List ports", Method: "read"}}}, Actions: map[string]cmdry.Handler{"list": listPorts}})
 }
 func listPorts(_ cmdry.Request) (cmdry.View, error) {
 	items, err := ports.CollectListeningPorts()

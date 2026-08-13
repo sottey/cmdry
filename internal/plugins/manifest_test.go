@@ -15,6 +15,18 @@ func TestValidateManifest(t *testing.T) {
 		t.Fatal("accepted unsafe ID")
 	}
 	m = validManifest()
+	m.ID = "com.sottey.port-inspector"
+	m.Pages[0].ID = "network.overview"
+	m.Actions[0].ID = "ports.list"
+	if err := ValidateManifest(m); err != nil {
+		t.Fatalf("rejected reverse-domain IDs: %v", err)
+	}
+	m = validManifest()
+	m.ID = ".ports"
+	if err := ValidateManifest(m); err == nil {
+		t.Fatal("accepted an ID beginning with a period")
+	}
+	m = validManifest()
 	m.ProtocolVersion = 2
 	if err := ValidateManifest(m); err == nil {
 		t.Fatal("accepted unsupported protocol")

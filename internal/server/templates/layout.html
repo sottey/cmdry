@@ -1,11 +1,84 @@
 {{define "layout.html"}}
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{{.Title}} · Cmdry</title><link rel="stylesheet" href="/static/app.css"></head>
-<body><aside><a class="brand" href="/"><span class="brand-mark">›_</span> cmdry</a><nav><a href="/" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a><p class="nav-label">Installed tools</p>{{range .Plugins}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}>{{.Manifest.Name}}</a>{{else}}<span class="empty-nav">No plugins found</span>{{end}}<p class="nav-label lower">System</p><a href="/plugins" {{if eq .Section "Plugins"}}class="active"{{end}}>Plugins</a><a href="/settings" {{if eq .Section "Settings"}}class="active"{{end}}>Settings</a></nav><footer>Cmdry v0.1 · local operator UI</footer></aside>
-<main><header><div><p class="eyebrow">{{.Section}}</p><h1>{{.Title}}</h1></div><div class="signal"><i></i> core online</div></header>
-{{if eq .Section "Overview"}}<section class="intro"><div><p>Command-line tools, made legible.</p><span>Cmdry discovers independently installed plugins and gives each one a consistent, safe web surface.</span></div><dl><div><dt>{{len .Plugins}}</dt><dd>registered plugins</dd></div><div><dt>v1</dt><dd>protocol</dd></div></dl></section><section class="panel"><h2>Get started</h2>{{if .Plugins}}<p>Select an installed tool from the sidebar. Cmdry will execute only actions declared by its manifest.</p>{{else}}<p>No plugin executables were found. Copy a <code>cmdry-*</code> executable to the configured plugin directory, then restart Cmdry.</p>{{end}}</section>
-{{else if eq .Section "Plugins"}}{{if .Message}}<section class="notice"><strong>{{.Message}}</strong></section>{{end}}{{if .Error}}<section class="notice error"><strong>{{.Error}}</strong></section>{{end}}<section class="panel plugin-tools"><form method="post" action="/plugins/refresh"><button type="submit">Refresh plugins</button></form><p>Rescans the configured plugin directory without restarting Cmdry.</p></section><section class="panel table-panel"><table><thead><tr><th>Name</th><th>Version</th><th>Category</th><th>Status</th><th>Permissions</th><th>Path</th></tr></thead><tbody>{{range .Plugins}}<tr><td><a href="/plugins/{{.Manifest.ID}}">{{.Manifest.Name}}</a></td><td>{{.Manifest.Version}}</td><td>{{category .Manifest.Category}}</td><td><span class="status">{{.Status}}</span></td><td>{{range .Manifest.Permissions}}<code>{{.}}</code> {{end}}</td><td><code>{{.Path}}</code></td></tr>{{else}}<tr><td colspan="6">No installed plugins.</td></tr>{{end}}</tbody></table></section>
-{{else if eq .Section "Settings"}}<section class="panel settings"><h2>Runtime configuration</h2><dl><div><dt>Listen address</dt><dd><code>CMDRY_ADDR</code> defaults to <code>127.0.0.1:8080</code>.</dd></div><div><dt>Plugin directory</dt><dd><code>CMDRY_PLUGIN_DIR</code> defaults to <code>/opt/cmdry/plugins</code>.</dd></div><div><dt>Data directory</dt><dd><code>CMDRY_DATA_DIR</code> defaults to <code>/opt/cmdry/data</code>.</dd></div></dl><p class="quiet">Configuration loads once at startup. Cmdry defaults to localhost; expose it only behind access controls you operate.</p></section>
-{{else if .Error}}<section class="notice error"><strong>{{.Current.Manifest.Name}} failed</strong><p>{{.Error}}</p><p>Check the plugin binary and its host command requirements, then try again.</p></section>
-{{else if .View}}<section class="view-title"><h2>{{.View.Title}}</h2><p>{{.Current.Manifest.Description}}</p></section>{{range .View.Components}}{{if eq .Type "metric"}}<section class="metric"><p>{{.Label}}</p><strong>{{.Value}}</strong>{{if .Description}}<span>{{.Description}}</span>{{end}}</section>{{else if eq .Type "text"}}<section class="panel"><h2>{{.Title}}</h2><p>{{.Text}}</p></section>{{else if eq .Type "alert"}}<section class="notice {{.Level}}"><strong>{{.Title}}</strong><p>{{.Message}}</p></section>{{else if eq .Type "table"}}{{$columns := .Columns}}<section class="panel table-panel"><table data-sortable><thead><tr>{{range $columns}}<th>{{.Label}}</th>{{end}}</tr></thead><tbody>{{range $row := .Rows}}<tr>{{range $column := $columns}}<td>{{row $row $column.Key}}</td>{{end}}</tr>{{end}}</tbody></table></section>{{else if eq .Type "actions"}}<section class="action-bar">{{range .Actions}}<form method="post" action="/plugins/{{$.Current.Manifest.ID}}/actions/{{.ID}}"><button type="submit">{{.Name}}</button></form>{{end}}</section>{{end}}{{end}}
-{{else}}<section class="panel"><p>This plugin did not return a view.</p></section>{{end}}</main><script src="/static/app.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{{.Title}} · Cmdry</title>
+  <link rel="stylesheet" href="/static/app.css">
+  <link rel="stylesheet" href="/static/processes.css">
+  <link rel="stylesheet" href="/static/plugin-order.css">
+</head>
+<body>
+  <aside>
+    <a class="brand" href="/"><span class="brand-mark">›_</span> cmdry</a>
+    <nav>
+      <a href="/" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a>
+      <p class="nav-label">Installed tools</p>
+      <div id="plugin-nav" aria-label="Installed tools">
+        {{range .Plugins}}
+          <a href="/plugins/{{.Manifest.ID}}" data-plugin-id="{{.Manifest.ID}}" draggable="true" {{if eq $.Section .Manifest.Name}}class="active"{{end}}>{{.Manifest.Name}}</a>
+        {{else}}
+          <span class="empty-nav">No plugins found</span>
+        {{end}}
+      </div>
+      <p class="nav-label lower">System</p>
+      <a href="/plugins" {{if eq .Section "Plugins"}}class="active"{{end}}>Plugins</a>
+      <a href="/settings" {{if eq .Section "Settings"}}class="active"{{end}}>Settings</a>
+    </nav>
+    <footer>Cmdry v0.1 · local operator UI</footer>
+  </aside>
+  <main>
+    <header>
+      <div><p class="eyebrow">{{.Section}}</p><h1>{{.Title}}</h1></div>
+      <div class="signal"><i></i> core online</div>
+    </header>
+    {{if eq .Section "Overview"}}
+      <section class="intro">
+        <div><p>Command-line tools, made legible.</p><span>Cmdry discovers independently installed plugins and gives each one a consistent, safe web surface.</span></div>
+        <dl><div><dt>{{len .Plugins}}</dt><dd>registered plugins</dd></div><div><dt>v1</dt><dd>protocol</dd></div></dl>
+      </section>
+      <section class="panel">
+        <h2>Get started</h2>
+        {{if .Plugins}}
+          <p>Select an installed tool from the sidebar. Cmdry will execute only actions declared by its manifest.</p>
+        {{else}}
+          <p>No plugin executables were found. Copy a <code>cmdry-*</code> executable to the configured plugin directory, then restart Cmdry.</p>
+        {{end}}
+      </section>
+    {{else if eq .Section "Plugins"}}
+      {{if .Message}}<section class="notice"><strong>{{.Message}}</strong></section>{{end}}
+      {{if .Error}}<section class="notice error"><strong>{{.Error}}</strong></section>{{end}}
+      <section class="panel plugin-tools"><form method="post" action="/plugins/refresh"><button type="submit">Refresh plugins</button></form><p>Rescans the configured plugin directory without restarting Cmdry.</p></section>
+      <section class="panel table-panel">
+        <table><thead><tr><th>Name</th><th>Version</th><th>Category</th><th>Status</th><th>Permissions</th><th>Path</th></tr></thead>
+        <tbody>{{range .Plugins}}<tr><td><a href="/plugins/{{.Manifest.ID}}">{{.Manifest.Name}}</a></td><td>{{.Manifest.Version}}</td><td>{{category .Manifest.Category}}</td><td><span class="status">{{.Status}}</span></td><td>{{range .Manifest.Permissions}}<code>{{.}}</code> {{end}}</td><td><code>{{.Path}}</code></td></tr>{{else}}<tr><td colspan="6">No installed plugins.</td></tr>{{end}}</tbody></table>
+      </section>
+    {{else if eq .Section "Settings"}}
+      <section class="panel settings"><h2>Runtime configuration</h2><dl><div><dt>Listen address</dt><dd><code>CMDRY_ADDR</code> defaults to <code>127.0.0.1:8080</code>.</dd></div><div><dt>Plugin directory</dt><dd><code>CMDRY_PLUGIN_DIR</code> defaults to <code>/opt/cmdry/plugins</code>.</dd></div><div><dt>Data directory</dt><dd><code>CMDRY_DATA_DIR</code> defaults to <code>/opt/cmdry/data</code>.</dd></div></dl><p class="quiet">Configuration loads once at startup. Cmdry defaults to localhost; expose it only behind access controls you operate.</p></section>
+    {{else if .Error}}
+      <section class="notice error"><strong>{{.Current.Manifest.Name}} failed</strong><p>{{.Error}}</p><p>Check the plugin binary and its host command requirements, then try again.</p></section>
+    {{else if .View}}
+      <section class="view-title"><h2>{{.View.Title}}</h2><p>{{.Current.Manifest.Description}}</p></section>
+      {{range .View.Components}}
+        {{if eq .Type "metric"}}
+          <section class="metric"><p>{{.Label}}</p><strong>{{.Value}}</strong>{{if .Description}}<span>{{.Description}}</span>{{end}}</section>
+        {{else if eq .Type "text"}}
+          <section class="panel"><h2>{{.Title}}</h2><p>{{.Text}}</p></section>
+        {{else if eq .Type "alert"}}
+          <section class="notice {{.Level}}"><strong>{{.Title}}</strong><p>{{.Message}}</p></section>
+        {{else if eq .Type "table"}}
+          {{$columns := .Columns}}
+          <section class="panel table-panel"><table class="table-{{.ID}}" data-sortable><thead><tr>{{range $columns}}<th>{{.Label}}</th>{{end}}</tr></thead><tbody>{{range $row := .Rows}}<tr>{{range $column := $columns}}<td>{{row $row $column.Key}}</td>{{end}}</tr>{{end}}</tbody></table></section>
+        {{else if eq .Type "actions"}}
+          <section class="action-bar">{{range .Actions}}<form method="post" action="/plugins/{{$.Current.Manifest.ID}}/actions/{{.ID}}"><button type="submit">{{.Name}}</button></form>{{end}}</section>
+        {{end}}
+      {{end}}
+    {{else}}
+      <section class="panel"><p>This plugin did not return a view.</p></section>
+    {{end}}
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
 {{end}}

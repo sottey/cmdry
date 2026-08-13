@@ -10,7 +10,7 @@ import (
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
 		ProtocolVersion: 1,
-		ID:              "journal",
+		ID:              "com.sottey.journal",
 		Name:            "Journal Viewer",
 		Version:         "0.1.0",
 		Description:     "Review the 100 most recent local Linux journal entries.",

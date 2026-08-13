@@ -98,7 +98,7 @@ separate security and interaction review.
 | FALSE | Systemd Status | Unit status, failures, dependencies, and logs | `systemctl`, `journalctl` | Do not add start/stop/restart controls initially. |
 | FALSE | SMART Monitor | Disk identity, health attributes, self-test history | `smartctl` | Hardware access and elevated permissions need careful deployment docs. |
 | FALSE | RAID Monitor | Array state, members, rebuild progress | `mdadm`, `/proc/mdstat` | Linux-specific; distinguish degraded from unavailable information. |
-| FALSE | Filesystem and Mount Inspector | Mounted filesystems, capacity, options, and sources | `findmnt`, `df` | Read-only first; never expose arbitrary mount commands. |
+| TRUE | Filesystem Inspector | Mounted filesystems, capacity, and available space | `df` | Cross-platform and read-only; mount management remains deferred. |
 | FALSE | Backup Status | Recent Restic snapshots, repository health, failures | `restic` | Secrets must remain outside plugin responses and logs. |
 | FALSE | Rsync Activity | Parse known job logs and last-result summaries | `rsync`, configured logs | Avoid a general-purpose command runner. |
 | FALSE | Rclone Status | Configured remote health and recent job summaries | `rclone` | Treat remote configuration and tokens as sensitive. |

@@ -2,14 +2,17 @@ package server
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log/slog"
 	"net/http"
 	"path"
 	"strings"
+	"sync"
 
 	"github.com/sottey/cmdry/internal/config"
+	"github.com/sottey/cmdry/internal/pluginorder"
 	"github.com/sottey/cmdry/internal/plugins"
 )
 
@@ -20,6 +23,9 @@ type App struct {
 	cfg       config.Config
 	registry  *plugins.Registry
 	discovery plugins.Discoverer
+	order     pluginorder.Store
+	orderIDs  []string
+	orderMu   sync.RWMutex
 	runner    plugins.Runner
 	logger    *slog.Logger
 	templates *template.Template
@@ -43,7 +49,12 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*A
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	order := pluginorder.Store{DataDir: cfg.DataDir}
+	orderIDs, err := order.Load()
+	if err != nil {
+		return nil, err
+	}
+	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -62,6 +73,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.pluginList(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/refresh":
 		a.refreshPlugins(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/order":
+		a.savePluginOrder(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
@@ -80,7 +93,10 @@ func (a *App) render(w http.ResponseWriter, status int, name string, d pageData)
 	}
 }
 func (a *App) base(title, section string) pageData {
-	return pageData{Title: title, Section: section, Plugins: a.registry.All()}
+	a.orderMu.RLock()
+	ids := append([]string(nil), a.orderIDs...)
+	a.orderMu.RUnlock()
+	return pageData{Title: title, Section: section, Plugins: a.registry.Ordered(ids)}
 }
 func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Cmdry", "Overview")
@@ -103,6 +119,41 @@ func (a *App) refreshPlugins(w http.ResponseWriter, r *http.Request) {
 	}
 	a.logger.Info("plugins refreshed", "plugins", a.registry.Len())
 	http.Redirect(w, r, "/plugins?refreshed=1", http.StatusSeeOther)
+}
+func (a *App) savePluginOrder(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 16*1024)
+	defer r.Body.Close()
+	var ids []string
+	if err := json.NewDecoder(r.Body).Decode(&ids); err != nil {
+		http.Error(w, "invalid plugin order", http.StatusBadRequest)
+		return
+	}
+	registered := a.registry.All()
+	if len(ids) != len(registered) {
+		http.Error(w, "plugin order must include every registered plugin", http.StatusBadRequest)
+		return
+	}
+	known := make(map[string]bool, len(registered))
+	for _, entry := range registered {
+		known[entry.Manifest.ID] = true
+	}
+	seen := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		if !plugins.ValidID(id) || !known[id] || seen[id] {
+			http.Error(w, "plugin order contains an unknown or duplicate plugin", http.StatusBadRequest)
+			return
+		}
+		seen[id] = true
+	}
+	if err := a.order.Save(ids); err != nil {
+		a.logger.Error("save plugin order", "error", err)
+		http.Error(w, "unable to save plugin order", http.StatusInternalServerError)
+		return
+	}
+	a.orderMu.Lock()
+	a.orderIDs = append([]string(nil), ids...)
+	a.orderMu.Unlock()
+	w.WriteHeader(http.StatusNoContent)
 }
 func (a *App) settings(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Settings", "Settings")

@@ -1,0 +1,25 @@
+#plugin-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+#plugin-nav a[draggable="true"] {
+  cursor: grab;
+}
+
+#plugin-nav a.dragging {
+  cursor: grabbing;
+  opacity: .45;
+}
+
+#plugin-nav a.drag-over {
+  border-top-color: #6ed3bb;
+}
+
+#plugin-nav.plugin-order-error::after {
+  content: "Order was not saved";
+  color: #ffd1ce;
+  font: 10px var(--mono);
+  padding: 7px 10px 0;
+}

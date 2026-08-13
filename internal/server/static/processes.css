@@ -1,0 +1,18 @@
+/* Keep the process command readable without letting long executable paths
+   expand the data table beyond its white panel. */
+.table-processes {
+  table-layout: fixed;
+}
+
+.table-processes th:last-child,
+.table-processes td:last-child {
+  width: 38%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+@media (max-width: 760px) {
+  .table-processes {
+    table-layout: auto;
+  }
+}

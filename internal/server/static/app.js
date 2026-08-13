@@ -15,3 +15,49 @@ document.querySelectorAll("table[data-sortable]").forEach((table) => {
     });
   });
 });
+
+const pluginNav = document.querySelector("#plugin-nav");
+if (pluginNav) {
+  let dragged = null;
+  const pluginLinks = () => [...pluginNav.querySelectorAll("a[data-plugin-id]")];
+  const saveOrder = async () => {
+    const ids = pluginLinks().map((link) => link.dataset.pluginId);
+    try {
+      const response = await fetch("/plugins/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ids),
+      });
+      if (!response.ok) throw new Error("save failed");
+    } catch (_) {
+      pluginNav.classList.add("plugin-order-error");
+    }
+  };
+  pluginLinks().forEach((link) => {
+    link.addEventListener("dragstart", (event) => {
+      dragged = link;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", link.dataset.pluginId);
+      link.classList.add("dragging");
+    });
+    link.addEventListener("dragend", () => {
+      dragged?.classList.remove("dragging");
+      dragged = null;
+      pluginNav.querySelectorAll(".drag-over").forEach((item) => item.classList.remove("drag-over"));
+    });
+    link.addEventListener("dragover", (event) => {
+      if (!dragged || dragged === link) return;
+      event.preventDefault();
+      link.classList.add("drag-over");
+    });
+    link.addEventListener("dragleave", () => link.classList.remove("drag-over"));
+    link.addEventListener("drop", (event) => {
+      if (!dragged || dragged === link) return;
+      event.preventDefault();
+      const placeAfter = event.clientY > link.getBoundingClientRect().top + link.offsetHeight / 2;
+      pluginNav.insertBefore(dragged, placeAfter ? link.nextSibling : link);
+      link.classList.remove("drag-over");
+      saveOrder();
+    });
+  });
+}
