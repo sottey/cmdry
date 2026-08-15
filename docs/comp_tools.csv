@@ -10,7 +10,7 @@ FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with qualit
 FALSE,4,Convert,Video to GIF,Convert video to animated GIF
 FALSE,2,CSV,Change CSV Separator,Change CSV file delimiter
 FALSE,3,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
-TRUE,,CSV,Convert CSV to JSON,Convert CSV data to JSON format.
+TRUE,0,CSV,Convert CSV to JSON,Convert CSV data to JSON format.
 FALSE,2,CSV,Convert CSV to TSV,Convert CSV data to TSV format.
 FALSE,3,CSV,Convert CSV to XML,Convert CSV data to XML format.
 FALSE,3,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
@@ -34,7 +34,7 @@ FALSE,3,Image,Resize Image,Resize one or multiple images at once.
 FALSE,3,Image,Rotate Image,Rotate an image easily.
 FALSE,4,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
 FALSE,3,Image,Watermark Images,Add text watermarks to images
-TRUE,,JSON,Compare JSON,Find differences between two JSON objects
+TRUE,0,JSON,Compare JSON,Find differences between two JSON objects
 FALSE,1,JSON,Escape JSON,Escape special characters in JSON
 FALSE,3,JSON,JSON to XML,Convert JSON to XML format
 FALSE,1,JSON,Minify JSON,Minify JSON by removing whitespace
@@ -76,13 +76,13 @@ FALSE,4,PDF,Rotate PDF,Rotate pages in a PDF document
 FALSE,4,PDF,Split PDF,Extract specific pages from a PDF file
 FALSE,3,PNG,Compress png,Quickly compress a PNG
 FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
-TRUE,,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
-TRUE,,Text,Compare Texts,Compare two texts and spot differences instantly
+TRUE,0,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
+TRUE,0,Text,Compare Texts,Compare two texts and spot differences instantly
 FALSE,1,Text,Convert to Uppercase,Convert text to uppercase
 FALSE,3,Text,Create palindrome,Create text that reads the same forward and backward
 FALSE,1,Text,Email Extractor,Extract email addresses from text
 FALSE,2,Text,Extract substring,Extract a portion of text between specified positions
-TRUE,,Text,Hidden Character Detector,Find hidden Unicode characters in text
+TRUE,0,Text,Hidden Character Detector,Find hidden Unicode characters in text
 FALSE,2,Text,Join Text,Join text elements with a specified separator
 FALSE,3,Text,Palindrome,Check if text reads the same forward and backward
 FALSE,3,Text,Randomize case,Randomize the case of letters in text
@@ -91,7 +91,7 @@ FALSE,3,Text,Repeat Text,Repeat text multiple times
 FALSE,2,Text,Reverse,Reverse any text character by character
 FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
 FALSE,3,Text,Rotate Text,Shift characters in text by position.
-TRUE,,Text,Slug Generator,Generate URL-friendly slugs from text.
+TRUE,0,Text,Slug Generator,Generate URL-friendly slugs from text.
 FALSE,2,Text,Split,Split text into multiple parts using a separator
 FALSE,3,Text,String To morse,Quickly encode text to morse
 FALSE,1,Text,String URL decoder,Quickly URL-unescape a string.
@@ -127,8 +127,8 @@ FALSE,5,Video,Resize Video,Resize videos to different resolutions
 FALSE,5,Video,Rotate Video,Rotate video by specified degrees
 FALSE,5,Video,Trim Video,Trim video by removing unwanted sections
 FALSE,1,XML,XML Validator,Validate XML code for errors
-TRUE,,JSON,JSON to CSV,Convert JSON to CSV format
-TRUE,,JSON,Prettify JSON,Format and beautify JSON code
+TRUE,0,JSON,JSON to CSV,Convert JSON to CSV format
+TRUE,0,JSON,Prettify JSON,Format and beautify JSON code
 FALSE,2,Text,Bcrypt,Hash strings with Bcrypt
-TRUE,,Text,Password Generator,Generate secure random passwords with custom options
-TRUE,,XML,XML Beautifier,Format and beautify XML code
+TRUE,0,Text,Password Generator,Generate secure random passwords with custom options
+TRUE,0,XML,XML Beautifier,Format and beautify XML code
