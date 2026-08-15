@@ -3,9 +3,11 @@ package plugins
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strings"
 	"time"
 )
 
@@ -65,7 +67,26 @@ func ValidateResponse(r Response) error {
 	}
 	for _, c := range r.Data.Components {
 		switch c.Type {
-		case "metric", "text", "alert", "table", "actions":
+		case "metric", "text", "alert", "table", "actions", "code":
+		case "form":
+			if !ValidID(c.Action) || strings.TrimSpace(c.Submit) == "" || len(c.Fields) == 0 {
+				return fmt.Errorf("invalid form component")
+			}
+			for _, field := range c.Fields {
+				if !ValidID(field.Name) || strings.TrimSpace(field.Label) == "" || (field.Type != "text" && field.Type != "textarea" && field.Type != "number" && field.Type != "checkbox" && field.Type != "select") {
+					return fmt.Errorf("invalid form field")
+				}
+				if field.Type == "select" && len(field.Options) == 0 {
+					return fmt.Errorf("select field has no options")
+				}
+			}
+		case "download":
+			if strings.TrimSpace(c.Filename) == "" || strings.TrimSpace(c.MIMEType) == "" || len(c.Content) == 0 || len(c.Content) > 8*1024*1024 {
+				return fmt.Errorf("invalid download component")
+			}
+			if _, err := base64.StdEncoding.DecodeString(c.Content); err != nil {
+				return fmt.Errorf("invalid download content: %w", err)
+			}
 		default:
 			return fmt.Errorf("unsupported UI component %q", c.Type)
 		}

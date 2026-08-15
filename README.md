@@ -8,7 +8,7 @@ The first included plugin is **Port Inspector**, a read-only view of listening T
 
 ## What Cmdry is (and is not)
 
-Cmdry is an extensible way to expose a focused Linux CLI utility through a local web UI. It is not a server-control panel, SSH terminal, Docker manager, file browser, plugin marketplace, or fleet-management system. V1 has no process-killing, service-control, write, or arbitrary-command actions.
+Cmdry is an extensible way to expose a focused Linux CLI utility through a local web UI. It is not a server-control panel, SSH terminal, Docker manager, file browser, plugin marketplace, or fleet-management system. V1 has no process-killing, service-control, filesystem-writing, or arbitrary-command actions.
 
 ## Run on a Linux host
 
@@ -93,7 +93,7 @@ cmdry-ports execute list
 
 The request arrives as JSON on stdin. The response must be protocol JSON on stdout; diagnostics belong on stderr. Core invocation has a timeout, validates action IDs and UI component types, and treats malformed output, a non-zero exit, and missing binaries as a contained page error.
 
-The supported UI component types are `metric`, `text`, `alert`, `table`, and `actions`. The core renders all values with `html/template`; plugins cannot inject markup, scripts, styles, URLs, or commands.
+The supported UI component types are `metric`, `text`, `code`, `alert`, `table`, `actions`, `form`, and `download`. Forms submit bounded local input to a declared plugin action; downloads are returned as in-memory, browser-local files. The core renders all values with `html/template`; plugins cannot inject markup, scripts, styles, URLs, or commands.
 
 The included Go SDK is in [`plugin-sdk/go`](plugin-sdk/go). A plugin has this shape:
 
@@ -143,6 +143,22 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 - **Scheduled Tasks**: user cron jobs plus Linux systemd timers or macOS launchd
   configuration files. It remains read-only and explicitly reports unavailable
   sources.
+- **Battery and Power Inspector**: battery charge state and power source on
+  macOS and Linux, with a clear no-battery view for desktop hosts.
+- **Wi-Fi Inspector**: active Wi-Fi network facts without exposing saved
+  networks or passwords, on macOS and Linux. On its first use on macOS, it
+  requests Location Services permission; this is required by macOS before an
+  app may read SSID, BSSID, and signal data.
+- **JSON to CSV**: converts pasted JSON objects or arrays of objects into a
+  browser-local CSV download on macOS and Linux. It does not read, watch, or
+  write host files.
+- **CSV to JSON**: converts pasted header-based CSV into a browser-local JSON
+  download on macOS and Linux. All CSV values remain strings to preserve the
+  source data exactly.
+- **JSON Compare**: compares two pasted JSON documents structurally on macOS
+  and Linux, ignoring object property order and whitespace.
+- **Hidden Character Detector**: finds pasted zero-width, bidirectional,
+  non-standard-space, and unexpected control characters on macOS and Linux.
 
 ## Build bundled binaries
 

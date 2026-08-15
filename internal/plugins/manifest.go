@@ -21,6 +21,14 @@ func ValidateManifest(m Manifest) error {
 	if strings.TrimSpace(m.Name) == "" {
 		return fmt.Errorf("plugin name is required")
 	}
+	if len(m.SearchTerms) > 32 {
+		return fmt.Errorf("too many search terms")
+	}
+	for _, term := range m.SearchTerms {
+		if term = strings.TrimSpace(term); term == "" || len(term) > 80 {
+			return fmt.Errorf("invalid search term")
+		}
+	}
 	if !versionPattern.MatchString(m.Version) {
 		return fmt.Errorf("invalid plugin version %q", m.Version)
 	}

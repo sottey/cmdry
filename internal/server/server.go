@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/sottey/cmdry/internal/config"
+	"github.com/sottey/cmdry/internal/groupstate"
 	"github.com/sottey/cmdry/internal/pluginorder"
 	"github.com/sottey/cmdry/internal/plugins"
 )
@@ -20,27 +21,53 @@ import (
 var assets embed.FS
 
 type App struct {
-	cfg       config.Config
-	registry  *plugins.Registry
-	discovery plugins.Discoverer
-	order     pluginorder.Store
-	orderIDs  []string
-	orderMu   sync.RWMutex
-	runner    plugins.Runner
-	logger    *slog.Logger
-	templates *template.Template
+	cfg        config.Config
+	registry   *plugins.Registry
+	discovery  plugins.Discoverer
+	order      pluginorder.Store
+	orderIDs   []string
+	orderMu    sync.RWMutex
+	groups     groupstate.Store
+	groupState map[string]bool
+	groupMu    sync.RWMutex
+	runner     plugins.Runner
+	logger     *slog.Logger
+	templates  *template.Template
 }
 type pageData struct {
 	Title, Section string
 	Plugins        []plugins.Registered
+	PluginGroups   []PluginGroup
 	Current        *plugins.Registered
 	View           *plugins.View
 	Error          string
 	Message        string
 }
+type PluginGroup struct {
+	ID, Name  string
+	Collapsed bool
+	Plugins   []plugins.Registered
+}
 
 func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*App, error) {
-	t, err := template.New("layout.html").Funcs(template.FuncMap{"row": func(row map[string]any, key string) any { return row[key] }, "category": func(s string) string {
+	t, err := template.New("layout.html").Funcs(template.FuncMap{"row": func(row map[string]any, key string) any { return row[key] }, "pluginSearchJSON": func(entries []plugins.Registered) template.JS {
+		type result struct {
+			ID          string   `json:"id"`
+			Name        string   `json:"name"`
+			Description string   `json:"description"`
+			Category    string   `json:"category"`
+			Href        string   `json:"href"`
+			Terms       []string `json:"terms"`
+		}
+		items := make([]result, 0, len(entries))
+		for _, entry := range entries {
+			items = append(items, result{ID: entry.Manifest.ID, Name: entry.Manifest.Name, Description: entry.Manifest.Description, Category: entry.Manifest.Category, Href: "/plugins/" + entry.Manifest.ID, Terms: append([]string{}, entry.Manifest.SearchTerms...)})
+		}
+		encoded, _ := json.Marshal(items)
+		return template.JS(encoded)
+	}, "downloadURL": func(mimeType, content string) template.URL {
+		return template.URL("data:" + mimeType + ";base64," + content)
+	}, "category": func(s string) string {
 		if s == "" {
 			return "other"
 		}
@@ -54,7 +81,12 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*A
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	groups := groupstate.Store{DataDir: cfg.DataDir}
+	groupState, err := groups.Load()
+	if err != nil {
+		return nil, err
+	}
+	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -75,6 +107,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.refreshPlugins(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/order":
 		a.savePluginOrder(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/groups":
+		a.saveGroupState(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
@@ -96,7 +130,37 @@ func (a *App) base(title, section string) pageData {
 	a.orderMu.RLock()
 	ids := append([]string(nil), a.orderIDs...)
 	a.orderMu.RUnlock()
-	return pageData{Title: title, Section: section, Plugins: a.registry.Ordered(ids)}
+	entries := a.registry.Ordered(ids)
+	a.groupMu.RLock()
+	state := make(map[string]bool, len(a.groupState))
+	for key, value := range a.groupState {
+		state[key] = value
+	}
+	a.groupMu.RUnlock()
+	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(entries, state)}
+}
+
+func makeGroups(entries []plugins.Registered, state map[string]bool) []PluginGroup {
+	byID := map[string]*PluginGroup{}
+	order := []string{}
+	for _, entry := range entries {
+		id := strings.TrimSpace(entry.Manifest.Category)
+		if id == "" {
+			id = "other"
+		}
+		group := byID[id]
+		if group == nil {
+			group = &PluginGroup{ID: id, Name: strings.ToUpper(id[:1]) + id[1:], Collapsed: state[id]}
+			byID[id] = group
+			order = append(order, id)
+		}
+		group.Plugins = append(group.Plugins, entry)
+	}
+	groups := make([]PluginGroup, 0, len(order))
+	for _, id := range order {
+		groups = append(groups, *byID[id])
+	}
+	return groups
 }
 func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Cmdry", "Overview")
@@ -153,6 +217,39 @@ func (a *App) savePluginOrder(w http.ResponseWriter, r *http.Request) {
 	a.orderMu.Lock()
 	a.orderIDs = append([]string(nil), ids...)
 	a.orderMu.Unlock()
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (a *App) saveGroupState(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 16*1024)
+	defer r.Body.Close()
+	var state map[string]bool
+	if err := json.NewDecoder(r.Body).Decode(&state); err != nil {
+		http.Error(w, "invalid plugin group state", http.StatusBadRequest)
+		return
+	}
+	known := map[string]bool{}
+	for _, entry := range a.registry.All() {
+		id := strings.TrimSpace(entry.Manifest.Category)
+		if id == "" {
+			id = "other"
+		}
+		known[id] = true
+	}
+	for id := range state {
+		if !plugins.ValidID(id) || !known[id] {
+			http.Error(w, "unknown plugin group", http.StatusBadRequest)
+			return
+		}
+	}
+	if err := a.groups.Save(state); err != nil {
+		a.logger.Error("save plugin group state", "error", err)
+		http.Error(w, "unable to save plugin group state", http.StatusInternalServerError)
+		return
+	}
+	a.groupMu.Lock()
+	a.groupState = state
+	a.groupMu.Unlock()
 	w.WriteHeader(http.StatusNoContent)
 }
 func (a *App) settings(w http.ResponseWriter, r *http.Request) {
@@ -220,9 +317,22 @@ func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	r.Body = http.MaxBytesReader(w, r.Body, 2*1024*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid or oversized action input", http.StatusBadRequest)
+		return
+	}
+	params := make(map[string]any, len(r.PostForm))
+	for key, values := range r.PostForm {
+		if !plugins.ValidID(key) || len(values) != 1 {
+			http.Error(w, "invalid action input", http.StatusBadRequest)
+			return
+		}
+		params[key] = values[0]
+	}
 	d := a.base(entry.Manifest.Name, entry.Manifest.Name)
 	d.Current = &entry
-	response, err := a.runner.Run(r.Context(), entry, parts[2], map[string]any{})
+	response, err := a.runner.Run(r.Context(), entry, parts[2], params)
 	if err != nil {
 		d.Error = err.Error()
 	} else if !response.OK {

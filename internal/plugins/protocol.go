@@ -12,6 +12,7 @@ type Manifest struct {
 	Description     string   `json:"description"`
 	Category        string   `json:"category"`
 	Icon            string   `json:"icon,omitempty"`
+	SearchTerms     []string `json:"search_terms,omitempty"`
 	Pages           []Page   `json:"pages"`
 	Permissions     []string `json:"permissions"`
 	Actions         []Action `json:"actions"`
@@ -57,9 +58,31 @@ type Component struct {
 	Columns     []Column         `json:"columns,omitempty"`
 	Rows        []map[string]any `json:"rows,omitempty"`
 	Actions     []Action         `json:"actions,omitempty"`
+	Action      string           `json:"action,omitempty"`
+	Submit      string           `json:"submit,omitempty"`
+	Fields      []Field          `json:"fields,omitempty"`
+	Filename    string           `json:"filename,omitempty"`
+	MIMEType    string           `json:"mime_type,omitempty"`
+	Content     string           `json:"content,omitempty"`
 }
 type Column struct {
 	Key   string `json:"key"`
+	Label string `json:"label"`
+}
+type Field struct {
+	Name        string   `json:"name"`
+	Label       string   `json:"label"`
+	Type        string   `json:"type"`
+	Value       string   `json:"value,omitempty"`
+	Min         string   `json:"min,omitempty"`
+	Max         string   `json:"max,omitempty"`
+	Placeholder string   `json:"placeholder,omitempty"`
+	Description string   `json:"description,omitempty"`
+	Required    bool     `json:"required,omitempty"`
+	Options     []Option `json:"options,omitempty"`
+}
+type Option struct {
+	Value string `json:"value"`
 	Label string `json:"label"`
 }
 

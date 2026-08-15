@@ -1,0 +1,43 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Start workspace terminals",
+        "dependsOn": ["CODEX", "CMD LINE"],
+        "runOptions": {
+          "runOn": "folderOpen"
+        }
+      },
+      {
+          "label": "CODEX",
+          "type": "process",
+          "command": "/bin/zsh",
+          "args": [
+          "-lc",
+          "exec $(cat \"${workspaceFolder}/codex_resume.txt\")"
+          ],
+          "isBackground": true,
+          "problemMatcher": [],
+          "presentation": {
+          "panel": "dedicated",
+          "reveal": "always",
+          "focus": false,
+          "close": false
+          }
+      },
+      {
+        "label": "CMD LINE",
+        "type": "process",
+        "command": "/bin/zsh",
+        "args": ["-l", "-i"],
+        "isBackground": true,
+        "problemMatcher": [],
+        "presentation": {
+          "panel": "dedicated",
+          "reveal": "always",
+          "focus": false,
+          "close": false
+        }
+      }
+    ]
+  }

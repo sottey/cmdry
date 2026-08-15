@@ -20,10 +20,11 @@ Plugins are executable code running with the Cmdry process's operating-system
 permissions. Only install plugins you trust. Manifest permissions are displayed
 in the UI, but they are descriptive in v1; they do not sandbox a plugin.
 
-The core has no command shell and does not pass web form data to plugins in v1.
-Each page load and button action currently receives an empty parameter object.
-Build read-only, fixed-purpose actions unless you control and validate every
-input within your own plugin.
+The core has no command shell. Page loads and ordinary action buttons receive
+an empty parameter object. A plugin may return a `form` component to collect
+bounded text input; the submitted field values are passed to its declared
+action in `params`. Validate every value in the plugin—manifest permissions are
+not a sandbox.
 
 ## Plugin lifecycle
 
@@ -50,7 +51,8 @@ When a user opens a plugin page or submits an action button, Cmdry executes:
 /absolute/path/to/cmdry-example execute list
 ```
 
-It sends this JSON on standard input:
+It sends this JSON on standard input (a page load or ordinary action has an
+empty `params` object):
 
 ```json
 {"action":"list","params":{}}
@@ -92,12 +94,19 @@ Required fields and rules:
 | `version` | Semantic-style version such as `0.1.0` or `v1.2.3-beta.1`. |
 | `pages` | At least one page; each needs a unique safe `id` and non-empty `name`. One page should be `default: true`. |
 | `actions` | At least one action; each needs a unique safe `id` and non-empty `name`. |
+| `search_terms` | Optional list of up to 32 short aliases used by Overview plugin search. |
 
 `description`, `category`, `icon`, and `permissions` are optional to the
-validator but should be supplied for a useful plugin list. Set a page's
+validator but should be supplied for a useful plugin list. Cmdry groups the
+sidebar by `category`, so use a stable, short category such as `text`, `data`,
+or `developer` rather than creating a near-duplicate category per plugin. Set a page's
 `action` to one of the manifest action IDs. If omitted, Cmdry uses the page ID
 as the action ID; if no default page is selected, Cmdry falls back to the first
 declared action.
+
+Overview search always matches a plugin's name, ID, category, and description.
+Use `search_terms` for aliases people are likely to type, such as `uuid` for a
+GUID generator or `checksum` for a hash generator.
 
 `method` is informational in v1. Use `read` for non-mutating actions and name
 any write-capable action honestly. The core does not enforce permissions or
@@ -137,9 +146,12 @@ Cmdry supports only these component types:
 | --- | --- |
 | `metric` | `label`, `value`, optional `description` |
 | `text` | `title`, `text` |
+| `code` | `title`, `text`, rendered in a copyable preformatted block |
 | `alert` | `title`, `message`, optional `level` |
 | `table` | `id`, `columns` (`key`, `label`), and `rows` |
 | `actions` | `actions`, each with `id`, `name`, `method` |
+| `form` | `title`, `action`, `submit`, and one or more `fields` |
+| `download` | `filename`, `mime_type`, and base64-encoded `content` |
 
 For a table, every column key should have a matching value in each row. Values
 are rendered as text. Cmdry uses Go's `html/template`, so plugin values are
@@ -147,8 +159,22 @@ HTML-escaped. There is no plugin-provided HTML, CSS, JavaScript, URL, or shell
 command capability.
 
 An `actions` component renders POST buttons. The action ID must appear in the
-manifest or Cmdry refuses to execute it. These actions do not receive a form
-payload in v1.
+manifest or Cmdry refuses to execute it.
+
+A `form` component renders a POST form. Each field needs a safe `name`,
+non-empty `label`, and `type` of `text`, `textarea`, `number`, `checkbox`, or
+`select`; a select field supplies `options` with `value` and `label`. Use
+`value`, `min`, `max`, and `required: true` where appropriate. Its `action`
+must be declared in the manifest. Cmdry limits
+the full submitted form body to 2 MiB and forwards one string value per field:
+
+```json
+{"action":"convert","params":{"json":"[{\"name\":\"Ada\"}]"}}
+```
+
+A `download` component provides a browser-local download. Its content must be
+standard base64 and is limited to 8 MiB after encoding. Use it for generated,
+ephemeral output such as CSV—not for paths on the host filesystem.
 
 To return an expected operational error, use this shape:
 

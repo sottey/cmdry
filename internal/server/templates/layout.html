@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="/static/app.css">
   <link rel="stylesheet" href="/static/processes.css">
   <link rel="stylesheet" href="/static/plugin-order.css">
+  <link rel="stylesheet" href="/static/search-layout.css">
+  <link rel="stylesheet" href="/static/copy-code.css">
 </head>
 <body>
   <aside>
@@ -16,8 +18,8 @@
       <a href="/" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a>
       <p class="nav-label">Installed tools</p>
       <div id="plugin-nav" aria-label="Installed tools">
-        {{range .Plugins}}
-          <a href="/plugins/{{.Manifest.ID}}" data-plugin-id="{{.Manifest.ID}}" draggable="true" {{if eq $.Section .Manifest.Name}}class="active"{{end}}>{{.Manifest.Name}}</a>
+        {{range .PluginGroups}}
+          <section class="plugin-group" data-group-id="{{.ID}}" {{if .Collapsed}}data-collapsed="true"{{end}}><button type="button" class="plugin-group-toggle" aria-expanded="{{if .Collapsed}}false{{else}}true{{end}}" aria-controls="plugin-group-{{.ID}}"><span>{{.Name}}</span><em>{{len .Plugins}}</em><i>⌄</i></button><div id="plugin-group-{{.ID}}" class="plugin-group-links">{{range .Plugins}}<a href="/plugins/{{.Manifest.ID}}" data-plugin-id="{{.Manifest.ID}}" draggable="true" {{if eq $.Section .Manifest.Name}}class="active"{{end}}>{{.Manifest.Name}}</a>{{end}}</div></section>
         {{else}}
           <span class="empty-nav">No plugins found</span>
         {{end}}
@@ -38,6 +40,7 @@
         <div><p>Command-line tools, made legible.</p><span>Cmdry discovers independently installed plugins and gives each one a consistent, safe web surface.</span></div>
         <dl><div><dt>{{len .Plugins}}</dt><dd>registered plugins</dd></div><div><dt>v1</dt><dd>protocol</dd></div></dl>
       </section>
+      {{if .Plugins}}<section class="plugin-search" aria-label="Find a plugin"><div class="plugin-search-heading"><span>Tool finder</span><p>Jump straight to a tool by name, purpose, or alias.</p></div><div class="plugin-search-input"><span aria-hidden="true">⌕</span><label class="sr-only" for="plugin-search-input">Find a plugin</label><input id="plugin-search-input" type="search" autocomplete="off" placeholder="What do you want to do?" aria-controls="plugin-search-results"><kbd>⌘ K</kbd></div><div id="plugin-search-results" class="plugin-search-results" role="listbox" hidden></div></section><script id="plugin-search-data" type="application/json">{{pluginSearchJSON .Plugins}}</script>{{end}}
       <section class="panel">
         <h2>Get started</h2>
         {{if .Plugins}}
@@ -65,6 +68,8 @@
           <section class="metric"><p>{{.Label}}</p><strong>{{.Value}}</strong>{{if .Description}}<span>{{.Description}}</span>{{end}}</section>
         {{else if eq .Type "text"}}
           <section class="panel"><h2>{{.Title}}</h2><p>{{.Text}}</p></section>
+        {{else if eq .Type "code"}}
+          <section class="panel code-panel"><div class="code-panel-heading"><h2>{{.Title}}</h2><button class="copy-code" type="button" aria-label="Copy {{.Title}}" title="Copy to clipboard"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M9 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-1M16 5V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1"/></svg><span class="sr-only">Copy</span></button></div><pre><code>{{.Text}}</code></pre></section>
         {{else if eq .Type "alert"}}
           <section class="notice {{.Level}}"><strong>{{.Title}}</strong><p>{{.Message}}</p></section>
         {{else if eq .Type "table"}}
@@ -72,6 +77,10 @@
           <section class="panel table-panel"><table class="table-{{.ID}}" data-sortable><thead><tr>{{range $columns}}<th>{{.Label}}</th>{{end}}</tr></thead><tbody>{{range $row := .Rows}}<tr>{{range $column := $columns}}<td>{{row $row $column.Key}}</td>{{end}}</tr>{{end}}</tbody></table></section>
         {{else if eq .Type "actions"}}
           <section class="action-bar">{{range .Actions}}<form method="post" action="/plugins/{{$.Current.Manifest.ID}}/actions/{{.ID}}"><button type="submit">{{.Name}}</button></form>{{end}}</section>
+        {{else if eq .Type "form"}}
+          <section class="panel data-form"><h2>{{.Title}}</h2>{{if .Description}}<p>{{.Description}}</p>{{end}}<form method="post" action="/plugins/{{$.Current.Manifest.ID}}/actions/{{.Action}}">{{range .Fields}}{{$selected := .Value}}<label class="field-{{.Type}}">{{if eq .Type "checkbox"}}<input type="checkbox" name="{{.Name}}" value="true" {{if .Value}}checked{{end}}>{{.Label}}{{else}}{{.Label}}{{if eq .Type "textarea"}}<textarea name="{{.Name}}" placeholder="{{.Placeholder}}" {{if .Required}}required{{end}}>{{.Value}}</textarea>{{else if eq .Type "select"}}<select name="{{.Name}}">{{range .Options}}<option value="{{.Value}}" {{if eq .Value $selected}}selected{{end}}>{{.Label}}</option>{{end}}</select>{{else}}<input type="{{.Type}}" name="{{.Name}}" value="{{.Value}}" min="{{.Min}}" max="{{.Max}}" placeholder="{{.Placeholder}}" {{if .Required}}required{{end}}>{{end}}{{end}}{{if .Description}}<span>{{.Description}}</span>{{end}}</label>{{end}}<button type="submit">{{.Submit}}</button></form></section>
+        {{else if eq .Type "download"}}
+          <section class="action-bar"><a class="button" href="{{downloadURL .MIMEType .Content}}" download="{{.Filename}}">Download {{.Filename}}</a></section>
         {{end}}
       {{end}}
     {{else}}

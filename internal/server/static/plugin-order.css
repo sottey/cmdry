@@ -4,6 +4,17 @@
   gap: 3px;
 }
 
+.plugin-group { margin: 0 0 11px; }
+.plugin-group-links { display:flex; flex-direction:column; gap:2px; padding-left:11px; }
+.plugin-group-links a { display:block; width:100%; }
+.plugin-group-toggle { display:flex; align-items:center; width:100%; border:0; background:transparent; color:#90a9ad; padding:7px 10px 5px; cursor:pointer; font:10px/1.4 var(--mono); letter-spacing:.1em; text-align:left; text-transform:uppercase; }
+.plugin-group-toggle span { flex:1; }
+.plugin-group-toggle em { font-style:normal; letter-spacing:0; opacity:.7; }
+.plugin-group-toggle i { color:#6ed3bb; font:16px/1 var(--mono); font-style:normal; margin-left:8px; transition:transform .15s ease; }
+.plugin-group[data-collapsed="true"] .plugin-group-links { display:none; }
+.plugin-group[data-collapsed="true"] .plugin-group-toggle i { transform:rotate(-90deg); }
+.plugin-group-toggle:hover { color:#e2eded; }
+
 #plugin-nav a[draggable="true"] {
   cursor: grab;
 }

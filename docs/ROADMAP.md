@@ -77,9 +77,8 @@ Cmdry v0.2.0 provides:
 
 ### Protocol evolution (only with a versioned design)
 
-- Specify constrained action parameters for filters, pagination, and confirmed
-  write operations. This requires request validation, size limits, CSRF
-  protection, and an explicit component/input model first.
+- Extend the bounded text-input model beyond the existing form component only
+  with explicit schemas, request validation, size limits, and CSRF protection.
 - Add pagination and server-side sorting metadata for large result sets.
 - Add component-level schemas and validation beyond the current component type
   allowlist.
@@ -109,7 +108,13 @@ separate security and interaction review.
 | TRUE | Scheduled Tasks | User cron jobs plus platform-native scheduled tasks | `crontab`, `systemctl list-timers`, launchd plist files | Cross-platform read-only view; loaded status and task editing remain deferred. |
 | TRUE | Network Interface Inspector | Interfaces, assigned addresses, and default gateway | `ifconfig`, `route`, `ip` | Cross-platform read-only baseline; DNS and traffic counters remain deferred. |
 | TRUE | System Information | OS, uptime, CPU, memory, and hardware facts | `sw_vers`, `sysctl`, `/proc` | Cross-platform read-only baseline; protected fields remain explicitly unavailable. |
+| TRUE | Battery and Power Inspector | Battery state and current power source | `pmset`, `/sys/class/power_supply` | Cross-platform read-only baseline; battery health remains deferred. |
+| TRUE | Wi-Fi Inspector | Active Wi-Fi network and connection facts | `networksetup`, `nmcli` | Cross-platform read-only baseline; saved networks and credentials remain excluded. |
 | TRUE | Process Resource Snapshot | Selected process CPU, memory, and state | `ps` | Keep filtering bounded; it is not a task manager or process killer. |
+| TRUE | JSON to CSV | Convert pasted objects or arrays of objects to a browser-local CSV download | Built-in JSON and CSV encoding | Cross-platform and one-shot; no host file access, watch folders, or background service. |
+| TRUE | CSV to JSON | Convert pasted header-based CSV records to a browser-local JSON download | Built-in CSV and JSON encoding | Cross-platform and one-shot; values remain strings rather than inferred types. |
+| TRUE | JSON Compare | Compare two pasted JSON documents structurally | Built-in JSON decoding | Cross-platform and one-shot; object key order and whitespace are ignored, array order is preserved. |
+| TRUE | Hidden Character Detector | Identify invisible Unicode formatting and non-standard whitespace in pasted text | Built-in Unicode tables | Cross-platform and one-shot; normal spaces, tabs, and line breaks are excluded. |
 
 ## Candidate selection criteria
 
