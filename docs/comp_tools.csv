@@ -64,71 +64,71 @@ FALSE,4,Number,Round trip voltage drop in cable,Calculate voltage drop and power
 FALSE,5,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
 FALSE,1,Number,Sum,Calculate sum of numbers
 FALSE,4,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
-FALSE,,PDF,Compress PDF,Compress PDF files securely in your browser
-FALSE,,PDF,Extract Images from PDF,Extract images from a PDF file.
-FALSE,,PDF,Images to PDF,Convert images to PDF with scale and orientation control
-FALSE,,PDF,Merge PDF,Merge multiple PDF files into a single document
-FALSE,,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
-FALSE,,PDF,PDF to EPUB,Convert PDF files to EPUB format
-FALSE,,PDF,PDF to PNG,Convert PDF into PNG images
-FALSE,,PDF,Protect PDF,Password protect PDF files securely
-FALSE,,PDF,Rotate PDF,Rotate pages in a PDF document
-FALSE,,PDF,Split PDF,Extract specific pages from a PDF file
-FALSE,,PNG,Compress png,Quickly compress a PNG
-FALSE,,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
+FALSE,4,PDF,Compress PDF,Compress PDF files securely in your browser
+FALSE,4,PDF,Extract Images from PDF,Extract images from a PDF file.
+FALSE,3,PDF,Images to PDF,Convert images to PDF with scale and orientation control
+FALSE,4,PDF,Merge PDF,Merge multiple PDF files into a single document
+FALSE,5,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
+FALSE,5,PDF,PDF to EPUB,Convert PDF files to EPUB format
+FALSE,4,PDF,PDF to PNG,Convert PDF into PNG images
+FALSE,4,PDF,Protect PDF,Password protect PDF files securely
+FALSE,4,PDF,Rotate PDF,Rotate pages in a PDF document
+FALSE,4,PDF,Split PDF,Extract specific pages from a PDF file
+FALSE,3,PNG,Compress png,Quickly compress a PNG
+FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
 TRUE,,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
 TRUE,,Text,Compare Texts,Compare two texts and spot differences instantly
-FALSE,,Text,Convert to Uppercase,Convert text to uppercase
-FALSE,,Text,Create palindrome,Create text that reads the same forward and backward
-FALSE,,Text,Email Extractor,Extract email addresses from text
-FALSE,,Text,Extract substring,Extract a portion of text between specified positions
+FALSE,1,Text,Convert to Uppercase,Convert text to uppercase
+FALSE,3,Text,Create palindrome,Create text that reads the same forward and backward
+FALSE,1,Text,Email Extractor,Extract email addresses from text
+FALSE,2,Text,Extract substring,Extract a portion of text between specified positions
 TRUE,,Text,Hidden Character Detector,Find hidden Unicode characters in text
-FALSE,,Text,Join Text,Join text elements with a specified separator
-FALSE,,Text,Palindrome,Check if text reads the same forward and backward
-FALSE,,Text,Randomize case,Randomize the case of letters in text
-FALSE,,Text,Remove duplicate lines,Quickly delete all repeated lines from text
-FALSE,,Text,Repeat Text,Repeat text multiple times
-FALSE,,Text,Reverse,Reverse any text character by character
-FALSE,,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
-FALSE,,Text,Rotate Text,Shift characters in text by position.
+FALSE,2,Text,Join Text,Join text elements with a specified separator
+FALSE,3,Text,Palindrome,Check if text reads the same forward and backward
+FALSE,3,Text,Randomize case,Randomize the case of letters in text
+FALSE,1,Text,Remove duplicate lines,Quickly delete all repeated lines from text
+FALSE,3,Text,Repeat Text,Repeat text multiple times
+FALSE,2,Text,Reverse,Reverse any text character by character
+FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
+FALSE,3,Text,Rotate Text,Shift characters in text by position.
 TRUE,,Text,Slug Generator,Generate URL-friendly slugs from text.
-FALSE,,Text,Split,Split text into multiple parts using a separator
-FALSE,,Text,String To morse,Quickly encode text to morse
-FALSE,,Text,String URL decoder,Quickly URL-unescape a string.
-FALSE,,Text,String URL encoder,Quickly URL-escape a string.
-FALSE,,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
-FALSE,,Text,Text Quoter,Add quotes around text with various styles
-FALSE,,Text,Text Replacer,Quickly replace text in your content
-FALSE,,Text,Text Statistics,Get statistics about your text
-FALSE,,Text,Text Statistics,Get statistics about your text
-FALSE,,Text,Truncate Text,Truncate text to a specified length
-FALSE,,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape sequences.
-FALSE,,Text,URL Editor,Inspect and edit URL components and query parameters.
-FALSE,,Time,Check Leap Years,Check if a year is a leap year
-FALSE,,Time,Convert Days to Hours,Convert days to hours
-FALSE,,Time,Convert Hours to Days,Convert hours to days
-FALSE,,Time,Convert Seconds to Time,Convert seconds to time format
-FALSE,,Time,Convert time to decimal,Convert human time to decimal time
-FALSE,,Time,Convert Time to Seconds,Convert time format to seconds
-FALSE,,Time,Convert Unix ↔ Date,Convert Unix timestamps and dates in both directions.
-FALSE,,Time,Crontab Guru,Parse and explain cron expressions in plain English
-FALSE,,Time,Date Weekday Calculator,Find years when a date falls on a weekday
-FALSE,,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
-FALSE,,Time,Time Between Dates,Calculate time between two dates
-FALSE,,Time,Truncate Clock Time,Truncate clock time to specified precision
-FALSE,,Video,Add Audio to Video,Add or replace audio track in video
-FALSE,,Video,Change Video Speed,Change video playback speed
-FALSE,,Video,Compress Video,Compress videos by scaling to different resolutions
-FALSE,,Video,Crop Video,Crop video to remove unwanted areas
-FALSE,,Video,Flip Video,Flip video horizontally or vertically
-FALSE,,Video,Loop Video,Create looping video files
-FALSE,,Video,Merge videos,Append and merge videos easily.
-FALSE,,Video,Resize Video,Resize videos to different resolutions
-FALSE,,Video,Rotate Video,Rotate video by specified degrees
-FALSE,,Video,Trim Video,Trim video by removing unwanted sections
-FALSE,,XML,XML Validator,Validate XML code for errors
+FALSE,2,Text,Split,Split text into multiple parts using a separator
+FALSE,3,Text,String To morse,Quickly encode text to morse
+FALSE,1,Text,String URL decoder,Quickly URL-unescape a string.
+FALSE,1,Text,String URL encoder,Quickly URL-escape a string.
+FALSE,3,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
+FALSE,3,Text,Text Quoter,Add quotes around text with various styles
+FALSE,1,Text,Text Replacer,Quickly replace text in your content
+FALSE,1,Text,Text Statistics,Get statistics about your text
+FALSE,1,Text,Text Statistics,Get statistics about your text
+FALSE,2,Text,Truncate Text,Truncate text to a specified length
+FALSE,2,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape sequences.
+FALSE,2,Text,URL Editor,Inspect and edit URL components and query parameters.
+FALSE,3,Time,Check Leap Years,Check if a year is a leap year
+FALSE,2,Time,Convert Days to Hours,Convert days to hours
+FALSE,2,Time,Convert Hours to Days,Convert hours to days
+FALSE,2,Time,Convert Seconds to Time,Convert seconds to time format
+FALSE,2,Time,Convert time to decimal,Convert human time to decimal time
+FALSE,2,Time,Convert Time to Seconds,Convert time format to seconds
+FALSE,1,Time,Convert Unix ↔ Date,Convert Unix timestamps and dates in both directions.
+FALSE,1,Time,Crontab Guru,Parse and explain cron expressions in plain English
+FALSE,3,Time,Date Weekday Calculator,Find years when a date falls on a weekday
+FALSE,3,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
+FALSE,2,Time,Time Between Dates,Calculate time between two dates
+FALSE,3,Time,Truncate Clock Time,Truncate clock time to specified precision
+FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
+FALSE,5,Video,Change Video Speed,Change video playback speed
+FALSE,5,Video,Compress Video,Compress videos by scaling to different resolutions
+FALSE,5,Video,Crop Video,Crop video to remove unwanted areas
+FALSE,5,Video,Flip Video,Flip video horizontally or vertically
+FALSE,5,Video,Loop Video,Create looping video files
+FALSE,5,Video,Merge videos,Append and merge videos easily.
+FALSE,5,Video,Resize Video,Resize videos to different resolutions
+FALSE,5,Video,Rotate Video,Rotate video by specified degrees
+FALSE,5,Video,Trim Video,Trim video by removing unwanted sections
+FALSE,1,XML,XML Validator,Validate XML code for errors
 TRUE,,JSON,JSON to CSV,Convert JSON to CSV format
 TRUE,,JSON,Prettify JSON,Format and beautify JSON code
-FALSE,,Text,Bcrypt,Hash strings with Bcrypt
+FALSE,2,Text,Bcrypt,Hash strings with Bcrypt
 TRUE,,Text,Password Generator,Generate secure random passwords with custom options
 TRUE,,XML,XML Beautifier,Format and beautify XML code
