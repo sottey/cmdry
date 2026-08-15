@@ -57,6 +57,9 @@ func TestValidateResponse(t *testing.T) {
 	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "form", Action: "convert", Submit: "Convert", Fields: []Field{{Name: "json", Label: "JSON", Type: "textarea", Required: true}}}}}}); err != nil {
 		t.Fatalf("rejected form component: %v", err)
 	}
+	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "form", Action: "hash", Submit: "Hash", Fields: []Field{{Name: "password", Label: "Password", Type: "password", Required: true}}}}}}); err != nil {
+		t.Fatalf("rejected password form field: %v", err)
+	}
 	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "download", Filename: "export.csv", MIMEType: "text/csv", Content: "YSxiCg=="}}}}); err != nil {
 		t.Fatalf("rejected download component: %v", err)
 	}

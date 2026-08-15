@@ -1,134 +1,148 @@
 DONE?,PRI,CATGORY,PLUGIN,DESCRIPTION
-FALSE,4,Audio,Change audio speed,Change the speed of audio files
-FALSE,4,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
-FALSE,4,Audio,Loop Audio,Create looping audio files
-FALSE,4,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
-FALSE,4,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
-FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
-FALSE,3,Convert,Convert Images to JPG,Convert images to JPG Format with quality control
-FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
-FALSE,4,Convert,Video to GIF,Convert video to animated GIF
-FALSE,2,CSV,Change CSV Separator,Change CSV file delimiter
-FALSE,3,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
-TRUE,0,CSV,Convert CSV to JSON,Convert CSV data to JSON format.
-FALSE,2,CSV,Convert CSV to TSV,Convert CSV data to TSV format.
-FALSE,3,CSV,Convert CSV to XML,Convert CSV data to XML format.
-FALSE,3,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
+TRUE,0,Number,Byte Converter,Quickly convert values between byte units
+TRUE,0,Text,Convert to Uppercase,Convert text to uppercase
+TRUE,0,Text,Convert to Lowercase,Convert text to lowercase
+TRUE,0,Time,Convert Unix ↔ Date,Convert Unix timestamps and dates in both directions.
+TRUE,0,Time,Crontab Guru,Parse and explain cron expressions in plain English
+TRUE,0,Text,Email Extractor,Extract email addresses from text
+TRUE,0,JSON,Escape JSON,Escape special characters in JSON
+TRUE,0,JSON,Minify JSON,Minify JSON by removing whitespace
+TRUE,0,Text,Remove duplicate lines,Quickly delete all repeated lines from text
+TRUE,0,Text,String URL decoder,Quickly URL-unescape a string.
+TRUE,0,Text,String URL encoder,Quickly URL-escape a string.
+TRUE,0,JSON,Stringify JSON,Convert objects to JSON string
+TRUE,0,Number,Sum,Calculate sum of numbers
+TRUE,0,Text,Text Replacer,Quickly replace text in your content
+TRUE,0,Text,Text Statistics,Get statistics about your text
+TRUE,0,JSON,Validate JSON,Validate JSON code for errors
+TRUE,0,XML,XML Validator,Validate XML code for errors
+TRUE,0,Text,Bcrypt,Hash strings with Bcrypt
+TRUE,0,CSV,Change CSV Separator,Change CSV file delimiter
+TRUE,0,List,Chunk List,Split a list into fixed-size chunks
+TRUE,0,CSV,Convert CSV to TSV,Convert CSV data to TSV format.
+TRUE,0,Time,Convert Days to Hours,Convert days to hours
+TRUE,0,Time,Convert Hours to Days,Convert hours to days
+TRUE,0,Time,Convert Seconds to Time,Convert seconds to time format
+TRUE,0,Time,Convert time to decimal,Convert human time to decimal time
+TRUE,0,Time,Convert Time to Seconds,Convert time format to seconds
+FALSE,2,Text,Extract substring,Extract a portion of text between specified positions
 FALSE,2,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
-FALSE,3,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
-FALSE,3,CSV,Swap CSV Columns,Reorder CSV columns.
-FALSE,3,CSV,Transpose CSV,Quickly transpose a CSV file.
-FALSE,2,CSV,TSV to JSON,Convert TSV to JSON format
-FALSE,4,GIF,Change GIF Speed,Change GIF animation speed
-FALSE,4,GIF,Images to GIF,Convert multiple images into an animated GIF
-FALSE,3,Image,Change colors in image,Quickly swap colors in a image
-FALSE,3,Image,Change image Opacity,Adjust transparency of images
-FALSE,3,Image,Compress Images,Compress one or multiple images at once.
-FALSE,3,Image,Create transparent PNG,Quickly make an image transparent
-FALSE,3,Image,Crop Image,Crop images quickly.
-FALSE,5,Image,Image Editor,Edit images with advanced tools and features
-FALSE,5,Image,Image to Text (OCR),Extract text from images using OCR.
-FALSE,2,Image,QR Code Generator,Create customized QR codes for various data formats.
-FALSE,5,Image,Remove Background from Image,Automatically remove backgrounds from images
-FALSE,3,Image,Resize Image,Resize one or multiple images at once.
-FALSE,3,Image,Rotate Image,Rotate an image easily.
-FALSE,4,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
-FALSE,3,Image,Watermark Images,Add text watermarks to images
-TRUE,0,JSON,Compare JSON,Find differences between two JSON objects
-FALSE,1,JSON,Escape JSON,Escape special characters in JSON
-FALSE,3,JSON,JSON to XML,Convert JSON to XML format
-FALSE,1,JSON,Minify JSON,Minify JSON by removing whitespace
-FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
-FALSE,1,JSON,Stringify JSON,Convert objects to JSON string
-FALSE,1,JSON,Validate JSON,Validate JSON code for errors
-FALSE,2,List,Chunk List,Split a list into fixed-size chunks
-FALSE,3,List,Duplicate,Duplicate list items with specified criteria
 FALSE,2,List,Find most popular,Find most frequently occurring items
 FALSE,2,List,Find unique,Find unique items in a list
-FALSE,2,List,Reverse,Quickly reverse a list
-FALSE,3,List,Rotate,Rotate list items by specified positions
-FALSE,3,List,Shuffle,Randomize the order of list items
-FALSE,2,List,Sort,Sort list items in specified order
-FALSE,2,List,Truncate,Truncate list to specified number of items
-FALSE,3,List,Unwrap,Unwrap list items from structured format
-FALSE,3,List,Wrap,Wrap list items with specified criteria
-FALSE,4,Number,Area of a Sphere,Calculate the surface area of a sphere based on its radius
-FALSE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
-FALSE,1,Number,Byte Converter,Quickly convert values between byte units
 FALSE,2,Number,Generate,Generate random numbers in specified ranges
-FALSE,3,Number,Number to Words,Convert numbers to words
-FALSE,4,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
+FALSE,2,Text,Join Text,Join text elements with a specified separator
+FALSE,2,Image,QR Code Generator,Create customized QR codes for various data formats.
 FALSE,2,Number,Random Number Generator,Generate random numbers in custom ranges
-FALSE,3,Number,Random Port Generator,Generate random network ports
-FALSE,4,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical circuits using length  material  and current
-FALSE,5,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
-FALSE,1,Number,Sum,Calculate sum of numbers
-FALSE,4,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
-FALSE,4,PDF,Compress PDF,Compress PDF files securely in your browser
-FALSE,4,PDF,Extract Images from PDF,Extract images from a PDF file.
+FALSE,2,List,Reverse,Quickly reverse a list
+FALSE,2,Text,Reverse,Reverse any text character by character
+FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
+FALSE,2,List,Sort,Sort list items in specified order
+FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
+FALSE,2,Text,Split,Split text into multiple parts using a separator
+FALSE,2,Time,Time Between Dates,Calculate time between two dates
+FALSE,2,List,Truncate,Truncate list to specified number of items
+FALSE,2,Text,Truncate Text,Truncate text to a specified length
+FALSE,2,CSV,TSV to JSON,Convert TSV to JSON format
+FALSE,2,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape sequences.
+FALSE,2,Text,URL Editor,Inspect and edit URL components and query parameters.
+FALSE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
+FALSE,3,Image,Change colors in image,Quickly swap colors in a image
+FALSE,3,Image,Change image Opacity,Adjust transparency of images
+FALSE,3,Time,Check Leap Years,Check if a year is a leap year
+FALSE,3,Image,Compress Images,Compress one or multiple images at once.
+FALSE,3,PNG,Compress png,Quickly compress a PNG
+FALSE,3,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
+FALSE,3,CSV,Convert CSV to XML,Convert CSV data to XML format.
+FALSE,3,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
+FALSE,3,Convert,Convert Images to JPG,Convert images to JPG Format with quality control
+FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
+FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
+FALSE,3,Text,Create palindrome,Create text that reads the same forward and backward
+FALSE,3,Image,Create transparent PNG,Quickly make an image transparent
+FALSE,3,Image,Crop Image,Crop images quickly.
+FALSE,3,Time,Date Weekday Calculator,Find years when a date falls on a weekday
+FALSE,3,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
+FALSE,3,List,Duplicate,Duplicate list items with specified criteria
 FALSE,3,PDF,Images to PDF,Convert images to PDF with scale and orientation control
+FALSE,3,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
+FALSE,3,JSON,JSON to XML,Convert JSON to XML format
+FALSE,3,Number,Number to Words,Convert numbers to words
+FALSE,3,Text,Palindrome,Check if text reads the same forward and backward
+FALSE,3,Number,Random Port Generator,Generate random network ports
+FALSE,3,Text,Randomize case,Randomize the case of letters in text
+FALSE,3,Text,Repeat Text,Repeat text multiple times
+FALSE,3,Image,Resize Image,Resize one or multiple images at once.
+FALSE,3,List,Rotate,Rotate list items by specified positions
+FALSE,3,Image,Rotate Image,Rotate an image easily.
+FALSE,3,Text,Rotate Text,Shift characters in text by position.
+FALSE,3,List,Shuffle,Randomize the order of list items
+FALSE,3,Text,String To morse,Quickly encode text to morse
+FALSE,3,CSV,Swap CSV Columns,Reorder CSV columns.
+FALSE,3,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
+FALSE,3,Text,Text Quoter,Add quotes around text with various styles
+FALSE,3,CSV,Transpose CSV,Quickly transpose a CSV file.
+FALSE,3,Time,Truncate Clock Time,Truncate clock time to specified precision
+FALSE,3,List,Unwrap,Unwrap list items from structured format
+FALSE,3,Image,Watermark Images,Add text watermarks to images
+FALSE,3,List,Wrap,Wrap list items with specified criteria
+FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
+FALSE,4,Number,Area of a Sphere,Calculate the surface area of a sphere based on its radius
+FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
+FALSE,4,Audio,Change audio speed,Change the speed of audio files
+FALSE,4,GIF,Change GIF Speed,Change GIF animation speed
+FALSE,4,PDF,Compress PDF,Compress PDF files securely in your browser
+FALSE,4,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
+FALSE,4,PDF,Extract Images from PDF,Extract images from a PDF file.
+FALSE,4,GIF,Images to GIF,Convert multiple images into an animated GIF
+FALSE,4,Audio,Loop Audio,Create looping audio files
+FALSE,4,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
 FALSE,4,PDF,Merge PDF,Merge multiple PDF files into a single document
-FALSE,5,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
-FALSE,5,PDF,PDF to EPUB,Convert PDF files to EPUB format
+FALSE,4,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
 FALSE,4,PDF,PDF to PNG,Convert PDF into PNG images
 FALSE,4,PDF,Protect PDF,Password protect PDF files securely
 FALSE,4,PDF,Rotate PDF,Rotate pages in a PDF document
+FALSE,4,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical circuits using length  material  and current
+FALSE,4,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
 FALSE,4,PDF,Split PDF,Extract specific pages from a PDF file
-FALSE,3,PNG,Compress png,Quickly compress a PNG
-FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
-TRUE,0,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
-TRUE,0,Text,Compare Texts,Compare two texts and spot differences instantly
-FALSE,1,Text,Convert to Uppercase,Convert text to uppercase
-FALSE,3,Text,Create palindrome,Create text that reads the same forward and backward
-FALSE,1,Text,Email Extractor,Extract email addresses from text
-FALSE,2,Text,Extract substring,Extract a portion of text between specified positions
-TRUE,0,Text,Hidden Character Detector,Find hidden Unicode characters in text
-FALSE,2,Text,Join Text,Join text elements with a specified separator
-FALSE,3,Text,Palindrome,Check if text reads the same forward and backward
-FALSE,3,Text,Randomize case,Randomize the case of letters in text
-FALSE,1,Text,Remove duplicate lines,Quickly delete all repeated lines from text
-FALSE,3,Text,Repeat Text,Repeat text multiple times
-FALSE,2,Text,Reverse,Reverse any text character by character
-FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
-FALSE,3,Text,Rotate Text,Shift characters in text by position.
-TRUE,0,Text,Slug Generator,Generate URL-friendly slugs from text.
-FALSE,2,Text,Split,Split text into multiple parts using a separator
-FALSE,3,Text,String To morse,Quickly encode text to morse
-FALSE,1,Text,String URL decoder,Quickly URL-unescape a string.
-FALSE,1,Text,String URL encoder,Quickly URL-escape a string.
-FALSE,3,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
-FALSE,3,Text,Text Quoter,Add quotes around text with various styles
-FALSE,1,Text,Text Replacer,Quickly replace text in your content
-FALSE,1,Text,Text Statistics,Get statistics about your text
-FALSE,1,Text,Text Statistics,Get statistics about your text
-FALSE,2,Text,Truncate Text,Truncate text to a specified length
-FALSE,2,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape sequences.
-FALSE,2,Text,URL Editor,Inspect and edit URL components and query parameters.
-FALSE,3,Time,Check Leap Years,Check if a year is a leap year
-FALSE,2,Time,Convert Days to Hours,Convert days to hours
-FALSE,2,Time,Convert Hours to Days,Convert hours to days
-FALSE,2,Time,Convert Seconds to Time,Convert seconds to time format
-FALSE,2,Time,Convert time to decimal,Convert human time to decimal time
-FALSE,2,Time,Convert Time to Seconds,Convert time format to seconds
-FALSE,1,Time,Convert Unix ↔ Date,Convert Unix timestamps and dates in both directions.
-FALSE,1,Time,Crontab Guru,Parse and explain cron expressions in plain English
-FALSE,3,Time,Date Weekday Calculator,Find years when a date falls on a weekday
-FALSE,3,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
-FALSE,2,Time,Time Between Dates,Calculate time between two dates
-FALSE,3,Time,Truncate Clock Time,Truncate clock time to specified precision
-FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
+FALSE,4,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
+FALSE,4,Convert,Video to GIF,Convert video to animated GIF
+FALSE,4,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
 FALSE,5,Video,Change Video Speed,Change video playback speed
 FALSE,5,Video,Compress Video,Compress videos by scaling to different resolutions
 FALSE,5,Video,Crop Video,Crop video to remove unwanted areas
 FALSE,5,Video,Flip Video,Flip video horizontally or vertically
+FALSE,5,Image,Image Editor,Edit images with advanced tools and features
+FALSE,5,Image,Image to Text (OCR),Extract text from images using OCR.
 FALSE,5,Video,Loop Video,Create looping video files
 FALSE,5,Video,Merge videos,Append and merge videos easily.
+FALSE,5,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
+FALSE,5,PDF,PDF to EPUB,Convert PDF files to EPUB format
+FALSE,5,Image,Remove Background from Image,Automatically remove backgrounds from images
 FALSE,5,Video,Resize Video,Resize videos to different resolutions
 FALSE,5,Video,Rotate Video,Rotate video by specified degrees
+FALSE,5,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
 FALSE,5,Video,Trim Video,Trim video by removing unwanted sections
-FALSE,1,XML,XML Validator,Validate XML code for errors
+TRUE,0,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
+TRUE,0,JSON,Compare JSON,Find differences between two JSON objects
+TRUE,0,Text,Compare Texts,Compare two texts and spot differences instantly
+TRUE,0,CSV,Convert CSV to JSON,Convert CSV data to JSON format.
+TRUE,0,Text,Hidden Character Detector,Find hidden Unicode characters in text
 TRUE,0,JSON,JSON to CSV,Convert JSON to CSV format
-TRUE,0,JSON,Prettify JSON,Format and beautify JSON code
-FALSE,2,Text,Bcrypt,Hash strings with Bcrypt
 TRUE,0,Text,Password Generator,Generate secure random passwords with custom options
+TRUE,0,JSON,Prettify JSON,Format and beautify JSON code
+TRUE,0,Text,Slug Generator,Generate URL-friendly slugs from text.
 TRUE,0,XML,XML Beautifier,Format and beautify XML code
+TRUE,0,System,Filesystem Inspector,Inspect mounted filesystem capacity and available space.
+TRUE,0,Generator,GUID Generator,Generate UUID values locally.
+TRUE,0,Generator,Hash Generator,Generate configurable hash values locally.
+TRUE,0,HTML,HTML Prettifier,Format pasted HTML locally.
+TRUE,0,JavaScript,JavaScript Prettifier,Format pasted JavaScript locally.
+TRUE,0,System,Journal Viewer,Review the 100 most recent local Linux journal entries.
+TRUE,0,System,Network Interface Inspector,Inspect local interfaces assigned addresses and the default gateway.
+TRUE,0,Network,Port Inspector,Inspect listening network ports and their owning processes.
+TRUE,0,System,Battery and Power Inspector,Inspect local battery charge state and power source.
+TRUE,0,System,Process Resource Snapshot,Inspect CPU and memory usage of visible local processes.
+TRUE,0,System,Scheduled Tasks,Inspect user cron jobs and platform-native scheduled tasks.
+TRUE,0,System,System Information,Inspect local operating system CPU memory and hardware facts.
+TRUE,0,System,Wi-Fi Inspector,Inspect the current Wi-Fi connection without exposing saved networks.
+TRUE,0,YAML,YAML Prettifier,Format pasted YAML locally.

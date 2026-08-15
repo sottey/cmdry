@@ -162,7 +162,7 @@ An `actions` component renders POST buttons. The action ID must appear in the
 manifest or Cmdry refuses to execute it.
 
 A `form` component renders a POST form. Each field needs a safe `name`,
-non-empty `label`, and `type` of `text`, `textarea`, `number`, `checkbox`, or
+non-empty `label`, and `type` of `text`, `password`, `textarea`, `number`, `checkbox`, or
 `select`; a select field supplies `options` with `value` and `label`. Use
 `value`, `min`, `max`, and `required: true` where appropriate. Its `action`
 must be declared in the manifest. Cmdry limits

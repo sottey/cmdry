@@ -1,3 +1,4 @@
 {
-    "terminal.integrated.defaultLocation": "editor"
+    "terminal.integrated.defaultLocation": "editor",
+    "terminal.integrated.gpuAcceleration": "off"
 }

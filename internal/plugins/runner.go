@@ -73,7 +73,7 @@ func ValidateResponse(r Response) error {
 				return fmt.Errorf("invalid form component")
 			}
 			for _, field := range c.Fields {
-				if !ValidID(field.Name) || strings.TrimSpace(field.Label) == "" || (field.Type != "text" && field.Type != "textarea" && field.Type != "number" && field.Type != "checkbox" && field.Type != "select") {
+				if !ValidID(field.Name) || strings.TrimSpace(field.Label) == "" || (field.Type != "text" && field.Type != "password" && field.Type != "textarea" && field.Type != "number" && field.Type != "checkbox" && field.Type != "select") {
 					return fmt.Errorf("invalid form field")
 				}
 				if field.Type == "select" && len(field.Options) == 0 {

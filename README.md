@@ -159,6 +159,41 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   and Linux, ignoring object property order and whitespace.
 - **Hidden Character Detector**: finds pasted zero-width, bidirectional,
   non-standard-space, and unexpected control characters on macOS and Linux.
+- **Byte Converter**: converts local byte values across binary units (KiB,
+  MiB, GiB) and decimal units (KB, MB, GB) on macOS and Linux.
+- **JSON Validator, Minifier, and Stringifier**: validate JSON, remove its
+  unnecessary whitespace, or encode a valid JSON document as a JSON string
+  literal—locally on macOS and Linux.
+- **Email Extractor, Remove Duplicate Lines, and Text Replacer**: extract
+  unique addresses, preserve unique lines, or make exact text replacements
+  locally on macOS and Linux.
+- **Uppercase, Lowercase, URL Encoder, and URL Decoder**: change Unicode text
+  case or encode/decode URL query values locally on macOS and Linux.
+- **Unix Date Converter**: converts whole-second Unix timestamps and RFC 3339
+  dates locally, displaying UTC and local-time values on macOS and Linux.
+- **Text Statistics**: counts characters, words, lines, UTF-8 bytes, and an
+  estimated reading time for pasted text locally on macOS and Linux.
+- **Sum**: calculates a local sum, count, average, minimum, and maximum from
+  pasted numbers on macOS and Linux.
+- **Cron Expression Explainer**: validates standard five-field cron schedules,
+  including ranges, lists, steps, names, and common `@` shortcuts, locally on
+  macOS and Linux.
+- **JSON String Escaper**: escapes arbitrary text into a JSON string literal
+  locally on macOS and Linux, without requiring the input itself to be JSON.
+- **XML Validator**: validates pasted XML locally and reports parser errors,
+  including line locations where the XML parser provides them.
+- **Bcrypt**: creates and verifies bcrypt password hashes locally, with a
+  configurable work factor and masked browser form fields.
+- **Change CSV Separator**: converts comma, semicolon, tab, or pipe-separated
+  CSV locally while preserving quoted fields.
+- **Chunk List**: splits a newline-delimited list into fixed-size groups
+  locally, ignoring blank lines.
+- **CSV to TSV**: converts quoted comma-separated CSV to tab-separated values
+  locally on macOS and Linux.
+- **Days to Hours and Hours to Days**: convert finite decimal durations locally
+  on macOS and Linux, including negative offsets.
+- **Seconds to Time, Time to Decimal, and Time to Seconds**: convert signed
+  whole-second and `HH:MM:SS` / `MM:SS` durations locally on macOS and Linux.
 
 ## Build bundled binaries
 
