@@ -41,29 +41,29 @@ FALSE,1,JSON,Minify JSON,Minify JSON by removing whitespace
 FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
 FALSE,1,JSON,Stringify JSON,Convert objects to JSON string
 FALSE,1,JSON,Validate JSON,Validate JSON code for errors
-FALSE,,List,Chunk List,Split a list into fixed-size chunks
-FALSE,,List,Duplicate,Duplicate list items with specified criteria
-FALSE,,List,Find most popular,Find most frequently occurring items
-FALSE,,List,Find unique,Find unique items in a list
-FALSE,,List,Reverse,Quickly reverse a list
-FALSE,,List,Rotate,Rotate list items by specified positions
-FALSE,,List,Shuffle,Randomize the order of list items
-FALSE,,List,Sort,Sort list items in specified order
-FALSE,,List,Truncate,Truncate list to specified number of items
-FALSE,,List,Unwrap,Unwrap list items from structured format
-FALSE,,List,Wrap,Wrap list items with specified criteria
-FALSE,,Number,Area of a Sphere,Calculate the surface area of a sphere based on its radius
-FALSE,,Number,Arithmetic Sequence,Generate arithmetic sequences
-FALSE,,Number,Byte Converter,Quickly convert values between byte units
-FALSE,,Number,Generate,Generate random numbers in specified ranges
-FALSE,,Number,Number to Words,Convert numbers to words
-FALSE,,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
-FALSE,,Number,Random Number Generator,Generate random numbers in custom ranges
-FALSE,,Number,Random Port Generator,Generate random network ports
-FALSE,,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical cables based on length  material  and current
-FALSE,,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
-FALSE,,Number,Sum,Calculate sum of numbers
-FALSE,,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
+FALSE,2,List,Chunk List,Split a list into fixed-size chunks
+FALSE,3,List,Duplicate,Duplicate list items with specified criteria
+FALSE,2,List,Find most popular,Find most frequently occurring items
+FALSE,2,List,Find unique,Find unique items in a list
+FALSE,2,List,Reverse,Quickly reverse a list
+FALSE,3,List,Rotate,Rotate list items by specified positions
+FALSE,3,List,Shuffle,Randomize the order of list items
+FALSE,2,List,Sort,Sort list items in specified order
+FALSE,2,List,Truncate,Truncate list to specified number of items
+FALSE,3,List,Unwrap,Unwrap list items from structured format
+FALSE,3,List,Wrap,Wrap list items with specified criteria
+FALSE,4,Number,Area of a Sphere,Calculate the surface area of a sphere based on its radius
+FALSE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
+FALSE,1,Number,Byte Converter,Quickly convert values between byte units
+FALSE,2,Number,Generate,Generate random numbers in specified ranges
+FALSE,3,Number,Number to Words,Convert numbers to words
+FALSE,4,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
+FALSE,2,Number,Random Number Generator,Generate random numbers in custom ranges
+FALSE,3,Number,Random Port Generator,Generate random network ports
+FALSE,4,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical circuits using length  material  and current
+FALSE,5,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
+FALSE,1,Number,Sum,Calculate sum of numbers
+FALSE,4,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
 FALSE,,PDF,Compress PDF,Compress PDF files securely in your browser
 FALSE,,PDF,Extract Images from PDF,Extract images from a PDF file.
 FALSE,,PDF,Images to PDF,Convert images to PDF with scale and orientation control
