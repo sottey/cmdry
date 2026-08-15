@@ -1,46 +1,46 @@
 DONE?,PRI,CATGORY,PLUGIN,DESCRIPTION
-FALSE,,Audio,Change audio speed,Change the speed of audio files
-FALSE,,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
-FALSE,,Audio,Loop Audio,Create looping audio files
-FALSE,,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
-FALSE,,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
-FALSE,,Convert,Audio Converter,Convert audio files to various formats.
-FALSE,,Convert,Convert Images to JPG,Convert images to JPG Format with quality control
-FALSE,,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
-FALSE,,Convert,Video to GIF,Convert video to animated GIF
-FALSE,,CSV,Change CSV Separator,Change CSV file delimiter
-FALSE,,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
+FALSE,4,Audio,Change audio speed,Change the speed of audio files
+FALSE,4,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
+FALSE,4,Audio,Loop Audio,Create looping audio files
+FALSE,4,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
+FALSE,4,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
+FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
+FALSE,3,Convert,Convert Images to JPG,Convert images to JPG Format with quality control
+FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
+FALSE,4,Convert,Video to GIF,Convert video to animated GIF
+FALSE,2,CSV,Change CSV Separator,Change CSV file delimiter
+FALSE,3,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
 TRUE,,CSV,Convert CSV to JSON,Convert CSV data to JSON format.
-FALSE,,CSV,Convert CSV to TSV,Convert CSV data to TSV format.
-FALSE,,CSV,Convert CSV to XML,Convert CSV data to XML format.
-FALSE,,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
-FALSE,,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
-FALSE,,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
-FALSE,,CSV,Swap CSV Columns,Reorder CSV columns.
-FALSE,,CSV,Transpose CSV,Quickly transpose a CSV file.
-FALSE,,CSV,TSV to JSON,Convert TSV to JSON format
-FALSE,,GIF,Change GIF Speed,Change GIF animation speed
-FALSE,,GIF,Images to GIF,Convert multiple images into an animated GIF
-FALSE,,Image,Change colors in image,Quickly swap colors in a image
-FALSE,,Image,Change image Opacity,Adjust transparency of images
-FALSE,,Image,Compress Images,Compress one or multiple images at once.
-FALSE,,Image,Create transparent PNG,Quickly make an image transparent
-FALSE,,Image,Crop Image,Crop images quickly.
-FALSE,,Image,Image Editor,Edit images with advanced tools and features
-FALSE,,Image,Image to Text (OCR),Extract text from images using OCR.
-FALSE,,Image,QR Code Generator,Create customized QR codes for various data formats.
-FALSE,,Image,Remove Background from Image,Automatically remove backgrounds from images
-FALSE,,Image,Resize Image,Resize one or multiple images at once.
-FALSE,,Image,Rotate Image,Rotate an image easily.
-FALSE,,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
-FALSE,,Image,Watermark Images,Add text watermarks to images
+FALSE,2,CSV,Convert CSV to TSV,Convert CSV data to TSV format.
+FALSE,3,CSV,Convert CSV to XML,Convert CSV data to XML format.
+FALSE,3,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
+FALSE,2,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
+FALSE,3,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
+FALSE,3,CSV,Swap CSV Columns,Reorder CSV columns.
+FALSE,3,CSV,Transpose CSV,Quickly transpose a CSV file.
+FALSE,2,CSV,TSV to JSON,Convert TSV to JSON format
+FALSE,4,GIF,Change GIF Speed,Change GIF animation speed
+FALSE,4,GIF,Images to GIF,Convert multiple images into an animated GIF
+FALSE,3,Image,Change colors in image,Quickly swap colors in a image
+FALSE,3,Image,Change image Opacity,Adjust transparency of images
+FALSE,3,Image,Compress Images,Compress one or multiple images at once.
+FALSE,3,Image,Create transparent PNG,Quickly make an image transparent
+FALSE,3,Image,Crop Image,Crop images quickly.
+FALSE,5,Image,Image Editor,Edit images with advanced tools and features
+FALSE,5,Image,Image to Text (OCR),Extract text from images using OCR.
+FALSE,2,Image,QR Code Generator,Create customized QR codes for various data formats.
+FALSE,5,Image,Remove Background from Image,Automatically remove backgrounds from images
+FALSE,3,Image,Resize Image,Resize one or multiple images at once.
+FALSE,3,Image,Rotate Image,Rotate an image easily.
+FALSE,4,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
+FALSE,3,Image,Watermark Images,Add text watermarks to images
 TRUE,,JSON,Compare JSON,Find differences between two JSON objects
-FALSE,,JSON,Escape JSON,Escape special characters in JSON
-FALSE,,JSON,JSON to XML,Convert JSON to XML format
-FALSE,,JSON,Minify JSON,Minify JSON by removing whitespace
-FALSE,,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
-FALSE,,JSON,Stringify JSON,Convert objects to JSON string
-FALSE,,JSON,Validate JSON,Validate JSON code for errors
+FALSE,1,JSON,Escape JSON,Escape special characters in JSON
+FALSE,3,JSON,JSON to XML,Convert JSON to XML format
+FALSE,1,JSON,Minify JSON,Minify JSON by removing whitespace
+FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
+FALSE,1,JSON,Stringify JSON,Convert objects to JSON string
+FALSE,1,JSON,Validate JSON,Validate JSON code for errors
 FALSE,,List,Chunk List,Split a list into fixed-size chunks
 FALSE,,List,Duplicate,Duplicate list items with specified criteria
 FALSE,,List,Find most popular,Find most frequently occurring items
