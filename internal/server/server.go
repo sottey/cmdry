@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,29 +19,33 @@ import (
 	"github.com/sottey/cmdry/internal/pluginnav"
 	"github.com/sottey/cmdry/internal/pluginorder"
 	"github.com/sottey/cmdry/internal/plugins"
+	"github.com/sottey/cmdry/internal/workspace"
 )
 
 //go:embed templates/*.html static/*
 var assets embed.FS
 
 type App struct {
-	cfg           config.Config
-	registry      *plugins.Registry
-	discovery     plugins.Discoverer
-	order         pluginorder.Store
-	orderIDs      []string
-	orderMu       sync.RWMutex
-	groups        groupstate.Store
-	groupState    map[string]bool
-	groupMu       sync.RWMutex
-	navigation    pluginnav.Store
-	navState      pluginnav.State
-	navMu         sync.RWMutex
-	diagnostics   plugins.ScanReport
-	diagnosticsMu sync.RWMutex
-	runner        plugins.Runner
-	logger        *slog.Logger
-	templates     *template.Template
+	cfg            config.Config
+	registry       *plugins.Registry
+	discovery      plugins.Discoverer
+	order          pluginorder.Store
+	orderIDs       []string
+	orderMu        sync.RWMutex
+	groups         groupstate.Store
+	groupState     map[string]bool
+	groupMu        sync.RWMutex
+	navigation     pluginnav.Store
+	navState       pluginnav.State
+	navMu          sync.RWMutex
+	workspace      workspace.Store
+	workspaceState workspace.State
+	workspaceMu    sync.RWMutex
+	diagnostics    plugins.ScanReport
+	diagnosticsMu  sync.RWMutex
+	runner         plugins.Runner
+	logger         *slog.Logger
+	templates      *template.Template
 }
 type pageData struct {
 	Title, Section string
@@ -54,6 +59,10 @@ type pageData struct {
 	RecentLimit    int
 	ShowFavorites  bool
 	ShowRecents    bool
+	Theme          string
+	ReducedMotion  bool
+	SidebarDensity string
+	DefaultLanding string
 	Diagnostics    []plugins.Diagnostic
 	LastScan       time.Time
 	ScanFailure    string
@@ -61,6 +70,13 @@ type pageData struct {
 	View           *plugins.View
 	Error          string
 	Message        string
+	PluginDetail   *PluginDetail
+}
+
+type PluginDetail struct {
+	Entry             plugins.Registered
+	PlatformNotes     []string
+	DiagnosticCommand string
 }
 type PluginGroup struct {
 	ID, Name  string
@@ -142,7 +158,12 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger, ini
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	workspaceStore := workspace.Store{DataDir: cfg.DataDir}
+	workspaceState, err := workspaceStore.Load()
+	if err != nil {
+		return nil, err
+	}
+	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, workspace: workspaceStore, workspaceState: workspaceState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -156,6 +177,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	switch {
 	case r.Method == http.MethodGet && r.URL.Path == "/":
+		a.dashboard(w, r)
+	case r.Method == http.MethodGet && r.URL.Path == "/overview":
 		a.dashboard(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/plugins":
 		a.pluginList(w, r)
@@ -177,6 +200,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.settings(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/settings/navigation":
 		a.saveNavigationSettings(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/settings/appearance":
+		a.saveAppearanceSettings(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/settings/favorites":
 		a.removeFavoriteFromSettings(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/settings/recents/clear":
@@ -185,6 +210,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.resetNavigationLayout(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
 		a.pluginAction(w, r)
+	case r.Method == http.MethodGet && strings.HasSuffix(r.URL.Path, "/details"):
+		a.pluginDetails(w, r)
 	case strings.HasPrefix(r.URL.Path, "/plugins/"):
 		a.pluginPage(w, r)
 	default:
@@ -217,9 +244,12 @@ func (a *App) base(title, section string) pageData {
 	showFavorites := a.navState.ShowFavorites
 	showRecents := a.navState.ShowRecents
 	a.navMu.RUnlock()
+	a.workspaceMu.RLock()
+	workspaceState := a.workspaceState
+	a.workspaceMu.RUnlock()
 	visibleEntries := entriesWithoutIDs(entries, hiddenIDs)
 	favorites := entriesByID(visibleEntries, favoriteIDs)
-	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(entries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents}
+	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(entries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding}
 }
 
 func entriesWithoutIDs(entries []plugins.Registered, ids []string) []plugins.Registered {
@@ -283,6 +313,17 @@ func makeGroups(entries []plugins.Registered, state map[string]bool) []PluginGro
 	return groups
 }
 func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" {
+		a.workspaceMu.RLock()
+		defaultLanding, lastPluginID := a.workspaceState.DefaultLanding, a.workspaceState.LastPluginID
+		a.workspaceMu.RUnlock()
+		if defaultLanding == workspace.LandingLastUsed && lastPluginID != "" {
+			if _, ok := a.registry.Get(lastPluginID); ok {
+				http.Redirect(w, r, "/plugins/"+lastPluginID, http.StatusSeeOther)
+				return
+			}
+		}
+	}
 	d := a.base("Cmdry", "Overview")
 	a.render(w, http.StatusOK, "dashboard.html", d)
 }
@@ -551,6 +592,35 @@ func (a *App) settings(w http.ResponseWriter, r *http.Request) {
 	a.render(w, http.StatusOK, "settings.html", d)
 }
 
+func (a *App) saveAppearanceSettings(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid appearance settings", http.StatusBadRequest)
+		return
+	}
+	state := workspace.State{
+		Theme:          r.Form.Get("theme"),
+		ReducedMotion:  r.Form.Get("reduced_motion") == "true",
+		SidebarDensity: r.Form.Get("sidebar_density"),
+		DefaultLanding: r.Form.Get("default_landing"),
+	}
+	if !state.Valid() {
+		http.Error(w, "invalid appearance settings", http.StatusBadRequest)
+		return
+	}
+	a.workspaceMu.Lock()
+	state.LastPluginID = a.workspaceState.LastPluginID
+	if err := a.workspace.Save(state); err != nil {
+		a.workspaceMu.Unlock()
+		a.logger.Error("save appearance settings", "error", err)
+		http.Error(w, "unable to save appearance settings", http.StatusInternalServerError)
+		return
+	}
+	a.workspaceState = state
+	a.workspaceMu.Unlock()
+	http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
 func (a *App) saveNavigationSettings(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
 	if err := r.ParseForm(); err != nil {
@@ -649,6 +719,7 @@ func (a *App) pluginPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	a.recordLastPlugin(entry.Manifest.ID)
 	a.recordRecent(entry.Manifest.ID)
 	d := a.base(entry.Manifest.Name, entry.Manifest.Name)
 	d.Current = &entry
@@ -687,6 +758,49 @@ func (a *App) pluginPage(w http.ResponseWriter, r *http.Request) {
 		d.View = response.Data
 	}
 	a.render(w, http.StatusOK, "plugin.html", d)
+}
+
+func (a *App) pluginDetails(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(strings.TrimPrefix(path.Clean(r.URL.Path), "/plugins/"), "/")
+	if len(parts) != 2 || parts[1] != "details" || !plugins.ValidID(parts[0]) {
+		http.NotFound(w, r)
+		return
+	}
+	entry, ok := a.registry.Get(parts[0])
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	d := a.base(entry.Manifest.Name+" details", "Plugin details")
+	d.Current = &entry
+	d.PluginDetail = &PluginDetail{
+		Entry:             entry,
+		DiagnosticCommand: shellQuote(entry.Path) + " manifest",
+		PlatformNotes: []string{
+			fmt.Sprintf("Loaded by Cmdry on %s/%s.", runtime.GOOS, runtime.GOARCH),
+			"Plugin manifests do not declare platform compatibility; this executable must match the host operating system and architecture.",
+		},
+	}
+	a.render(w, http.StatusOK, "plugin-details.html", d)
+}
+
+func (a *App) recordLastPlugin(id string) {
+	a.workspaceMu.Lock()
+	defer a.workspaceMu.Unlock()
+	if a.workspaceState.LastPluginID == id {
+		return
+	}
+	state := a.workspaceState
+	state.LastPluginID = id
+	if err := a.workspace.Save(state); err != nil {
+		a.logger.Warn("save last used plugin", "plugin", id, "error", err)
+		return
+	}
+	a.workspaceState = state
+}
+
+func shellQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "'\\\"'\\\"'") + "'"
 }
 
 func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {

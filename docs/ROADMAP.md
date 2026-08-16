@@ -28,13 +28,13 @@ Cmdry v0.2.0 provides:
 - [x] Add a plugin diagnostics page that lists rejected candidates, refresh time,
   manifest failures, and safely bounded stderr excerpts. It must never execute
   unregistered plugins from the UI.
-- Add a plugin detail page with the manifest description, version, declared
+- [x] Add a plugin detail page with the manifest description, version, declared
   permissions, search terms, binary path, platform notes, and a copyable
   diagnostic command.
 - [x] Add user-managed navigation settings: manage Favorites, clear Recent Tools,
   choose the bounded recent-tools limit, and restore default sidebar order and
   group expansion state.
-- Add appearance and accessibility settings: system/light/dark theme, reduced
+- [x] Add appearance and accessibility settings: system/light/dark theme, reduced
   motion, sidebar density, and an Overview-or-last-used default landing page.
 - Add a persisted enabled/disabled state for installed plugins. Disabled tools
   remain visible in Plugins and Diagnostics and can be re-enabled without
