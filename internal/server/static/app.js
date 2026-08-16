@@ -118,6 +118,12 @@ if (groupToggles.length) {
   }));
 }
 
+const sidebarVisibilityCheckboxes = [...document.querySelectorAll("[data-sidebar-visibility]")];
+sidebarVisibilityCheckboxes.forEach((checkbox) => {
+  if (checkbox.dataset.indeterminate === "true") checkbox.indeterminate = true;
+  checkbox.addEventListener("change", () => checkbox.closest("form")?.requestSubmit());
+});
+
 const pluginSearchData = document.querySelector("#plugin-search-data");
 const plugins = pluginSearchData ? JSON.parse(pluginSearchData.textContent) : [];
 const pluginNavigationData = document.querySelector("#plugin-navigation-data");

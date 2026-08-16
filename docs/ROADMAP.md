@@ -31,6 +31,14 @@ Cmdry v0.2.0 provides:
 - Add a plugin detail page with the manifest description, version, declared
   permissions, search terms, binary path, platform notes, and a copyable
   diagnostic command.
+- [x] Add user-managed navigation settings: manage Favorites, clear Recent Tools,
+  choose the bounded recent-tools limit, and restore default sidebar order and
+  group expansion state.
+- Add appearance and accessibility settings: system/light/dark theme, reduced
+  motion, sidebar density, and an Overview-or-last-used default landing page.
+- Add a persisted enabled/disabled state for installed plugins. Disabled tools
+  remain visible in Plugins and Diagnostics and can be re-enabled without
+  deleting their binary.
 
 ### Priority 3
 
@@ -40,6 +48,12 @@ Cmdry v0.2.0 provides:
 - Design a safe file-input protocol for future plugins: explicit permission,
   schema validation, bounded upload size, temporary-file lifecycle, and no
   unrestricted filesystem access.
+- Add privacy and local-data controls that show exactly what Cmdry retains and
+  let users clear navigation state, saved history, and presets independently.
+  Any future history or presets must remain opt-in and exclude secret inputs.
+- Add diagnostics preferences, including safe clearing of retained scan reports
+  and a redacted, copyable support snapshot that excludes form data and
+  environment secrets.
 
 ## Core improvements
 

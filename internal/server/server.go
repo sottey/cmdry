@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -47,6 +48,12 @@ type pageData struct {
 	PluginGroups   []PluginGroup
 	Favorites      []plugins.Registered
 	Recents        []plugins.Registered
+	Hidden         []string
+	AllVisible     bool
+	SomeVisible    bool
+	RecentLimit    int
+	ShowFavorites  bool
+	ShowRecents    bool
 	Diagnostics    []plugins.Diagnostic
 	LastScan       time.Time
 	ScanFailure    string
@@ -65,6 +72,13 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger, ini
 	t, err := template.New("layout.html").Funcs(template.FuncMap{"row": func(row map[string]any, key string) any { return row[key] }, "favorite": func(entries []plugins.Registered, id string) bool {
 		for _, entry := range entries {
 			if entry.Manifest.ID == id {
+				return true
+			}
+		}
+		return false
+	}, "hidden": func(ids []string, id string) bool {
+		for _, hiddenID := range ids {
+			if hiddenID == id {
 				return true
 			}
 		}
@@ -155,8 +169,20 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.saveGroupState(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/favorites":
 		a.saveFavorite(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/sidebar-visibility":
+		a.savePluginSidebarVisibility(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/sidebar-visibility/all":
+		a.saveAllPluginSidebarVisibility(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/settings/navigation":
+		a.saveNavigationSettings(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/settings/favorites":
+		a.removeFavoriteFromSettings(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/settings/recents/clear":
+		a.clearRecents(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/settings/navigation/reset":
+		a.resetNavigationLayout(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
 		a.pluginAction(w, r)
 	case strings.HasPrefix(r.URL.Path, "/plugins/"):
@@ -186,9 +212,28 @@ func (a *App) base(title, section string) pageData {
 	a.navMu.RLock()
 	favoriteIDs := append([]string(nil), a.navState.Favorites...)
 	recentIDs := append([]string(nil), a.navState.Recents...)
+	hiddenIDs := append([]string(nil), a.navState.Hidden...)
+	recentLimit := a.navState.RecentLimit
+	showFavorites := a.navState.ShowFavorites
+	showRecents := a.navState.ShowRecents
 	a.navMu.RUnlock()
-	favorites := entriesByID(entries, favoriteIDs)
-	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(entries, state), Favorites: favorites, Recents: entriesByIDExcluding(entries, recentIDs, favoriteIDs)}
+	visibleEntries := entriesWithoutIDs(entries, hiddenIDs)
+	favorites := entriesByID(visibleEntries, favoriteIDs)
+	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(entries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents}
+}
+
+func entriesWithoutIDs(entries []plugins.Registered, ids []string) []plugins.Registered {
+	hidden := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		hidden[id] = true
+	}
+	result := make([]plugins.Registered, 0, len(entries))
+	for _, entry := range entries {
+		if !hidden[entry.Manifest.ID] {
+			result = append(result, entry)
+		}
+	}
+	return result
 }
 
 func entriesByID(entries []plugins.Registered, ids []string) []plugins.Registered {
@@ -357,34 +402,65 @@ func (a *App) saveFavorite(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	wantFavorite := r.Form.Get("favorite") == "true"
-	a.navMu.Lock()
-	state := a.navState
-	if wantFavorite {
-		state.Favorites = appendUnique(state.Favorites, id)
-	} else {
-		state.Favorites = withoutID(state.Favorites, id)
-	}
-	if err := a.navigation.Save(state); err != nil {
-		a.navMu.Unlock()
+	if err := a.setFavorite(id, r.Form.Get("favorite") == "true"); err != nil {
 		a.logger.Error("save plugin favorites", "error", err)
 		http.Error(w, "unable to save plugin favorite", http.StatusInternalServerError)
 		return
 	}
-	a.navState = state
-	a.navMu.Unlock()
 	http.Redirect(w, r, "/plugins/"+id, http.StatusSeeOther)
 }
 
-const recentPluginLimit = 8
+func (a *App) savePluginSidebarVisibility(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid sidebar visibility request", http.StatusBadRequest)
+		return
+	}
+	id := r.Form.Get("plugin_id")
+	if !plugins.ValidID(id) {
+		http.Error(w, "invalid plugin", http.StatusBadRequest)
+		return
+	}
+	if _, ok := a.registry.Get(id); !ok {
+		http.NotFound(w, r)
+		return
+	}
+	if err := a.setPluginSidebarVisibility(id, r.Form.Get("visible") == "true"); err != nil {
+		a.logger.Error("save plugin sidebar visibility", "error", err)
+		http.Error(w, "unable to save plugin sidebar visibility", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/plugins", http.StatusSeeOther)
+}
+
+func (a *App) saveAllPluginSidebarVisibility(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid sidebar visibility request", http.StatusBadRequest)
+		return
+	}
+	visible := r.Form.Get("visible") == "true"
+	ids := make([]string, 0, a.registry.Len())
+	if !visible {
+		for _, entry := range a.registry.All() {
+			ids = append(ids, entry.Manifest.ID)
+		}
+	}
+	if err := a.setAllPluginSidebarVisibility(ids); err != nil {
+		a.logger.Error("save all plugin sidebar visibility", "error", err)
+		http.Error(w, "unable to save plugin sidebar visibility", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/plugins", http.StatusSeeOther)
+}
 
 func (a *App) recordRecent(id string) {
 	a.navMu.Lock()
 	defer a.navMu.Unlock()
 	state := a.navState
 	state.Recents = append([]string{id}, withoutID(state.Recents, id)...)
-	if len(state.Recents) > recentPluginLimit {
-		state.Recents = state.Recents[:recentPluginLimit]
+	if len(state.Recents) > state.RecentLimit {
+		state.Recents = state.Recents[:state.RecentLimit]
 	}
 	if slicesEqual(state.Recents, a.navState.Recents) {
 		return
@@ -394,6 +470,50 @@ func (a *App) recordRecent(id string) {
 		return
 	}
 	a.navState = state
+}
+
+func (a *App) setFavorite(id string, wantFavorite bool) error {
+	a.navMu.Lock()
+	defer a.navMu.Unlock()
+	state := a.navState
+	if wantFavorite {
+		state.Favorites = appendUnique(state.Favorites, id)
+	} else {
+		state.Favorites = withoutID(state.Favorites, id)
+	}
+	if err := a.navigation.Save(state); err != nil {
+		return err
+	}
+	a.navState = state
+	return nil
+}
+
+func (a *App) setPluginSidebarVisibility(id string, visible bool) error {
+	a.navMu.Lock()
+	defer a.navMu.Unlock()
+	state := a.navState
+	if visible {
+		state.Hidden = withoutID(state.Hidden, id)
+	} else {
+		state.Hidden = appendUnique(state.Hidden, id)
+	}
+	if err := a.navigation.Save(state); err != nil {
+		return err
+	}
+	a.navState = state
+	return nil
+}
+
+func (a *App) setAllPluginSidebarVisibility(hidden []string) error {
+	a.navMu.Lock()
+	defer a.navMu.Unlock()
+	state := a.navState
+	state.Hidden = hidden
+	if err := a.navigation.Save(state); err != nil {
+		return err
+	}
+	a.navState = state
+	return nil
 }
 
 func appendUnique(ids []string, id string) []string {
@@ -429,6 +549,94 @@ func slicesEqual(left, right []string) bool {
 func (a *App) settings(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Settings", "Settings")
 	a.render(w, http.StatusOK, "settings.html", d)
+}
+
+func (a *App) saveNavigationSettings(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid navigation settings", http.StatusBadRequest)
+		return
+	}
+	limit, err := strconv.Atoi(r.Form.Get("recent_limit"))
+	if err != nil || !validRecentLimit(limit) {
+		http.Error(w, "invalid recent tools limit", http.StatusBadRequest)
+		return
+	}
+	a.navMu.Lock()
+	state := a.navState
+	state.RecentLimit = limit
+	state.ShowFavorites = r.Form.Get("show_favorites") == "true"
+	state.ShowRecents = r.Form.Get("show_recents") == "true"
+	if len(state.Recents) > limit {
+		state.Recents = state.Recents[:limit]
+	}
+	if err := a.navigation.Save(state); err != nil {
+		a.navMu.Unlock()
+		a.logger.Error("save navigation settings", "error", err)
+		http.Error(w, "unable to save navigation settings", http.StatusInternalServerError)
+		return
+	}
+	a.navState = state
+	a.navMu.Unlock()
+	http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
+func (a *App) removeFavoriteFromSettings(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid favorite request", http.StatusBadRequest)
+		return
+	}
+	id := r.Form.Get("plugin_id")
+	if !plugins.ValidID(id) {
+		http.Error(w, "invalid plugin", http.StatusBadRequest)
+		return
+	}
+	if err := a.setFavorite(id, false); err != nil {
+		a.logger.Error("remove plugin favorite", "error", err)
+		http.Error(w, "unable to remove plugin favorite", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
+func (a *App) clearRecents(w http.ResponseWriter, r *http.Request) {
+	a.navMu.Lock()
+	state := a.navState
+	state.Recents = nil
+	if err := a.navigation.Save(state); err != nil {
+		a.navMu.Unlock()
+		a.logger.Error("clear recent tools", "error", err)
+		http.Error(w, "unable to clear recent tools", http.StatusInternalServerError)
+		return
+	}
+	a.navState = state
+	a.navMu.Unlock()
+	http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
+func (a *App) resetNavigationLayout(w http.ResponseWriter, r *http.Request) {
+	if err := a.order.Save(nil); err != nil {
+		a.logger.Error("reset plugin order", "error", err)
+		http.Error(w, "unable to reset sidebar layout", http.StatusInternalServerError)
+		return
+	}
+	if err := a.groups.Save(map[string]bool{}); err != nil {
+		a.logger.Error("reset plugin group state", "error", err)
+		http.Error(w, "unable to reset sidebar layout", http.StatusInternalServerError)
+		return
+	}
+	a.orderMu.Lock()
+	a.orderIDs = nil
+	a.orderMu.Unlock()
+	a.groupMu.Lock()
+	a.groupState = map[string]bool{}
+	a.groupMu.Unlock()
+	http.Redirect(w, r, "/settings", http.StatusSeeOther)
+}
+
+func validRecentLimit(limit int) bool {
+	return limit == 4 || limit == 8 || limit == 12
 }
 func (a *App) pluginPage(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(path.Clean(r.URL.Path), "/plugins/"), "/")

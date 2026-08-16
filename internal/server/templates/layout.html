@@ -12,20 +12,22 @@
   <link rel="stylesheet" href="/static/copy-code.css">
   <link rel="stylesheet" href="/static/command-palette.css">
   <link rel="stylesheet" href="/static/diagnostics.css">
+  <link rel="stylesheet" href="/static/workspace-settings.css">
+  <link rel="stylesheet" href="/static/plugin-visibility.css">
 </head>
 <body>
   <aside>
     <a class="brand" href="/"><span class="brand-mark">›_</span> cmdry</a>
     <nav>
       <a href="/" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a>
-      {{if .Favorites}}<p class="nav-label special-label">Favorites</p><div class="plugin-special-list">{{range .Favorites}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">★</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
-      {{if .Recents}}<p class="nav-label special-label">Recent tools</p><div class="plugin-special-list">{{range .Recents}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">↗</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
+      {{if and .ShowFavorites .Favorites}}<p class="nav-label special-label">Favorites</p><div class="plugin-special-list">{{range .Favorites}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">★</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
+      {{if and .ShowRecents .Recents}}<p class="nav-label special-label">Recent tools</p><div class="plugin-special-list">{{range .Recents}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">↗</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
       <p class="nav-label">Installed tools</p>
       <div id="plugin-nav" aria-label="Installed tools">
         {{range .PluginGroups}}
           <section class="plugin-group" data-group-id="{{.ID}}" {{if .Collapsed}}data-collapsed="true"{{end}}><button type="button" class="plugin-group-toggle" aria-expanded="{{if .Collapsed}}false{{else}}true{{end}}" aria-controls="plugin-group-{{.ID}}"><span>{{.Name}}</span><em>{{len .Plugins}}</em><i>⌄</i></button><div id="plugin-group-{{.ID}}" class="plugin-group-links">{{range .Plugins}}<a href="/plugins/{{.Manifest.ID}}" data-plugin-id="{{.Manifest.ID}}" draggable="true" {{if eq $.Section .Manifest.Name}}class="active"{{end}}>{{.Manifest.Name}}</a>{{end}}</div></section>
         {{else}}
-          <span class="empty-nav">No plugins found</span>
+          <span class="empty-nav">{{if .Plugins}}All plugins are hidden. Search to open a tool.{{else}}No plugins found{{end}}</span>
         {{end}}
       </div>
       <p class="nav-label lower">System</p>
@@ -62,9 +64,10 @@
       {{if .Message}}<section class="notice"><strong>{{.Message}}</strong></section>{{end}}
       {{if .Error}}<section class="notice error"><strong>{{.Error}}</strong></section>{{end}}
       <section class="panel plugin-tools"><form method="post" action="/plugins/refresh"><button type="submit">Refresh plugins</button></form><p>Rescans the configured plugin directory without restarting Cmdry.</p></section>
+      {{if .Plugins}}<section class="panel sidebar-visibility"><div><p class="eyebrow">Sidebar visibility</p><h2>Choose what stays in the sidebar</h2><p>Hidden tools remain installed, searchable, and available from the command palette.</p></div><form method="post" action="/plugins/sidebar-visibility/all" data-sidebar-visibility-form><input type="hidden" name="scope" value="all"><label class="visibility-checkbox"><input type="checkbox" name="visible" value="true" {{if .AllVisible}}checked{{end}} {{if and .SomeVisible (not .AllVisible)}}data-indeterminate="true"{{end}} data-sidebar-visibility><span>Show all in sidebar</span></label><button class="sr-only" type="submit">Save sidebar visibility</button></form></section>{{end}}
       <section class="panel table-panel">
-        <table><thead><tr><th>Name</th><th>Version</th><th>Category</th><th>Status</th><th>Permissions</th><th>Path</th></tr></thead>
-        <tbody>{{range .Plugins}}<tr><td><a href="/plugins/{{.Manifest.ID}}">{{.Manifest.Name}}</a></td><td>{{.Manifest.Version}}</td><td>{{category .Manifest.Category}}</td><td><span class="status">{{.Status}}</span></td><td>{{range .Manifest.Permissions}}<code>{{.}}</code> {{end}}</td><td><code>{{.Path}}</code></td></tr>{{else}}<tr><td colspan="6">No installed plugins.</td></tr>{{end}}</tbody></table>
+        <table><thead><tr><th>Name</th><th>Version</th><th>Category</th><th>Status</th><th>Sidebar</th><th>Permissions</th><th>Path</th></tr></thead>
+        <tbody>{{range .Plugins}}<tr><td><a href="/plugins/{{.Manifest.ID}}">{{.Manifest.Name}}</a></td><td>{{.Manifest.Version}}</td><td>{{category .Manifest.Category}}</td><td><span class="status">{{.Status}}</span></td><td><form class="plugin-visibility-toggle" method="post" action="/plugins/sidebar-visibility" data-sidebar-visibility-form><input type="hidden" name="plugin_id" value="{{.Manifest.ID}}"><label class="visibility-checkbox"><input type="checkbox" name="visible" value="true" {{if not (hidden $.Hidden .Manifest.ID)}}checked{{end}} data-sidebar-visibility><span>Visible</span></label><button class="sr-only" type="submit">Save sidebar visibility</button></form></td><td>{{range .Manifest.Permissions}}<code>{{.}}</code> {{end}}</td><td><code>{{.Path}}</code></td></tr>{{else}}<tr><td colspan="7">No installed plugins.</td></tr>{{end}}</tbody></table>
       </section>
     {{else if eq .Section "Diagnostics"}}
       <section class="diagnostics-summary"><div><p class="eyebrow">Last discovery scan</p><strong>{{scanTime .LastScan}}</strong><span>{{len .Diagnostics}} rejected candidate{{if ne (len .Diagnostics) 1}}s{{end}}</span></div><a class="button" href="/plugins">Refresh plugins</a></section>
@@ -75,6 +78,7 @@
         {{if not .ScanFailure}}<section class="notice"><strong>No rejected plugin candidates in the latest scan.</strong><p>Cmdry found only registered plugins. Refresh from the Plugins page after you install or replace a plugin.</p></section>{{end}}
       {{end}}
     {{else if eq .Section "Settings"}}
+      <section class="panel workspace-settings"><div class="workspace-settings-heading"><div><p class="eyebrow">This Cmdry workspace</p><h2>Navigation</h2><p>These preferences stay local to this Cmdry data directory.</p></div><span>local-only</span></div><div class="workspace-settings-block"><h3>Sidebar sections</h3><p>Hide a section without clearing its saved tools.</p><form class="navigation-preferences" method="post" action="/settings/navigation"><label for="recent-limit">Show up to</label><select id="recent-limit" name="recent_limit"><option value="4" {{if eq .RecentLimit 4}}selected{{end}}>4 tools</option><option value="8" {{if eq .RecentLimit 8}}selected{{end}}>8 tools</option><option value="12" {{if eq .RecentLimit 12}}selected{{end}}>12 tools</option></select><label class="setting-checkbox"><input type="checkbox" name="show_favorites" value="true" {{if .ShowFavorites}}checked{{end}}>Show Favorites</label><label class="setting-checkbox"><input type="checkbox" name="show_recents" value="true" {{if .ShowRecents}}checked{{end}}>Show Recent Tools</label><button type="submit">Save navigation preferences</button></form>{{if .Recents}}<form method="post" action="/settings/recents/clear"><button class="button-muted" type="submit">Clear recent tools</button></form>{{else}}<p class="workspace-empty">No recent tools to clear.</p>{{end}}</div><div class="workspace-settings-block"><h3>Favorites</h3>{{range .Favorites}}<form class="favorite-setting" method="post" action="/settings/favorites"><code>{{.Manifest.Name}}</code><input type="hidden" name="plugin_id" value="{{.Manifest.ID}}"><button class="button-muted" type="submit">Remove</button></form>{{else}}<p class="workspace-empty">No favorites yet. Star a plugin from its page to keep it here.</p>{{end}}</div><div class="workspace-settings-block reset-layout"><h3>Sidebar layout</h3><p>Returns plugin ordering and category expansion to Cmdry defaults. Favorites and recent tools are kept.</p><form method="post" action="/settings/navigation/reset"><button class="button-muted" type="submit">Restore default sidebar layout</button></form></div></section>
       <section class="panel settings"><h2>Runtime configuration</h2><dl><div><dt>Listen address</dt><dd><code>CMDRY_ADDR</code> defaults to <code>127.0.0.1:8080</code>.</dd></div><div><dt>Plugin directory</dt><dd><code>CMDRY_PLUGIN_DIR</code> defaults to <code>/opt/cmdry/plugins</code>.</dd></div><div><dt>Data directory</dt><dd><code>CMDRY_DATA_DIR</code> defaults to <code>/opt/cmdry/data</code>.</dd></div></dl><p class="quiet">Configuration loads once at startup. Cmdry defaults to localhost; expose it only behind access controls you operate.</p></section>
     {{else if .Error}}
       <section class="notice error"><strong>{{.Current.Manifest.Name}} failed</strong><p>{{.Error}}</p><p>Check the plugin binary and its host command requirements, then try again.</p></section>
