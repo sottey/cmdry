@@ -54,6 +54,12 @@ func RunTextJoiner() {
 func RunTextReverser() {
 	run("reverse-text", "Reverse Text", "Reverse pasted Unicode text character by character locally.", []string{"reverse", "text", "characters", "unicode"}, reverseTextForm, reverseText)
 }
+func RunROT13() {
+	run("rot13", "ROT13 Encoder/Decoder", "Encode or decode pasted text using the ROT13 cipher locally.", []string{"rot13", "cipher", "encode", "decode", "text"}, rot13Form, rot13)
+}
+func RunSplitter() {
+	run("split-text", "Split Text", "Split pasted text into parts using a separator locally.", []string{"split", "text", "separator", "delimiter", "parts"}, splitForm, splitText)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -99,6 +105,12 @@ func joinTextForm(cmdry.Request) (cmdry.View, error) {
 }
 func reverseTextForm(cmdry.Request) (cmdry.View, error) {
 	return form("Reverse Text", "Reverse text", "Reverse text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+func rot13Form(cmdry.Request) (cmdry.View, error) {
+	return form("ROT13 Encoder/Decoder", "Transform text", "Apply ROT13", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+func splitForm(cmdry.Request) (cmdry.View, error) {
+	return form("Split Text", "Split text", "Split text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "separator", Label: "Separator", Type: "text", Required: true, Placeholder: "For example: , or |"}, {Name: "omit_empty", Label: "Omit empty parts", Type: "checkbox", Value: "true"}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -246,6 +258,16 @@ func joinText(r cmdry.Request) (cmdry.View, error) {
 func reverseText(r cmdry.Request) (cmdry.View, error) {
 	return result("Reversed text", ReverseText(fmt.Sprint(r.Params["input"]))), nil
 }
+func rot13(r cmdry.Request) (cmdry.View, error) {
+	return result("ROT13 text", ROT13(fmt.Sprint(r.Params["input"]))), nil
+}
+func splitText(r cmdry.Request) (cmdry.View, error) {
+	parts, err := SplitText(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["separator"]), fmt.Sprint(r.Params["omit_empty"]) == "true")
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return cmdry.View{Title: "Split text", Components: []cmdry.Component{{Type: "metric", Label: "Parts", Value: fmt.Sprint(len(parts))}, {Type: "code", Title: "Split parts", Text: strings.Join(parts, "\n")}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Split more text"}}}}}, nil
+}
 
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)
 
@@ -333,6 +355,40 @@ func ReverseText(input string) string {
 		characters[left], characters[right] = characters[right], characters[left]
 	}
 	return string(characters)
+}
+
+// ROT13 shifts ASCII letters by 13 positions. Applying it twice restores the
+// original text.
+func ROT13(input string) string {
+	return strings.Map(func(value rune) rune {
+		switch {
+		case value >= 'a' && value <= 'z':
+			return 'a' + (value-'a'+13)%26
+		case value >= 'A' && value <= 'Z':
+			return 'A' + (value-'A'+13)%26
+		default:
+			return value
+		}
+	}, input)
+}
+
+// SplitText splits text on a non-empty exact separator. Empty parts may be
+// omitted, while all other whitespace remains unchanged.
+func SplitText(input, separator string, omitEmpty bool) ([]string, error) {
+	if separator == "" {
+		return nil, fmt.Errorf("separator is required")
+	}
+	parts := strings.Split(input, separator)
+	if !omitEmpty {
+		return parts, nil
+	}
+	filtered := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part != "" {
+			filtered = append(filtered, part)
+		}
+	}
+	return filtered, nil
 }
 
 // Statistics is a set of useful local text measurements. Characters are Unicode

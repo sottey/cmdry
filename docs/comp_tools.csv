@@ -35,11 +35,11 @@ TRUE,0,Image,QR Code Generator,Create customized QR codes for various data forma
 TRUE,0,Number,Random Number Generator,Generate random numbers in custom ranges
 TRUE,0,List,Reverse,Quickly reverse a list
 TRUE,0,Text,Reverse,Reverse any text character by character
-FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
-FALSE,2,List,Sort,Sort list items in specified order
-FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
-FALSE,2,Text,Split,Split text into multiple parts using a separator
-FALSE,2,Time,Time Between Dates,Calculate time between two dates
+TRUE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
+TRUE,2,List,Sort,Sort list items in specified order
+TRUE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
+TRUE,2,Text,Split,Split text into multiple parts using a separator
+TRUE,2,Time,Time Between Dates,Calculate time between two dates
 FALSE,2,List,Truncate,Truncate list to specified number of items
 FALSE,2,Text,Truncate Text,Truncate text to a specified length
 FALSE,2,CSV,TSV to JSON,Convert TSV to JSON format

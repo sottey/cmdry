@@ -23,6 +23,13 @@ func RunEscaper() {
 		Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Escape JSON string", Method: "write"}},
 	}, Actions: map[string]cmdry.Handler{"overview": escaperForm, "run": escape}})
 }
+func RunSorter() {
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
+		ProtocolVersion: 1, ID: "com.sottey.json-sort", Name: "Sort JSON", Version: "0.1.0", Description: "Sort JSON object keys or array values locally.", Category: "developer", Icon: "json",
+		SearchTerms: []string{"json", "sort", "keys", "arrays", "alphabetical"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"},
+		Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Sort JSON", Method: "write"}},
+	}, Actions: map[string]cmdry.Handler{"overview": sorterForm, "run": sortJSON}})
+}
 
 func run(id, name, description string, terms []string, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
@@ -84,6 +91,10 @@ func escaperForm(cmdry.Request) (cmdry.View, error) {
 	return cmdry.View{Title: "JSON String Escaper", Components: []cmdry.Component{{Type: "form", Title: "Escape text", Action: "run", Submit: "Escape JSON string", Description: "Escapes arbitrary text as one JSON string literal locally. The input does not need to be JSON.", Fields: []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}}}}, nil
 }
 
+func sorterForm(cmdry.Request) (cmdry.View, error) {
+	return cmdry.View{Title: "Sort JSON", Components: []cmdry.Component{{Type: "form", Title: "Sort JSON", Action: "run", Submit: "Sort JSON", Description: "Object keys are always written alphabetically. Optionally sort every JSON array by value.", Fields: []cmdry.Field{{Name: "input", Label: "JSON input", Type: "textarea", Required: true}, {Name: "arrays", Label: "Array order", Type: "select", Value: "preserve", Options: []cmdry.Option{{Value: "preserve", Label: "Preserve array order"}, {Value: "sort", Label: "Sort arrays by value"}}}}}}}, nil
+}
+
 func escape(request cmdry.Request) (cmdry.View, error) {
 	value := fmt.Sprint(request.Params["input"])
 	escaped, err := EscapeString(value)
@@ -91,6 +102,18 @@ func escape(request cmdry.Request) (cmdry.View, error) {
 		return cmdry.View{}, fmt.Errorf("escape JSON string: %w", err)
 	}
 	return output("Escaped JSON string", string(escaped)), nil
+}
+
+func sortJSON(request cmdry.Request) (cmdry.View, error) {
+	value, err := input(request)
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	sorted, err := Sort(value, fmt.Sprint(request.Params["arrays"]) == "sort")
+	if err != nil {
+		return cmdry.View{}, fmt.Errorf("invalid JSON: %w", err)
+	}
+	return output("Sorted JSON", string(sorted)), nil
 }
 
 func output(title, value string) cmdry.View {

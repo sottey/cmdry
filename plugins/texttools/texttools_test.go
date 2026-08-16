@@ -82,3 +82,25 @@ func TestReverseTextUsesUnicodeCharacters(t *testing.T) {
 		t.Fatalf("reversed = %q, want %q", got, want)
 	}
 }
+
+func TestROT13(t *testing.T) {
+	if got, want := ROT13("Hello, World! café"), "Uryyb, Jbeyq! pnsé"; got != want {
+		t.Fatalf("ROT13() = %q, want %q", got, want)
+	}
+	if got, want := ROT13(ROT13("Hello, World!")), "Hello, World!"; got != want {
+		t.Fatalf("double ROT13 = %q, want %q", got, want)
+	}
+}
+
+func TestSplitText(t *testing.T) {
+	parts, err := SplitText("one,,two,", ",", true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.Join(parts, "|"), "one|two"; got != want {
+		t.Fatalf("parts = %q, want %q", got, want)
+	}
+	if _, err := SplitText("one", "", false); err == nil {
+		t.Fatal("expected empty separator error")
+	}
+}

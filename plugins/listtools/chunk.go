@@ -112,3 +112,25 @@ func ReverseLines(input string) ([]string, error) {
 	}
 	return items, nil
 }
+
+// SortLines returns non-blank newline-delimited items in case-insensitive
+// alphabetical order. Exact item text is preserved in the result.
+func SortLines(input string, descending bool) ([]string, error) {
+	items := make([]string, 0)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) != "" {
+			items = append(items, line)
+		}
+	}
+	if len(items) == 0 {
+		return nil, fmt.Errorf("enter at least one non-blank list item")
+	}
+	sort.SliceStable(items, func(left, right int) bool {
+		leftValue, rightValue := strings.ToLower(items[left]), strings.ToLower(items[right])
+		if descending {
+			return leftValue > rightValue
+		}
+		return leftValue < rightValue
+	})
+	return items, nil
+}
