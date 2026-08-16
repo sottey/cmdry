@@ -2,6 +2,7 @@
 package cmdry
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -35,6 +36,37 @@ type Request struct {
 	Action string         `json:"action"`
 	Params map[string]any `json:"params"`
 }
+type Upload struct {
+	Name     string `json:"name"`
+	MIMEType string `json:"mime_type"`
+	Content  string `json:"content"`
+}
+
+// File returns an uploaded file carried in a file form field. Content is held
+// only in this request as standard base64; plugins must never expect a path.
+func (r Request) File(name string) (Upload, []byte, error) {
+	value, ok := r.Params[name]
+	if !ok {
+		return Upload{}, nil, fmt.Errorf("%s is required", name)
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return Upload{}, nil, fmt.Errorf("read %s: %w", name, err)
+	}
+	var upload Upload
+	if err := json.Unmarshal(encoded, &upload); err != nil {
+		return Upload{}, nil, fmt.Errorf("read %s: %w", name, err)
+	}
+	if upload.Name == "" || upload.MIMEType == "" || upload.Content == "" {
+		return Upload{}, nil, fmt.Errorf("%s is not a valid upload", name)
+	}
+	contents, err := base64.StdEncoding.DecodeString(upload.Content)
+	if err != nil {
+		return Upload{}, nil, fmt.Errorf("decode %s: %w", name, err)
+	}
+	return upload, contents, nil
+}
+
 type Response struct {
 	OK    bool   `json:"ok"`
 	Data  *View  `json:"data,omitempty"`
@@ -81,6 +113,7 @@ type Field struct {
 	Max         string   `json:"max,omitempty"`
 	Placeholder string   `json:"placeholder,omitempty"`
 	Description string   `json:"description,omitempty"`
+	Accept      string   `json:"accept,omitempty"`
 	Required    bool     `json:"required,omitempty"`
 	Options     []Option `json:"options,omitempty"`
 }

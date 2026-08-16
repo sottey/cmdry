@@ -14,25 +14,25 @@ TRUE,2,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical 
 TRUE,2,Text,Palindrome,Check if text reads the same forward and backward
 TRUE,2,Number,Random Port Generator,Generate random network ports
 TRUE,2,Text,Randomize case,Randomize the case of letters in text
-FALSE,2,Text,Repeat Text,Repeat text multiple times
-FALSE,2,List,Rotate,Rotate list items by specified positions
-FALSE,2,Text,Rotate Text,Shift characters in text by position.
-FALSE,2,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical circuits using length  material  and current
-FALSE,2,List,Shuffle,Randomize the order of list items
-FALSE,2,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
-FALSE,2,Text,String To morse,Quickly encode text to morse
-FALSE,2,CSV,Swap CSV Columns,Reorder CSV columns.
-FALSE,2,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
-FALSE,2,Text,Text Quoter,Add quotes around text with various styles
-FALSE,2,CSV,Transpose CSV,Quickly transpose a CSV file.
+TRUE,2,Text,Repeat Text,Repeat text multiple times
+TRUE,2,List,Rotate,Rotate list items by specified positions
+TRUE,2,Text,Rotate Text,Shift characters in text by position.
+TRUE,2,Number,Round trip voltage drop in cable,Calculate voltage drop and power loss in electrical circuits using length  material  and current
+TRUE,2,List,Shuffle,Randomize the order of list items
+TRUE,2,Number,Slackline Tension,Calculate the approximate tension of a slackline or clothesline. Do not rely on this for safety.
+TRUE,2,Text,String To morse,Quickly encode text to morse
+TRUE,2,CSV,Swap CSV Columns,Reorder CSV columns.
+TRUE,2,Text,Text Censor,Quickly mask bad words or replace them with alternative words.
+TRUE,2,Text,Text Quoter,Add quotes around text with various styles
+TRUE,2,CSV,Transpose CSV,Quickly transpose a CSV file.
 TRUE,2,List,Truncate,Truncate list to specified number of items
-FALSE,2,Time,Truncate Clock Time,Truncate clock time to specified precision
+TRUE,2,Time,Truncate Clock Time,Truncate clock time to specified precision
 TRUE,2,Text,Truncate Text,Truncate text to a specified length
 TRUE,2,CSV,TSV to JSON,Convert TSV to JSON format
 TRUE,2,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape sequences.
-FALSE,2,List,Unwrap,Unwrap list items from structured format
+TRUE,2,List,Unwrap,Unwrap list items from structured format
 TRUE,2,Text,URL Editor,Inspect and edit URL components and query parameters.
-FALSE,2,List,Wrap,Wrap list items with specified criteria
+TRUE,2,List,Wrap,Wrap list items with specified criteria
 FALSE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
 FALSE,3,Image,Change colors in image,Quickly swap colors in a image
 FALSE,3,Image,Change image Opacity,Adjust transparency of images
@@ -43,10 +43,10 @@ FALSE,3,Convert,Convert Images to JPG,Convert images to JPG Format with quality 
 FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
 FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
 FALSE,3,Image,Create transparent PNG,Quickly make an image transparent
-FALSE,3,Image,Crop Image,Crop images quickly.
+TRUE,3,Image,Crop Image,Crop images quickly.
 FALSE,3,PDF,Images to PDF,Convert images to PDF with scale and orientation control
-FALSE,3,Image,Resize Image,Resize one or multiple images at once.
-FALSE,3,Image,Rotate Image,Rotate an image easily.
+TRUE,3,Image,Resize Image,Resize one or multiple images at once.
+TRUE,3,Image,Rotate Image,Rotate an image easily.
 FALSE,3,Image,Watermark Images,Add text watermarks to images
 FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
 FALSE,4,Convert,Audio Converter,Convert audio files to various formats.

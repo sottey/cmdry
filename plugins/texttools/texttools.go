@@ -72,6 +72,21 @@ func RunPalindromeChecker() {
 func RunRandomCase() {
 	run("randomize-case", "Randomize Case", "Randomize the letter case of pasted text locally.", []string{"random", "case", "uppercase", "lowercase", "text"}, randomCaseForm, randomizeCase)
 }
+func RunRepeater() {
+	run("repeat-text", "Repeat Text", "Repeat pasted text locally.", []string{"repeat", "text"}, repeatForm, repeatText)
+}
+func RunTextRotator() {
+	run("rotate-text", "Rotate Text", "Rotate pasted text characters by a chosen position locally.", []string{"rotate", "shift", "text", "characters"}, rotateTextForm, rotateTextAction)
+}
+func RunMorseEncoder() {
+	run("text-morse", "Text to Morse", "Encode pasted text as International Morse code locally.", []string{"morse", "encode", "text", "code"}, morseForm, morseAction)
+}
+func RunTextCensor() {
+	run("text-censor", "Text Censor", "Mask selected whole words in pasted text locally.", []string{"censor", "mask", "replace", "words", "text"}, censorForm, censorAction)
+}
+func RunTextQuoter() {
+	run("text-quoter", "Text Quoter", "Add a selected quote style around pasted text lines locally.", []string{"quote", "text", "wrap", "lines"}, quoterForm, quoterAction)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -135,6 +150,21 @@ func palindromeCheckForm(cmdry.Request) (cmdry.View, error) {
 }
 func randomCaseForm(cmdry.Request) (cmdry.View, error) {
 	return form("Randomize Case", "Randomize letter case", "Randomize case", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+func repeatForm(cmdry.Request) (cmdry.View, error) {
+	return form("Repeat Text", "Repeat text", "Repeat", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "count", Label: "Times", Type: "number", Value: "2", Min: "1", Required: true}}), nil
+}
+func rotateTextForm(cmdry.Request) (cmdry.View, error) {
+	return form("Rotate Text", "Rotate text characters", "Rotate text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "positions", Label: "Positions to rotate left", Type: "number", Value: "1", Required: true}}), nil
+}
+func morseForm(cmdry.Request) (cmdry.View, error) {
+	return form("Text to Morse", "Encode text", "Encode Morse", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+func censorForm(cmdry.Request) (cmdry.View, error) {
+	return form("Text Censor", "Mask whole words", "Censor text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "words", Label: "Words to censor", Type: "text", Placeholder: "comma-separated", Required: true}, {Name: "replacement", Label: "Replacement", Type: "text", Value: "***"}}), nil
+}
+func quoterForm(cmdry.Request) (cmdry.View, error) {
+	return form("Text Quoter", "Quote each non-blank line", "Add quotes", []cmdry.Field{{Name: "input", Label: "Text lines", Type: "textarea", Required: true}, {Name: "style", Label: "Quote style", Type: "select", Value: "double", Options: []cmdry.Option{{Value: "double", Label: "Double quotes"}, {Value: "single", Label: "Single quotes"}, {Value: "curly", Label: "Curly quotes"}}}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -323,6 +353,41 @@ func checkPalindrome(r cmdry.Request) (cmdry.View, error) {
 }
 func randomizeCase(r cmdry.Request) (cmdry.View, error) {
 	return result("Randomized case", RandomizeCase(fmt.Sprint(r.Params["input"]))), nil
+}
+func repeatText(r cmdry.Request) (cmdry.View, error) {
+	n, e := strconv.Atoi(fmt.Sprint(r.Params["count"]))
+	if e != nil || n < 1 {
+		return cmdry.View{}, fmt.Errorf("times must be a positive whole number")
+	}
+	return result("Repeated text", strings.Repeat(fmt.Sprint(r.Params["input"]), n)), nil
+}
+func rotateTextAction(r cmdry.Request) (cmdry.View, error) {
+	positions, err := strconv.Atoi(fmt.Sprint(r.Params["positions"]))
+	if err != nil {
+		return cmdry.View{}, fmt.Errorf("positions must be a whole number")
+	}
+	return result("Rotated text", RotateText(fmt.Sprint(r.Params["input"]), positions)), nil
+}
+func morseAction(r cmdry.Request) (cmdry.View, error) {
+	output, err := ToMorse(fmt.Sprint(r.Params["input"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return result("Morse code", output), nil
+}
+func censorAction(r cmdry.Request) (cmdry.View, error) {
+	output, count, err := CensorText(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["words"]), fmt.Sprint(r.Params["replacement"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return cmdry.View{Title: "Censored text", Components: []cmdry.Component{{Type: "metric", Label: "Words masked", Value: fmt.Sprint(count)}, {Type: "code", Title: "Censored text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Censor more text"}}}}}, nil
+}
+func quoterAction(r cmdry.Request) (cmdry.View, error) {
+	output, count, err := QuoteText(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["style"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return cmdry.View{Title: "Quoted text", Components: []cmdry.Component{{Type: "metric", Label: "Lines quoted", Value: fmt.Sprint(count)}, {Type: "code", Title: "Quoted text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Quote more text"}}}}}, nil
 }
 
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)

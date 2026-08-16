@@ -7,13 +7,17 @@ fleet-management product.
 
 ## Current baseline
 
-Cmdry v0.2.0 provides:
+Cmdry v0.12.0 provides:
 
 - A Go, server-rendered core with a local-by-default listen address.
 - Startup discovery of executable `cmdry-*` plugins.
 - A version-1 JSON manifest and action protocol.
 - Structured, escaped UI components rather than plugin-supplied HTML or script.
 - The Port Inspector plugin, using `ss` on Linux and `lsof` on macOS.
+- 99 focused bundled plugins spanning host inspection and local data, text,
+  list, time, and calculator transformations.
+- Persistent local navigation preferences, including favorites, recents,
+  ordering, group expansion, sidebar visibility, and appearance settings.
 
 ## Prioritized product enhancements
 

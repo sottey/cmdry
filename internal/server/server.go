@@ -2,9 +2,11 @@ package server
 
 import (
 	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"log/slog"
 	"net/http"
 	"path"
@@ -814,18 +816,10 @@ func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	r.Body = http.MaxBytesReader(w, r.Body, 2*1024*1024)
-	if err := r.ParseForm(); err != nil {
+	params, err := actionParams(w, r)
+	if err != nil {
 		http.Error(w, "invalid or oversized action input", http.StatusBadRequest)
 		return
-	}
-	params := make(map[string]any, len(r.PostForm))
-	for key, values := range r.PostForm {
-		if !plugins.ValidID(key) || len(values) != 1 {
-			http.Error(w, "invalid action input", http.StatusBadRequest)
-			return
-		}
-		params[key] = values[0]
 	}
 	d := a.base(entry.Manifest.Name, entry.Manifest.Name)
 	d.Current = &entry
@@ -838,4 +832,53 @@ func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {
 		d.View = response.Data
 	}
 	a.render(w, http.StatusOK, "plugin.html", d)
+}
+
+const maxActionBody = 6 * 1024 * 1024
+const maxUploadBytes = 4 * 1024 * 1024
+
+func actionParams(w http.ResponseWriter, r *http.Request) (map[string]any, error) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxActionBody)
+	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		if err := r.ParseMultipartForm(maxUploadBytes); err != nil {
+			return nil, err
+		}
+		defer r.MultipartForm.RemoveAll()
+	} else if err := r.ParseForm(); err != nil {
+		return nil, err
+	}
+	fileCount := 0
+	if r.MultipartForm != nil {
+		fileCount = len(r.MultipartForm.File)
+	}
+	params := make(map[string]any, len(r.PostForm)+fileCount)
+	for key, values := range r.PostForm {
+		if !plugins.ValidID(key) || len(values) != 1 {
+			return nil, fmt.Errorf("invalid field")
+		}
+		params[key] = values[0]
+	}
+	if r.MultipartForm == nil {
+		return params, nil
+	}
+	for key, files := range r.MultipartForm.File {
+		if !plugins.ValidID(key) || len(files) != 1 || files[0].Size < 1 || files[0].Size > maxUploadBytes {
+			return nil, fmt.Errorf("invalid upload")
+		}
+		file, err := files[0].Open()
+		if err != nil {
+			return nil, err
+		}
+		contents, readErr := io.ReadAll(io.LimitReader(file, maxUploadBytes+1))
+		closeErr := file.Close()
+		if readErr != nil {
+			return nil, readErr
+		}
+		if closeErr != nil || len(contents) < 1 || len(contents) > maxUploadBytes {
+			return nil, fmt.Errorf("invalid upload")
+		}
+		mimeType := http.DetectContentType(contents)
+		params[key] = plugins.Upload{Name: path.Base(files[0].Filename), MIMEType: mimeType, Content: base64.StdEncoding.EncodeToString(contents)}
+	}
+	return params, nil
 }

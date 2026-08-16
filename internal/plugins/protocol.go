@@ -32,6 +32,11 @@ type Request struct {
 	Action string         `json:"action"`
 	Params map[string]any `json:"params"`
 }
+type Upload struct {
+	Name     string `json:"name"`
+	MIMEType string `json:"mime_type"`
+	Content  string `json:"content"`
+}
 type Response struct {
 	OK    bool         `json:"ok"`
 	Data  *View        `json:"data,omitempty"`
@@ -78,6 +83,7 @@ type Field struct {
 	Max         string   `json:"max,omitempty"`
 	Placeholder string   `json:"placeholder,omitempty"`
 	Description string   `json:"description,omitempty"`
+	Accept      string   `json:"accept,omitempty"`
 	Required    bool     `json:"required,omitempty"`
 	Options     []Option `json:"options,omitempty"`
 }

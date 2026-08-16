@@ -169,13 +169,20 @@ manifest or Cmdry refuses to execute it.
 
 A `form` component renders a POST form. Each field needs a safe `name`,
 non-empty `label`, and `type` of `text`, `password`, `textarea`, `number`, `checkbox`, or
-`select`; a select field supplies `options` with `value` and `label`. Use
+`select`; a select field supplies `options` with `value` and `label`. A `file`
+field may set `accept` to guide browser selection. Cmdry accepts one uploaded
+file per field, holds it only in request memory, removes multipart temporary
+data before returning, and never provides a host path to the plugin. Uploads
+are limited to 4 MiB; the complete multipart action body is limited to 6 MiB.
+Use
 `value`, `min`, `max`, and `required: true` where appropriate. Its `action`
 must be declared in the manifest. Cmdry limits
-the full submitted form body to 2 MiB and forwards one string value per field:
+the full submitted form body to 6 MiB. Ordinary fields arrive as strings; a
+file arrives as `{name, mime_type, content}` where content is standard base64.
+The Go SDK's `request.File("image")` helper validates and decodes it:
 
 ```json
-{"action":"convert","params":{"json":"[{\"name\":\"Ada\"}]"}}
+{"action":"resize","params":{"image":{"name":"photo.png","mime_type":"image/png","content":"..."}}}
 ```
 
 A `download` component provides a browser-local download. Its content must be

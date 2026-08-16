@@ -1,10 +1,8 @@
 # Cmdry
 
-Cmdry is a small, self-hosted web workbench for Linux command-line tools. The core provides navigation, a consistent server-rendered UI, plugin discovery, and strict executable-plugin boundaries. Plugins are separate processes that return versioned JSON—not arbitrary HTML, JavaScript, or shell commands.
+Cmdry is a small, self-hosted web workbench for focused local tools. The Go core provides navigation, a consistent server-rendered UI, plugin discovery, and strict executable-plugin boundaries. Plugins are separate processes that return versioned JSON—not arbitrary HTML, JavaScript, or shell commands.
 
-The first included plugin is **Port Inspector**, a read-only view of listening TCP and UDP ports from `ss`.
-
-> Screenshot placeholder: Cmdry’s Port Inspector page shows concise listening-port counts above a sortable-ready data table.
+It includes host-inspection tools for Linux and macOS alongside local text, list, CSV, JSON, XML, time, and calculator utilities. Cmdry is local-first: transformation plugins work on pasted data and do not read or write host files.
 
 ## What Cmdry is (and is not)
 
@@ -15,11 +13,9 @@ Cmdry is an extensible way to expose a focused Linux CLI utility through a local
 Build the core and bundled plugins:
 
 ```bash
-./scripts/build.sh
+sudo mkdir -p /opt/cmdry/{data,plugins}
+sudo CMDRY_PLUGIN_DIR=/opt/cmdry/plugins ./scripts/build.sh
 sudo install -Dm755 dist/cmdry /usr/local/bin/cmdry
-sudo install -Dm755 dist/plugins/cmdry-ports /opt/cmdry/plugins/cmdry-ports
-sudo install -Dm755 dist/plugins/cmdry-journal /opt/cmdry/plugins/cmdry-journal
-sudo mkdir -p /opt/cmdry/data
 sudo chown "$USER" /opt/cmdry/data
 CMDRY_ADDR=127.0.0.1:8080 cmdry serve
 ```
@@ -30,7 +26,7 @@ Port Inspector requires `ss`, normally supplied by the `iproute2` package. It re
 
 ## Run natively on macOS
 
-Cmdry and Port Inspector run natively on macOS. The plugin uses the built-in
+Cmdry and its cross-platform plugins run natively on macOS. Port Inspector uses the built-in
 `lsof` command: TCP results are listening sockets, while UDP results are
 unconnected sockets with an assigned local port. macOS may hide processes that
 the current user cannot inspect; Cmdry preserves missing process and PID values.
@@ -51,9 +47,7 @@ This is intentional. It listens on host port `8087`:
 
 ```bash
 sudo mkdir -p /home/sottey/docker-data/cmdry/{data,plugins}
-./scripts/build.sh
-sudo install -Dm755 dist/plugins/cmdry-ports /home/sottey/docker-data/cmdry/plugins/cmdry-ports
-sudo install -Dm755 dist/plugins/cmdry-journal /home/sottey/docker-data/cmdry/plugins/cmdry-journal
+sudo CMDRY_PLUGIN_DIR=/home/sottey/docker-data/cmdry/plugins ./scripts/build.sh
 docker compose up --build -d
 ```
 
@@ -104,7 +98,7 @@ cmdry.Run(cmdry.Plugin{
 })
 ```
 
-Build a future plugin separately, place the executable in `CMDRY_PLUGIN_DIR`, and restart Cmdry. No Cmdry core modification is needed.
+Build a future plugin separately, place the executable in `CMDRY_PLUGIN_DIR`, and use **Refresh plugins** from Cmdry’s Plugins page. No Cmdry core modification is needed.
 
 See the [plugin development guide](docs/plugin-development.md) for the complete
 v1 manifest, response contract, SDK example, local development workflow, and
@@ -212,6 +206,27 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   decimal values in inclusive local ranges on macOS and Linux.
 - **Reverse List and Reverse Text**: reverse nonblank list item order or
   Unicode text characters locally on macOS and Linux.
+- **Repeat Text, Rotate Text, and Text to Morse**: repeat text, rotate Unicode
+  characters, or encode supported text as International Morse code locally.
+- **Text Censor and Text Quoter**: mask selected whole words or add single,
+  double, or curly quotes around each nonblank text line locally.
+- **Rotate List and Shuffle List**: rotate list positions or use a
+  cryptographically secure shuffle of pasted list order locally.
+- **Wrap List and Unwrap List**: add or remove matching prefixes and suffixes
+  around newline-delimited list items locally.
+- **Swap CSV Columns and Transpose CSV**: swap two named headers or transpose
+  a complete header-based CSV table locally.
+- **Round-Trip Voltage Drop**: estimate copper-cable DC voltage drop and power
+  loss from length, conductor area, and current; it is an estimate, not an
+  electrical design result.
+- **Slackline Tension**: estimates a simplified centered static load only and
+  is explicitly not appropriate for safety, rigging, or equipment decisions.
+- **Truncate Clock Time**: drop smaller units from a signed `HH:MM:SS` or
+  `MM:SS` duration locally.
+- **Resize Image, Crop Image, and Rotate Image**: transform one uploaded PNG,
+  JPEG, or GIF entirely in memory and return a browser-local PNG download.
+  Uploaded images are limited to 4 MiB and are never exposed to plugins as host
+  paths or retained after the request.
 
 ## Build bundled binaries
 
