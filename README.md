@@ -83,7 +83,7 @@ At startup Cmdry scans the plugin directory for executable files named `cmdry-*`
 cmdry-ports manifest
 ```
 
-The program must print only a valid version-1 JSON manifest to stdout. Cmdry validates the protocol version, safe IDs, version, and unique page/action IDs. Bad binaries are logged and skipped; they never stop Cmdry from starting.
+The program must print only a valid version-1 JSON manifest to stdout. Cmdry validates the protocol version, safe IDs, version, and unique page/action IDs. Bad binaries are logged and skipped; they never stop Cmdry from starting. The **Diagnostics** page retains the latest scan's rejected candidates and bounded stderr excerpts. It is read-only: invalid candidates are never registered or executable through the UI.
 
 For a page request, Cmdry runs an explicitly registered action with no shell:
 
@@ -194,6 +194,24 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   on macOS and Linux, including negative offsets.
 - **Seconds to Time, Time to Decimal, and Time to Seconds**: convert signed
   whole-second and `HH:MM:SS` / `MM:SS` durations locally on macOS and Linux.
+- **Extract Substring**: extracts a one-based, inclusive Unicode character
+  range from pasted text locally on macOS and Linux.
+- **Find Incomplete CSV Records**: reports comma-separated CSV rows and header
+  columns with empty values locally on macOS and Linux.
+- **Find Most Popular**: counts and ranks exact newline-delimited list items
+  locally on macOS and Linux.
+- **Find Unique**: keeps the first exact occurrence of each nonblank
+  newline-delimited list item locally on macOS and Linux.
+- **Generate Random Numbers**: creates cryptographically secure integers in an
+  inclusive configured range locally on macOS and Linux.
+- **Join Text**: combines nonblank newline-delimited items with a common or
+  custom separator locally on macOS and Linux.
+- **QR Code Generator**: encodes pasted text or URLs into local PNG downloads
+  on macOS and Linux.
+- **Random Number Generator**: creates cryptographically secure fixed-precision
+  decimal values in inclusive local ranges on macOS and Linux.
+- **Reverse List and Reverse Text**: reverse nonblank list item order or
+  Unicode text characters locally on macOS and Linux.
 
 ## Build bundled binaries
 

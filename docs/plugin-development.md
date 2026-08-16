@@ -45,6 +45,12 @@ The program must write exactly one valid manifest JSON document to standard
 output. Diagnostics belong on standard error. An invalid plugin is logged and
 skipped without stopping Cmdry.
 
+Cmdry also records the latest discovery scan on its **Diagnostics** page. It
+lists rejected executable candidates, the scan time, and a stderr excerpt
+capped at 4 KiB. A rejected candidate is never registered and the diagnostics
+page has no action that can execute it; correct the binary, then use **Refresh
+plugins** on the Plugins page to scan again.
+
 When a user opens a plugin page or submits an action button, Cmdry executes:
 
 ```text

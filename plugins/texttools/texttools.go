@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -44,6 +45,15 @@ func RunURLDecoder() {
 func RunTextStatistics() {
 	run("text-statistics", "Text Statistics", "Count characters, words, lines, and bytes in pasted text locally.", []string{"text", "statistics", "word count", "character count", "reading time"}, textStatisticsForm, textStatistics)
 }
+func RunSubstringExtractor() {
+	run("extract-substring", "Extract Substring", "Extract a Unicode-safe character range from pasted text locally.", []string{"substring", "extract", "text", "characters", "range"}, substringForm, extractSubstring)
+}
+func RunTextJoiner() {
+	run("join-text", "Join Text", "Join pasted newline-delimited text items locally.", []string{"join", "text", "separator", "combine", "lines"}, joinTextForm, joinText)
+}
+func RunTextReverser() {
+	run("reverse-text", "Reverse Text", "Reverse pasted Unicode text character by character locally.", []string{"reverse", "text", "characters", "unicode"}, reverseTextForm, reverseText)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -80,6 +90,15 @@ func urlDecoderForm(cmdry.Request) (cmdry.View, error) {
 }
 func textStatisticsForm(cmdry.Request) (cmdry.View, error) {
 	return form("Text Statistics", "Analyze text", "Analyze text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+func substringForm(cmdry.Request) (cmdry.View, error) {
+	return form("Extract Substring", "Extract character range", "Extract substring", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "start", Label: "Start character", Type: "number", Value: "1", Min: "1", Required: true}, {Name: "end", Label: "End character (inclusive)", Type: "number", Value: "1", Min: "1", Required: true}}), nil
+}
+func joinTextForm(cmdry.Request) (cmdry.View, error) {
+	return form("Join Text", "Join text items", "Join text", []cmdry.Field{{Name: "input", Label: "Text items", Type: "textarea", Required: true}, {Name: "separator", Label: "Separator", Type: "select", Value: "newline", Options: []cmdry.Option{{Value: "newline", Label: "New line"}, {Value: "space", Label: "Space"}, {Value: "comma", Label: "Comma and space"}, {Value: "none", Label: "No separator"}, {Value: "custom", Label: "Custom"}}}, {Name: "custom", Label: "Custom separator", Type: "text"}}), nil
+}
+func reverseTextForm(cmdry.Request) (cmdry.View, error) {
+	return form("Reverse Text", "Reverse text", "Reverse text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -200,6 +219,33 @@ func textStatistics(r cmdry.Request) (cmdry.View, error) {
 	}
 	return cmdry.View{Title: "Text Statistics", Components: components}, nil
 }
+func extractSubstring(r cmdry.Request) (cmdry.View, error) {
+	start, err := strconv.Atoi(fmt.Sprint(r.Params["start"]))
+	if err != nil {
+		return cmdry.View{}, fmt.Errorf("start character must be a whole number")
+	}
+	end, err := strconv.Atoi(fmt.Sprint(r.Params["end"]))
+	if err != nil {
+		return cmdry.View{}, fmt.Errorf("end character must be a whole number")
+	}
+	output, err := ExtractSubstring(fmt.Sprint(r.Params["input"]), start, end)
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return result("Extracted substring", output), nil
+}
+func joinText(r cmdry.Request) (cmdry.View, error) {
+	separator := fmt.Sprint(r.Params["separator"])
+	custom, _ := r.Params["custom"].(string)
+	output, count, err := JoinLines(fmt.Sprint(r.Params["input"]), separator, custom)
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return cmdry.View{Title: "Joined text", Components: []cmdry.Component{{Type: "metric", Label: "Items joined", Value: fmt.Sprint(count)}, {Type: "code", Title: "Joined text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Join more text"}}}}}, nil
+}
+func reverseText(r cmdry.Request) (cmdry.View, error) {
+	return result("Reversed text", ReverseText(fmt.Sprint(r.Params["input"]))), nil
+}
 
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)
 
@@ -243,6 +289,50 @@ func ReplaceAll(input, find, replacement string) (string, int) {
 		return input, 0
 	}
 	return strings.ReplaceAll(input, find, replacement), strings.Count(input, find)
+}
+
+// ExtractSubstring returns one-based inclusive Unicode character positions.
+func ExtractSubstring(input string, start, end int) (string, error) {
+	characters := []rune(input)
+	if start < 1 || end < 1 {
+		return "", fmt.Errorf("character positions must be at least 1")
+	}
+	if start > end {
+		return "", fmt.Errorf("start character must not be after end character")
+	}
+	if end > len(characters) {
+		return "", fmt.Errorf("end character %d exceeds the text length of %d characters", end, len(characters))
+	}
+	return string(characters[start-1 : end]), nil
+}
+
+// JoinLines joins non-blank newline-delimited text values with the chosen
+// separator. Exact item spacing is otherwise preserved.
+func JoinLines(input, separator, custom string) (string, int, error) {
+	items := make([]string, 0)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) != "" {
+			items = append(items, line)
+		}
+	}
+	if len(items) == 0 {
+		return "", 0, fmt.Errorf("enter at least one non-blank text item")
+	}
+	separators := map[string]string{"newline": "\n", "space": " ", "comma": ", ", "none": "", "custom": custom}
+	value, ok := separators[separator]
+	if !ok {
+		return "", 0, fmt.Errorf("unsupported separator")
+	}
+	return strings.Join(items, value), len(items), nil
+}
+
+// ReverseText reverses Unicode code points while preserving their UTF-8 form.
+func ReverseText(input string) string {
+	characters := []rune(input)
+	for left, right := 0, len(characters)-1; left < right; left, right = left+1, right-1 {
+		characters[left], characters[right] = characters[right], characters[left]
+	}
+	return string(characters)
 }
 
 // Statistics is a set of useful local text measurements. Characters are Unicode

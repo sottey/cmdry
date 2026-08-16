@@ -3,6 +3,7 @@ package listtools
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -42,4 +43,72 @@ func FormatChunks(chunks [][]string) string {
 		groups = append(groups, strings.Join(chunk, "\n"))
 	}
 	return strings.Join(groups, "\n\n")
+}
+
+// PopularItem is one exact list item and its number of occurrences.
+type PopularItem struct {
+	Item  string
+	Count int
+}
+
+// FindMostPopular counts non-blank newline-delimited items. Ties are sorted
+// alphabetically for deterministic output.
+func FindMostPopular(input string) ([]PopularItem, error) {
+	counts := make(map[string]int)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) != "" {
+			counts[line]++
+		}
+	}
+	if len(counts) == 0 {
+		return nil, fmt.Errorf("enter at least one non-blank list item")
+	}
+	items := make([]PopularItem, 0, len(counts))
+	for item, count := range counts {
+		items = append(items, PopularItem{Item: item, Count: count})
+	}
+	sort.Slice(items, func(left, right int) bool {
+		if items[left].Count != items[right].Count {
+			return items[left].Count > items[right].Count
+		}
+		return items[left].Item < items[right].Item
+	})
+	return items, nil
+}
+
+// UniqueLines returns the first occurrence of each exact non-blank list item.
+func UniqueLines(input string) ([]string, error) {
+	seen := make(map[string]struct{})
+	items := make([]string, 0)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		if _, exists := seen[line]; exists {
+			continue
+		}
+		seen[line] = struct{}{}
+		items = append(items, line)
+	}
+	if len(items) == 0 {
+		return nil, fmt.Errorf("enter at least one non-blank list item")
+	}
+	return items, nil
+}
+
+// ReverseLines returns non-blank newline-delimited list items in reverse order.
+func ReverseLines(input string) ([]string, error) {
+	items := make([]string, 0)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) != "" {
+			items = append(items, line)
+		}
+	}
+	if len(items) == 0 {
+		return nil, fmt.Errorf("enter at least one non-blank list item")
+	}
+	for left, right := 0, len(items)-1; left < right; left, right = left+1, right-1 {
+		items[left], items[right] = items[right], items[left]
+	}
+	return items, nil
 }

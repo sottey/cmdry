@@ -4,6 +4,8 @@ go 1.26.5
 
 require github.com/spf13/cobra v1.10.2
 
+require github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
+
 require (
 	github.com/evanw/esbuild v0.25.9
 	github.com/hermanschaaf/prettyprint v0.0.0-20151019092546-de00933accbc

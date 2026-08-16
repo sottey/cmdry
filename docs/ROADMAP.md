@@ -15,6 +15,32 @@ Cmdry v0.2.0 provides:
 - Structured, escaped UI components rather than plugin-supplied HTML or script.
 - The Port Inspector plugin, using `ss` on Linux and `lsof` on macOS.
 
+## Prioritized product enhancements
+
+### Priority 1
+
+- [x] Add a keyboard-first command palette (`Cmd+K` / `Ctrl+K`) that searches
+  plugin names, descriptions, and search terms, with keyboard navigation and
+  recently used tools.
+- [x] Add persistent Favorites and Recent Tools sections above the grouped sidebar.
+  Favorites should be explicit user choices; recent tools should be local-only
+  and bounded.
+- [x] Add a plugin diagnostics page that lists rejected candidates, refresh time,
+  manifest failures, and safely bounded stderr excerpts. It must never execute
+  unregistered plugins from the UI.
+- Add a plugin detail page with the manifest description, version, declared
+  permissions, search terms, binary path, platform notes, and a copyable
+  diagnostic command.
+
+### Priority 3
+
+- Add opt-in non-sensitive per-plugin history and named presets, with a clear
+  “run again” workflow. Secret inputs such as Bcrypt values must opt out and
+  never be retained.
+- Design a safe file-input protocol for future plugins: explicit permission,
+  schema validation, bounded upload size, temporary-file lifecycle, and no
+  unrestricted filesystem access.
+
 ## Core improvements
 
 ### Reliability and test coverage
@@ -36,8 +62,6 @@ Cmdry v0.2.0 provides:
 - Add a plugin scaffold command or template with manifest, tests, and a local
   development script.
 - Define a protocol JSON Schema and use it for fixture validation.
-- Add a plugin diagnostics page that lists rejected candidates and the reason
-  each was skipped; do not execute unregistered plugins from the UI.
 - Document a stable process for plugin upgrades, rollbacks, and compatibility
   checks.
 

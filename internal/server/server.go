@@ -10,9 +10,11 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sottey/cmdry/internal/config"
 	"github.com/sottey/cmdry/internal/groupstate"
+	"github.com/sottey/cmdry/internal/pluginnav"
 	"github.com/sottey/cmdry/internal/pluginorder"
 	"github.com/sottey/cmdry/internal/plugins"
 )
@@ -21,23 +23,33 @@ import (
 var assets embed.FS
 
 type App struct {
-	cfg        config.Config
-	registry   *plugins.Registry
-	discovery  plugins.Discoverer
-	order      pluginorder.Store
-	orderIDs   []string
-	orderMu    sync.RWMutex
-	groups     groupstate.Store
-	groupState map[string]bool
-	groupMu    sync.RWMutex
-	runner     plugins.Runner
-	logger     *slog.Logger
-	templates  *template.Template
+	cfg           config.Config
+	registry      *plugins.Registry
+	discovery     plugins.Discoverer
+	order         pluginorder.Store
+	orderIDs      []string
+	orderMu       sync.RWMutex
+	groups        groupstate.Store
+	groupState    map[string]bool
+	groupMu       sync.RWMutex
+	navigation    pluginnav.Store
+	navState      pluginnav.State
+	navMu         sync.RWMutex
+	diagnostics   plugins.ScanReport
+	diagnosticsMu sync.RWMutex
+	runner        plugins.Runner
+	logger        *slog.Logger
+	templates     *template.Template
 }
 type pageData struct {
 	Title, Section string
 	Plugins        []plugins.Registered
 	PluginGroups   []PluginGroup
+	Favorites      []plugins.Registered
+	Recents        []plugins.Registered
+	Diagnostics    []plugins.Diagnostic
+	LastScan       time.Time
+	ScanFailure    string
 	Current        *plugins.Registered
 	View           *plugins.View
 	Error          string
@@ -49,8 +61,15 @@ type PluginGroup struct {
 	Plugins   []plugins.Registered
 }
 
-func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*App, error) {
-	t, err := template.New("layout.html").Funcs(template.FuncMap{"row": func(row map[string]any, key string) any { return row[key] }, "pluginSearchJSON": func(entries []plugins.Registered) template.JS {
+func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger, initialReport plugins.ScanReport) (*App, error) {
+	t, err := template.New("layout.html").Funcs(template.FuncMap{"row": func(row map[string]any, key string) any { return row[key] }, "favorite": func(entries []plugins.Registered, id string) bool {
+		for _, entry := range entries {
+			if entry.Manifest.ID == id {
+				return true
+			}
+		}
+		return false
+	}, "pluginSearchJSON": func(entries []plugins.Registered) template.JS {
 		type result struct {
 			ID          string   `json:"id"`
 			Name        string   `json:"name"`
@@ -65,6 +84,24 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*A
 		}
 		encoded, _ := json.Marshal(items)
 		return template.JS(encoded)
+	}, "pluginNavigationJSON": func(favorites, recents []plugins.Registered) template.JS {
+		ids := func(entries []plugins.Registered) []string {
+			result := make([]string, 0, len(entries))
+			for _, entry := range entries {
+				result = append(result, entry.Manifest.ID)
+			}
+			return result
+		}
+		encoded, _ := json.Marshal(struct {
+			Favorites []string `json:"favorites"`
+			Recents   []string `json:"recents"`
+		}{Favorites: ids(favorites), Recents: ids(recents)})
+		return template.JS(encoded)
+	}, "scanTime": func(value time.Time) string {
+		if value.IsZero() {
+			return "Not yet scanned"
+		}
+		return value.Local().Format("Jan 2, 2006 · 3:04:05 PM MST")
 	}, "downloadURL": func(mimeType, content string) template.URL {
 		return template.URL("data:" + mimeType + ";base64," + content)
 	}, "category": func(s string) string {
@@ -86,7 +123,12 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger) (*A
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	navigation := pluginnav.Store{DataDir: cfg.DataDir}
+	navState, err := navigation.Load()
+	if err != nil {
+		return nil, err
+	}
+	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -103,12 +145,16 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.dashboard(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/plugins":
 		a.pluginList(w, r)
+	case r.Method == http.MethodGet && r.URL.Path == "/diagnostics":
+		a.diagnosticsPage(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/refresh":
 		a.refreshPlugins(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/order":
 		a.savePluginOrder(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/groups":
 		a.saveGroupState(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/favorites":
+		a.saveFavorite(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
 	case r.Method == http.MethodPost && strings.Contains(r.URL.Path, "/actions/"):
@@ -137,7 +183,36 @@ func (a *App) base(title, section string) pageData {
 		state[key] = value
 	}
 	a.groupMu.RUnlock()
-	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(entries, state)}
+	a.navMu.RLock()
+	favoriteIDs := append([]string(nil), a.navState.Favorites...)
+	recentIDs := append([]string(nil), a.navState.Recents...)
+	a.navMu.RUnlock()
+	favorites := entriesByID(entries, favoriteIDs)
+	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(entries, state), Favorites: favorites, Recents: entriesByIDExcluding(entries, recentIDs, favoriteIDs)}
+}
+
+func entriesByID(entries []plugins.Registered, ids []string) []plugins.Registered {
+	return entriesByIDExcluding(entries, ids, nil)
+}
+
+func entriesByIDExcluding(entries []plugins.Registered, ids, excluded []string) []plugins.Registered {
+	byID := make(map[string]plugins.Registered, len(entries))
+	for _, entry := range entries {
+		byID[entry.Manifest.ID] = entry
+	}
+	skip := make(map[string]bool, len(excluded))
+	for _, id := range excluded {
+		skip[id] = true
+	}
+	result := make([]plugins.Registered, 0, len(ids))
+	seen := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		if entry, ok := byID[id]; ok && !skip[id] && !seen[id] {
+			result = append(result, entry)
+			seen[id] = true
+		}
+	}
+	return result
 }
 
 func makeGroups(entries []plugins.Registered, state map[string]bool) []PluginGroup {
@@ -176,13 +251,27 @@ func (a *App) pluginList(w http.ResponseWriter, r *http.Request) {
 	a.render(w, http.StatusOK, "plugins.html", d)
 }
 func (a *App) refreshPlugins(w http.ResponseWriter, r *http.Request) {
-	if err := a.discovery.Discover(r.Context(), a.registry); err != nil {
+	report, err := a.discovery.DiscoverWithDiagnostics(r.Context(), a.registry)
+	a.diagnosticsMu.Lock()
+	a.diagnostics = report
+	a.diagnosticsMu.Unlock()
+	if err != nil {
 		a.logger.Warn("plugin refresh failed", "error", err)
 		http.Redirect(w, r, "/plugins?refresh=failed", http.StatusSeeOther)
 		return
 	}
 	a.logger.Info("plugins refreshed", "plugins", a.registry.Len())
 	http.Redirect(w, r, "/plugins?refreshed=1", http.StatusSeeOther)
+}
+
+func (a *App) diagnosticsPage(w http.ResponseWriter, r *http.Request) {
+	d := a.base("Plugin diagnostics", "Diagnostics")
+	a.diagnosticsMu.RLock()
+	d.Diagnostics = append([]plugins.Diagnostic(nil), a.diagnostics.Diagnostics...)
+	d.LastScan = a.diagnostics.CompletedAt
+	d.ScanFailure = a.diagnostics.Failure
+	a.diagnosticsMu.RUnlock()
+	a.render(w, http.StatusOK, "diagnostics.html", d)
 }
 func (a *App) savePluginOrder(w http.ResponseWriter, r *http.Request) {
 	r.Body = http.MaxBytesReader(w, r.Body, 16*1024)
@@ -252,6 +341,91 @@ func (a *App) saveGroupState(w http.ResponseWriter, r *http.Request) {
 	a.groupMu.Unlock()
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (a *App) saveFavorite(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid favorite request", http.StatusBadRequest)
+		return
+	}
+	id := r.Form.Get("plugin_id")
+	if !plugins.ValidID(id) {
+		http.Error(w, "invalid plugin", http.StatusBadRequest)
+		return
+	}
+	if _, ok := a.registry.Get(id); !ok {
+		http.NotFound(w, r)
+		return
+	}
+	wantFavorite := r.Form.Get("favorite") == "true"
+	a.navMu.Lock()
+	state := a.navState
+	if wantFavorite {
+		state.Favorites = appendUnique(state.Favorites, id)
+	} else {
+		state.Favorites = withoutID(state.Favorites, id)
+	}
+	if err := a.navigation.Save(state); err != nil {
+		a.navMu.Unlock()
+		a.logger.Error("save plugin favorites", "error", err)
+		http.Error(w, "unable to save plugin favorite", http.StatusInternalServerError)
+		return
+	}
+	a.navState = state
+	a.navMu.Unlock()
+	http.Redirect(w, r, "/plugins/"+id, http.StatusSeeOther)
+}
+
+const recentPluginLimit = 8
+
+func (a *App) recordRecent(id string) {
+	a.navMu.Lock()
+	defer a.navMu.Unlock()
+	state := a.navState
+	state.Recents = append([]string{id}, withoutID(state.Recents, id)...)
+	if len(state.Recents) > recentPluginLimit {
+		state.Recents = state.Recents[:recentPluginLimit]
+	}
+	if slicesEqual(state.Recents, a.navState.Recents) {
+		return
+	}
+	if err := a.navigation.Save(state); err != nil {
+		a.logger.Warn("save recently used plugin", "plugin", id, "error", err)
+		return
+	}
+	a.navState = state
+}
+
+func appendUnique(ids []string, id string) []string {
+	for _, existing := range ids {
+		if existing == id {
+			return ids
+		}
+	}
+	return append(ids, id)
+}
+
+func withoutID(ids []string, id string) []string {
+	result := make([]string, 0, len(ids))
+	for _, existing := range ids {
+		if existing != id {
+			result = append(result, existing)
+		}
+	}
+	return result
+}
+
+func slicesEqual(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	for index := range left {
+		if left[index] != right[index] {
+			return false
+		}
+	}
+	return true
+}
 func (a *App) settings(w http.ResponseWriter, r *http.Request) {
 	d := a.base("Settings", "Settings")
 	a.render(w, http.StatusOK, "settings.html", d)
@@ -267,6 +441,7 @@ func (a *App) pluginPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	a.recordRecent(entry.Manifest.ID)
 	d := a.base(entry.Manifest.Name, entry.Manifest.Name)
 	d.Current = &entry
 	action := ""

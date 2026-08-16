@@ -25,16 +25,16 @@ TRUE,0,Time,Convert Hours to Days,Convert hours to days
 TRUE,0,Time,Convert Seconds to Time,Convert seconds to time format
 TRUE,0,Time,Convert time to decimal,Convert human time to decimal time
 TRUE,0,Time,Convert Time to Seconds,Convert time format to seconds
-FALSE,2,Text,Extract substring,Extract a portion of text between specified positions
-FALSE,2,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
-FALSE,2,List,Find most popular,Find most frequently occurring items
-FALSE,2,List,Find unique,Find unique items in a list
-FALSE,2,Number,Generate,Generate random numbers in specified ranges
-FALSE,2,Text,Join Text,Join text elements with a specified separator
-FALSE,2,Image,QR Code Generator,Create customized QR codes for various data formats.
-FALSE,2,Number,Random Number Generator,Generate random numbers in custom ranges
-FALSE,2,List,Reverse,Quickly reverse a list
-FALSE,2,Text,Reverse,Reverse any text character by character
+TRUE,0,Text,Extract substring,Extract a portion of text between specified positions
+TRUE,0,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
+TRUE,0,List,Find most popular,Find most frequently occurring items
+TRUE,0,List,Find unique,Find unique items in a list
+TRUE,0,Number,Generate,Generate random numbers in specified ranges
+TRUE,0,Text,Join Text,Join text elements with a specified separator
+TRUE,0,Image,QR Code Generator,Create customized QR codes for various data formats.
+TRUE,0,Number,Random Number Generator,Generate random numbers in custom ranges
+TRUE,0,List,Reverse,Quickly reverse a list
+TRUE,0,Text,Reverse,Reverse any text character by character
 FALSE,2,Text,ROT13 Encoder/Decoder,Encode or decode text using ROT13 cipher.
 FALSE,2,List,Sort,Sort list items in specified order
 FALSE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically

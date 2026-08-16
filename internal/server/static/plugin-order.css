@@ -4,6 +4,12 @@
   gap: 3px;
 }
 
+.special-label { margin-top: 20px; }
+.plugin-special-list { display:flex; flex-direction:column; gap:2px; margin-bottom:8px; }
+.plugin-special-list a { display:flex; align-items:baseline; gap:7px; color:#d4e1e0; text-decoration:none; padding:7px 10px; border-left:2px solid transparent; font-size:13px; }
+.plugin-special-list a span { color:#6ed3bb; font:12px/1 var(--mono); }
+.plugin-special-list a:hover,.plugin-special-list a.active { color:#fff; border-color:#6ed3bb; background:#254654; }
+
 .plugin-group { margin: 0 0 11px; }
 .plugin-group-links { display:flex; flex-direction:column; gap:2px; padding-left:11px; }
 .plugin-group-links a { display:block; width:100%; }

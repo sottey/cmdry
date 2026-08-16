@@ -59,3 +59,26 @@ func TestTextStatistics(t *testing.T) {
 		t.Fatalf("reading time = %q", statistics.ReadingTime)
 	}
 }
+
+func TestExtractSubstringUsesCharacterPositions(t *testing.T) {
+	output, err := ExtractSubstring("A café", 3, 5)
+	if err != nil || output != "caf" {
+		t.Fatalf("output = %q, err = %v", output, err)
+	}
+	if _, err := ExtractSubstring("abc", 2, 4); err == nil {
+		t.Fatal("expected out-of-range error")
+	}
+}
+
+func TestJoinLines(t *testing.T) {
+	output, count, err := JoinLines("one\n\ntwo\nthree", "comma", "")
+	if err != nil || count != 3 || output != "one, two, three" {
+		t.Fatalf("output = %q, count = %d, err = %v", output, count, err)
+	}
+}
+
+func TestReverseTextUsesUnicodeCharacters(t *testing.T) {
+	if got, want := ReverseText("A café"), "éfac A"; got != want {
+		t.Fatalf("reversed = %q, want %q", got, want)
+	}
+}

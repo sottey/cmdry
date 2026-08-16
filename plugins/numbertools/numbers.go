@@ -2,8 +2,10 @@
 package numbertools
 
 import (
+	"crypto/rand"
 	"fmt"
 	"math"
+	"math/big"
 	"strconv"
 	"strings"
 )
@@ -53,4 +55,34 @@ func Summarize(input []float64) (Summary, error) {
 	}
 	result.Average = result.Sum / float64(result.Count)
 	return result, nil
+}
+
+// GenerateRandomIntegers returns count cryptographically secure random integers
+// within the inclusive min and max bounds. Bounds may exceed int64.
+func GenerateRandomIntegers(minInput, maxInput string, count int) ([]string, error) {
+	if count < 1 || count > 10000 {
+		return nil, fmt.Errorf("count must be between 1 and 10,000")
+	}
+	min, ok := new(big.Int).SetString(strings.TrimSpace(minInput), 10)
+	if !ok {
+		return nil, fmt.Errorf("minimum must be a whole number")
+	}
+	max, ok := new(big.Int).SetString(strings.TrimSpace(maxInput), 10)
+	if !ok {
+		return nil, fmt.Errorf("maximum must be a whole number")
+	}
+	if min.Cmp(max) > 0 {
+		return nil, fmt.Errorf("minimum must not exceed maximum")
+	}
+	width := new(big.Int).Sub(max, min)
+	width.Add(width, big.NewInt(1))
+	values := make([]string, 0, count)
+	for range count {
+		offset, err := rand.Int(rand.Reader, width)
+		if err != nil {
+			return nil, fmt.Errorf("generate random integer: %w", err)
+		}
+		values = append(values, new(big.Int).Add(min, offset).String())
+	}
+	return values, nil
 }

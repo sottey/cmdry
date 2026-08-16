@@ -10,12 +10,16 @@
   <link rel="stylesheet" href="/static/plugin-order.css">
   <link rel="stylesheet" href="/static/search-layout.css">
   <link rel="stylesheet" href="/static/copy-code.css">
+  <link rel="stylesheet" href="/static/command-palette.css">
+  <link rel="stylesheet" href="/static/diagnostics.css">
 </head>
 <body>
   <aside>
     <a class="brand" href="/"><span class="brand-mark">›_</span> cmdry</a>
     <nav>
       <a href="/" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a>
+      {{if .Favorites}}<p class="nav-label special-label">Favorites</p><div class="plugin-special-list">{{range .Favorites}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">★</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
+      {{if .Recents}}<p class="nav-label special-label">Recent tools</p><div class="plugin-special-list">{{range .Recents}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">↗</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
       <p class="nav-label">Installed tools</p>
       <div id="plugin-nav" aria-label="Installed tools">
         {{range .PluginGroups}}
@@ -26,6 +30,7 @@
       </div>
       <p class="nav-label lower">System</p>
       <a href="/plugins" {{if eq .Section "Plugins"}}class="active"{{end}}>Plugins</a>
+      <a href="/diagnostics" {{if eq .Section "Diagnostics"}}class="active"{{end}}>Diagnostics</a>
       <a href="/settings" {{if eq .Section "Settings"}}class="active"{{end}}>Settings</a>
     </nav>
     <footer>Cmdry v0.1 · local operator UI</footer>
@@ -33,14 +38,18 @@
   <main>
     <header>
       <div><p class="eyebrow">{{.Section}}</p><h1>{{.Title}}</h1></div>
-      <div class="signal"><i></i> core online</div>
+      <div class="header-tools">
+        {{if .Current}}<form class="favorite-form" method="post" action="/plugins/favorites"><input type="hidden" name="plugin_id" value="{{.Current.Manifest.ID}}"><input type="hidden" name="favorite" value="{{if favorite .Favorites .Current.Manifest.ID}}false{{else}}true{{end}}"><button class="favorite-toggle" type="submit" aria-label="{{if favorite .Favorites .Current.Manifest.ID}}Remove {{.Current.Manifest.Name}} from favorites{{else}}Add {{.Current.Manifest.Name}} to favorites{{end}}" title="{{if favorite .Favorites .Current.Manifest.ID}}Remove from favorites{{else}}Add to favorites{{end}}"><span aria-hidden="true">{{if favorite .Favorites .Current.Manifest.ID}}★{{else}}☆{{end}}</span><em>{{if favorite .Favorites .Current.Manifest.ID}}Favorited{{else}}Favorite{{end}}</em></button></form>{{end}}
+        {{if .Plugins}}<button id="command-palette-trigger" class="command-palette-trigger" type="button" aria-haspopup="dialog" aria-controls="command-palette" title="Open command palette"><span>Find a tool</span><kbd>⌘ K</kbd></button>{{end}}
+        <div class="signal"><i></i> core online</div>
+      </div>
     </header>
     {{if eq .Section "Overview"}}
       <section class="intro">
         <div><p>Command-line tools, made legible.</p><span>Cmdry discovers independently installed plugins and gives each one a consistent, safe web surface.</span></div>
         <dl><div><dt>{{len .Plugins}}</dt><dd>registered plugins</dd></div><div><dt>v1</dt><dd>protocol</dd></div></dl>
       </section>
-      {{if .Plugins}}<section class="plugin-search" aria-label="Find a plugin"><div class="plugin-search-heading"><span>Tool finder</span><p>Jump straight to a tool by name, purpose, or alias.</p></div><div class="plugin-search-input"><span aria-hidden="true">⌕</span><label class="sr-only" for="plugin-search-input">Find a plugin</label><input id="plugin-search-input" type="search" autocomplete="off" placeholder="What do you want to do?" aria-controls="plugin-search-results"><kbd>⌘ K</kbd></div><div id="plugin-search-results" class="plugin-search-results" role="listbox" hidden></div></section><script id="plugin-search-data" type="application/json">{{pluginSearchJSON .Plugins}}</script>{{end}}
+      {{if .Plugins}}<section class="plugin-search" aria-label="Find a plugin"><div class="plugin-search-heading"><span>Tool finder</span><p>Jump straight to a tool by name, purpose, or alias.</p></div><div class="plugin-search-input"><span aria-hidden="true">⌕</span><label class="sr-only" for="plugin-search-input">Find a plugin</label><input id="plugin-search-input" type="search" autocomplete="off" placeholder="What do you want to do?" aria-controls="plugin-search-results"><kbd>⌘ K</kbd></div><div id="plugin-search-results" class="plugin-search-results" role="listbox" hidden></div></section>{{end}}
       <section class="panel">
         <h2>Get started</h2>
         {{if .Plugins}}
@@ -57,6 +66,14 @@
         <table><thead><tr><th>Name</th><th>Version</th><th>Category</th><th>Status</th><th>Permissions</th><th>Path</th></tr></thead>
         <tbody>{{range .Plugins}}<tr><td><a href="/plugins/{{.Manifest.ID}}">{{.Manifest.Name}}</a></td><td>{{.Manifest.Version}}</td><td>{{category .Manifest.Category}}</td><td><span class="status">{{.Status}}</span></td><td>{{range .Manifest.Permissions}}<code>{{.}}</code> {{end}}</td><td><code>{{.Path}}</code></td></tr>{{else}}<tr><td colspan="6">No installed plugins.</td></tr>{{end}}</tbody></table>
       </section>
+    {{else if eq .Section "Diagnostics"}}
+      <section class="diagnostics-summary"><div><p class="eyebrow">Last discovery scan</p><strong>{{scanTime .LastScan}}</strong><span>{{len .Diagnostics}} rejected candidate{{if ne (len .Diagnostics) 1}}s{{end}}</span></div><a class="button" href="/plugins">Refresh plugins</a></section>
+      {{if .ScanFailure}}<section class="notice error"><strong>Plugin directory scan failed</strong><p>{{.ScanFailure}}</p></section>{{end}}
+      {{range .Diagnostics}}
+        <section class="diagnostic-entry"><div class="diagnostic-entry-heading"><div><p class="eyebrow">Rejected candidate</p><h2><code>{{.Path}}</code></h2></div><span>not registered</span></div><p class="diagnostic-reason">{{.Reason}}</p>{{if .Stderr}}<div class="code-panel diagnostic-stderr"><div class="code-panel-heading"><h3>stderr excerpt{{if .StderrTruncated}} <span>(truncated)</span>{{end}}</h3><button class="copy-code" type="button" aria-label="Copy stderr excerpt" title="Copy to clipboard"><svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M9 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-1M16 5V4a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1"/></svg><span class="sr-only">Copy</span></button></div><pre><code>{{.Stderr}}</code></pre></div>{{end}}</section>
+      {{else}}
+        {{if not .ScanFailure}}<section class="notice"><strong>No rejected plugin candidates in the latest scan.</strong><p>Cmdry found only registered plugins. Refresh from the Plugins page after you install or replace a plugin.</p></section>{{end}}
+      {{end}}
     {{else if eq .Section "Settings"}}
       <section class="panel settings"><h2>Runtime configuration</h2><dl><div><dt>Listen address</dt><dd><code>CMDRY_ADDR</code> defaults to <code>127.0.0.1:8080</code>.</dd></div><div><dt>Plugin directory</dt><dd><code>CMDRY_PLUGIN_DIR</code> defaults to <code>/opt/cmdry/plugins</code>.</dd></div><div><dt>Data directory</dt><dd><code>CMDRY_DATA_DIR</code> defaults to <code>/opt/cmdry/data</code>.</dd></div></dl><p class="quiet">Configuration loads once at startup. Cmdry defaults to localhost; expose it only behind access controls you operate.</p></section>
     {{else if .Error}}
@@ -87,6 +104,20 @@
       <section class="panel"><p>This plugin did not return a view.</p></section>
     {{end}}
   </main>
+  {{if .Plugins}}
+    <script id="plugin-search-data" type="application/json">{{pluginSearchJSON .Plugins}}</script>
+    <script id="plugin-navigation-data" type="application/json">{{pluginNavigationJSON .Favorites .Recents}}</script>
+    <div id="command-palette" class="command-palette" hidden>
+      <button class="command-palette-scrim" type="button" data-command-palette-close aria-label="Close command palette"></button>
+      <section class="command-palette-dialog" role="dialog" aria-modal="true" aria-labelledby="command-palette-title">
+        <div class="command-palette-heading"><span id="command-palette-title">Command palette</span><kbd>ESC</kbd></div>
+        <label class="sr-only" for="command-palette-input">Search installed tools</label>
+        <div class="command-palette-input"><span aria-hidden="true">›_</span><input id="command-palette-input" type="search" autocomplete="off" placeholder="Search tools, aliases, and tasks…" aria-controls="command-palette-results" aria-autocomplete="list"></div>
+        <div id="command-palette-results" class="command-palette-results" role="listbox" aria-label="Matching tools"></div>
+        <p class="command-palette-hint"><kbd>↑↓</kbd> move <kbd>↵</kbd> open <kbd>esc</kbd> close</p>
+      </section>
+    </div>
+  {{end}}
   <script src="/static/app.js"></script>
 </body>
 </html>
