@@ -86,3 +86,11 @@ func GenerateRandomIntegers(minInput, maxInput string, count int) ([]string, err
 	}
 	return values, nil
 }
+
+// SphereArea calculates the surface area 4πr² for a non-negative radius.
+func SphereArea(radius float64) (float64, error) {
+	if math.IsNaN(radius) || math.IsInf(radius, 0) || radius < 0 {
+		return 0, fmt.Errorf("radius must be a non-negative finite number")
+	}
+	return 4 * math.Pi * radius * radius, nil
+}

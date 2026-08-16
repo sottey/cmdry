@@ -60,6 +60,12 @@ func RunROT13() {
 func RunSplitter() {
 	run("split-text", "Split Text", "Split pasted text into parts using a separator locally.", []string{"split", "text", "separator", "delimiter", "parts"}, splitForm, splitText)
 }
+func RunTruncator() {
+	run("truncate-text", "Truncate Text", "Shorten pasted text to a specified number of Unicode characters locally.", []string{"truncate", "text", "limit", "characters", "shorten"}, truncateTextForm, truncateText)
+}
+func RunPalindromeCreator() {
+	run("create-palindrome", "Create Palindrome", "Create a palindrome by mirroring pasted text locally.", []string{"palindrome", "mirror", "reverse", "text", "symmetric"}, palindromeForm, createPalindrome)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -111,6 +117,12 @@ func rot13Form(cmdry.Request) (cmdry.View, error) {
 }
 func splitForm(cmdry.Request) (cmdry.View, error) {
 	return form("Split Text", "Split text", "Split text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "separator", Label: "Separator", Type: "text", Required: true, Placeholder: "For example: , or |"}, {Name: "omit_empty", Label: "Omit empty parts", Type: "checkbox", Value: "true"}}), nil
+}
+func truncateTextForm(cmdry.Request) (cmdry.View, error) {
+	return form("Truncate Text", "Shorten text", "Truncate text", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "limit", Label: "Characters to keep", Type: "number", Value: "100", Min: "0", Required: true}, {Name: "ellipsis", Label: "Append ellipsis when truncated", Type: "checkbox", Value: "true"}}), nil
+}
+func palindromeForm(cmdry.Request) (cmdry.View, error) {
+	return form("Create Palindrome", "Mirror text", "Create palindrome", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "duplicate_center", Label: "Duplicate the center character", Type: "checkbox"}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -268,6 +280,25 @@ func splitText(r cmdry.Request) (cmdry.View, error) {
 	}
 	return cmdry.View{Title: "Split text", Components: []cmdry.Component{{Type: "metric", Label: "Parts", Value: fmt.Sprint(len(parts))}, {Type: "code", Title: "Split parts", Text: strings.Join(parts, "\n")}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Split more text"}}}}}, nil
 }
+func truncateText(r cmdry.Request) (cmdry.View, error) {
+	limit, err := strconv.Atoi(fmt.Sprint(r.Params["limit"]))
+	if err != nil {
+		return cmdry.View{}, fmt.Errorf("character limit must be a whole number")
+	}
+	output, truncated, err := TruncateText(fmt.Sprint(r.Params["input"]), limit, fmt.Sprint(r.Params["ellipsis"]) == "true")
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	message := "The text already fits the requested length."
+	if truncated {
+		message = "The text was shortened to the requested length."
+	}
+	return cmdry.View{Title: "Truncated text", Components: []cmdry.Component{{Type: "alert", Level: "success", Title: "Text ready", Message: message}, {Type: "metric", Label: "Characters", Value: fmt.Sprint(len([]rune(output)))}, {Type: "code", Title: "Truncated text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Truncate more text"}}}}}, nil
+}
+func createPalindrome(r cmdry.Request) (cmdry.View, error) {
+	output := CreatePalindrome(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["duplicate_center"]) == "true")
+	return result("Palindrome", output), nil
+}
 
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)
 
@@ -389,6 +420,40 @@ func SplitText(input, separator string, omitEmpty bool) ([]string, error) {
 		}
 	}
 	return filtered, nil
+}
+
+// TruncateText keeps at most limit Unicode characters, optionally appending an
+// ellipsis after the retained text when it has been shortened.
+func TruncateText(input string, limit int, addEllipsis bool) (string, bool, error) {
+	if limit < 0 {
+		return "", false, fmt.Errorf("character limit must not be negative")
+	}
+	characters := []rune(input)
+	if len(characters) <= limit {
+		return input, false, nil
+	}
+	output := string(characters[:limit])
+	if addEllipsis {
+		output += "…"
+	}
+	return output, true, nil
+}
+
+// CreatePalindrome mirrors text around its final character. By default the
+// center is shared; duplicateCenter includes it on both sides.
+func CreatePalindrome(input string, duplicateCenter bool) string {
+	characters := []rune(input)
+	if len(characters) == 0 {
+		return ""
+	}
+	start := len(characters) - 1
+	if !duplicateCenter {
+		start--
+	}
+	for index := start; index >= 0; index-- {
+		characters = append(characters, characters[index])
+	}
+	return string(characters)
 }
 
 // Statistics is a set of useful local text measurements. Characters are Unicode

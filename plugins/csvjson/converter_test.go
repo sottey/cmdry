@@ -17,3 +17,13 @@ func TestConvertRejectsDuplicateHeaders(t *testing.T) {
 		t.Fatal("accepted duplicate headers")
 	}
 }
+
+func TestConvertDelimitedTSV(t *testing.T) {
+	result, err := ConvertDelimited("name\tage\nAda\t37\n", '\t')
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := string(result.JSON), "[\n  {\n    \"age\": \"37\",\n    \"name\": \"Ada\"\n  }\n]\n"; got != want {
+		t.Fatalf("JSON = %q, want %q", got, want)
+	}
+}

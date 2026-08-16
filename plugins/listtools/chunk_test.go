@@ -30,3 +30,13 @@ func TestSortLines(t *testing.T) {
 		t.Fatalf("sorted = %q, want %q", got, want)
 	}
 }
+
+func TestTruncateLines(t *testing.T) {
+	items, err := TruncateLines("one\n\ntwo\nthree", 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := strings.Join(items, ","), "one,two"; got != want {
+		t.Fatalf("items = %q, want %q", got, want)
+	}
+}

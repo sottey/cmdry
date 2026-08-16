@@ -134,3 +134,23 @@ func SortLines(input string, descending bool) ([]string, error) {
 	})
 	return items, nil
 }
+
+// TruncateLines returns the first limit non-blank newline-delimited items.
+func TruncateLines(input string, limit int) ([]string, error) {
+	if limit < 1 {
+		return nil, fmt.Errorf("item limit must be at least 1")
+	}
+	items := make([]string, 0)
+	for _, line := range strings.Split(strings.ReplaceAll(input, "\r\n", "\n"), "\n") {
+		if strings.TrimSpace(line) != "" {
+			items = append(items, line)
+		}
+	}
+	if len(items) == 0 {
+		return nil, fmt.Errorf("enter at least one non-blank list item")
+	}
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items, nil
+}

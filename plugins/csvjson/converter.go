@@ -18,11 +18,18 @@ type Result struct {
 
 // Convert accepts CSV whose first row supplies unique object property names.
 func Convert(input string) (Result, error) {
+	return ConvertDelimited(input, ',')
+}
+
+// ConvertDelimited converts header-based delimited data using delimiter as its
+// column separator. It is used for both CSV and TSV inputs.
+func ConvertDelimited(input string, delimiter rune) (Result, error) {
 	reader := csv.NewReader(strings.NewReader(input))
+	reader.Comma = delimiter
 	reader.FieldsPerRecord = -1
 	headers, err := reader.Read()
 	if err == io.EOF {
-		return Result{}, fmt.Errorf("CSV input is empty")
+		return Result{}, fmt.Errorf("input is empty")
 	}
 	if err != nil {
 		return Result{}, fmt.Errorf("read header: %w", err)

@@ -104,3 +104,16 @@ func TestSplitText(t *testing.T) {
 		t.Fatal("expected empty separator error")
 	}
 }
+
+func TestTruncateTextUsesUnicodeCharacters(t *testing.T) {
+	output, truncated, err := TruncateText("A café", 3, true)
+	if err != nil || !truncated || output != "A c…" {
+		t.Fatalf("output = %q, truncated = %t, err = %v", output, truncated, err)
+	}
+}
+
+func TestCreatePalindrome(t *testing.T) {
+	if got, want := CreatePalindrome("café", false), "caféfac"; got != want {
+		t.Fatalf("palindrome = %q, want %q", got, want)
+	}
+}
