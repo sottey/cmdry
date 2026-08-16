@@ -154,3 +154,20 @@ func TruncateLines(input string, limit int) ([]string, error) {
 	}
 	return items, nil
 }
+
+func DuplicateLines(input string, copies int) ([]string, error) {
+	if copies < 1 || copies > 1000 {
+		return nil, fmt.Errorf("copies must be between 1 and 1,000")
+	}
+	items, err := UniqueLines(input)
+	if err != nil {
+		return nil, err
+	}
+	output := make([]string, 0, len(items)*copies)
+	for _, item := range items {
+		for range copies {
+			output = append(output, item)
+		}
+	}
+	return output, nil
+}

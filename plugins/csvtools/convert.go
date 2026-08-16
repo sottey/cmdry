@@ -79,6 +79,36 @@ func RowsToColumns(input string) (string, int, int, error) {
 	return output.String(), len(headers), len(rows), nil
 }
 
+func InsertColumns(input string, position int, names []string) (string, error) {
+	headers, rows, err := ReadTable(input)
+	if err != nil {
+		return "", err
+	}
+	if position < 1 || position > len(headers)+1 || len(names) == 0 {
+		return "", fmt.Errorf("choose a valid insertion position and column name")
+	}
+	for i := range names {
+		names[i] = strings.TrimSpace(names[i])
+		if names[i] == "" {
+			return "", fmt.Errorf("column names cannot be blank")
+		}
+	}
+	at := position - 1
+	headers = append(headers[:at], append(names, headers[at:]...)...)
+	for i, row := range rows {
+		blank := make([]string, len(names))
+		rows[i] = append(row[:at], append(blank, row[at:]...)...)
+	}
+	var out bytes.Buffer
+	w := csv.NewWriter(&out)
+	_ = w.Write(headers)
+	w.WriteAll(rows)
+	if e := w.Error(); e != nil {
+		return "", e
+	}
+	return out.String(), nil
+}
+
 // CSVToXML renders each data row as a record element with sanitized header
 // names used as XML elements.
 func CSVToXML(input string) (string, int, error) {

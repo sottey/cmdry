@@ -66,6 +66,12 @@ func RunTruncator() {
 func RunPalindromeCreator() {
 	run("create-palindrome", "Create Palindrome", "Create a palindrome by mirroring pasted text locally.", []string{"palindrome", "mirror", "reverse", "text", "symmetric"}, palindromeForm, createPalindrome)
 }
+func RunPalindromeChecker() {
+	run("palindrome", "Palindrome", "Check whether text reads the same forward and backward locally.", []string{"palindrome", "reverse", "text", "check"}, palindromeCheckForm, checkPalindrome)
+}
+func RunRandomCase() {
+	run("randomize-case", "Randomize Case", "Randomize the letter case of pasted text locally.", []string{"random", "case", "uppercase", "lowercase", "text"}, randomCaseForm, randomizeCase)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -123,6 +129,12 @@ func truncateTextForm(cmdry.Request) (cmdry.View, error) {
 }
 func palindromeForm(cmdry.Request) (cmdry.View, error) {
 	return form("Create Palindrome", "Mirror text", "Create palindrome", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "duplicate_center", Label: "Duplicate the center character", Type: "checkbox"}}), nil
+}
+func palindromeCheckForm(cmdry.Request) (cmdry.View, error) {
+	return form("Palindrome", "Check text", "Check palindrome", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "ignore", Label: "Ignore spaces, punctuation, and case", Type: "checkbox", Value: "true"}}), nil
+}
+func randomCaseForm(cmdry.Request) (cmdry.View, error) {
+	return form("Randomize Case", "Randomize letter case", "Randomize case", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -299,6 +311,19 @@ func createPalindrome(r cmdry.Request) (cmdry.View, error) {
 	output := CreatePalindrome(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["duplicate_center"]) == "true")
 	return result("Palindrome", output), nil
 }
+func checkPalindrome(r cmdry.Request) (cmdry.View, error) {
+	matched := IsPalindrome(fmt.Sprint(r.Params["input"]), fmt.Sprint(r.Params["ignore"]) == "true")
+	message := "This text is not a palindrome."
+	level := "info"
+	if matched {
+		message = "This text is a palindrome."
+		level = "success"
+	}
+	return cmdry.View{Title: "Palindrome check", Components: []cmdry.Component{{Type: "alert", Level: level, Title: "Result", Message: message}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Check another"}}}}}, nil
+}
+func randomizeCase(r cmdry.Request) (cmdry.View, error) {
+	return result("Randomized case", RandomizeCase(fmt.Sprint(r.Params["input"]))), nil
+}
 
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)
 
@@ -454,6 +479,33 @@ func CreatePalindrome(input string, duplicateCenter bool) string {
 		characters = append(characters, characters[index])
 	}
 	return string(characters)
+}
+func IsPalindrome(input string, ignore bool) bool {
+	chars := []rune{}
+	for _, value := range []rune(strings.ToLower(input)) {
+		if !ignore || unicode.IsLetter(value) || unicode.IsDigit(value) {
+			chars = append(chars, value)
+		}
+	}
+	for left, right := 0, len(chars)-1; left < right; left, right = left+1, right-1 {
+		if chars[left] != chars[right] {
+			return false
+		}
+	}
+	return len(chars) > 0
+}
+func RandomizeCase(input string) string {
+	upper := true
+	return strings.Map(func(value rune) rune {
+		if !unicode.IsLetter(value) {
+			return value
+		}
+		upper = !upper
+		if upper {
+			return unicode.ToUpper(value)
+		}
+		return unicode.ToLower(value)
+	}, input)
 }
 
 // Statistics is a set of useful local text measurements. Characters are Unicode

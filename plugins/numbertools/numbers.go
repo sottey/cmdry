@@ -94,3 +94,70 @@ func SphereArea(radius float64) (float64, error) {
 	}
 	return 4 * math.Pi * radius * radius, nil
 }
+
+func OhmsLaw(voltage, current, resistance float64) (float64, error) {
+	count := 0
+	if voltage > 0 {
+		count++
+	}
+	if current > 0 {
+		count++
+	}
+	if resistance > 0 {
+		count++
+	}
+	if count != 2 {
+		return 0, fmt.Errorf("enter exactly two positive values")
+	}
+	if voltage == 0 {
+		return current * resistance, nil
+	}
+	if current == 0 {
+		return voltage / resistance, nil
+	}
+	return voltage / current, nil
+}
+func NumberToWords(value int64) string {
+	if value == 0 {
+		return "zero"
+	}
+	if value < 0 {
+		return "minus " + NumberToWords(-value)
+	}
+	ones := []string{"", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"}
+	tens := []string{"", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"}
+	var under func(int64) string
+	under = func(n int64) string {
+		if n < 20 {
+			return ones[n]
+		}
+		if n < 100 {
+			if n%10 == 0 {
+				return tens[n/10]
+			}
+			return tens[n/10] + "-" + ones[n%10]
+		}
+		if n < 1000 {
+			if n%100 == 0 {
+				return ones[n/100] + " hundred"
+			}
+			return ones[n/100] + " hundred " + under(n%100)
+		}
+		return ""
+	}
+	scales := []struct {
+		n int64
+		s string
+	}{{1000000000000, "trillion"}, {1000000000, "billion"}, {1000000, "million"}, {1000, "thousand"}}
+	parts := []string{}
+	for _, scale := range scales {
+		if value >= scale.n {
+			parts = append(parts, under(value/scale.n)+" "+scale.s)
+			value %= scale.n
+		}
+	}
+	if value > 0 {
+		parts = append(parts, under(value))
+	}
+	return strings.Join(parts, " ")
+}

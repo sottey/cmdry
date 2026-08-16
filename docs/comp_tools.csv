@@ -4,16 +4,16 @@ TRUE,2,CSV,Convert CSV Rows to Columns,Convert CSV rows to columns.
 TRUE,2,CSV,Convert CSV to XML,Convert CSV data to XML format.
 TRUE,2,CSV,Convert CSV to YAML,Quickly convert a CSV file to a YAML file.
 TRUE,2,Text,Create palindrome,Create text that reads the same forward and backward
-FALSE,2,Time,Date Weekday Calculator,Find years when a date falls on a weekday
-FALSE,2,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
-FALSE,2,List,Duplicate,Duplicate list items with specified criteria
-FALSE,2,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
-FALSE,2,JSON,JSON to XML,Convert JSON to XML format
-FALSE,2,Number,Number to Words,Convert numbers to words
-FALSE,2,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
-FALSE,2,Text,Palindrome,Check if text reads the same forward and backward
-FALSE,2,Number,Random Port Generator,Generate random network ports
-FALSE,2,Text,Randomize case,Randomize the case of letters in text
+TRUE,2,Time,Date Weekday Calculator,Find years when a date falls on a weekday
+TRUE,2,Time,Discord Timestamp Generator,Generate Discord timestamps from dates
+TRUE,2,List,Duplicate,Duplicate list items with specified criteria
+TRUE,2,CSV,Insert CSV columns,Quickly insert one or more new columns anywhere in a CSV file.
+TRUE,2,JSON,JSON to XML,Convert JSON to XML format
+TRUE,2,Number,Number to Words,Convert numbers to words
+TRUE,2,Number,Ohm's Law,Calculate voltage  current  or resistance in electrical circuits using Ohm's Law
+TRUE,2,Text,Palindrome,Check if text reads the same forward and backward
+TRUE,2,Number,Random Port Generator,Generate random network ports
+TRUE,2,Text,Randomize case,Randomize the case of letters in text
 FALSE,2,Text,Repeat Text,Repeat text multiple times
 FALSE,2,List,Rotate,Rotate list items by specified positions
 FALSE,2,Text,Rotate Text,Shift characters in text by position.

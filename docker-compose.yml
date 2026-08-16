@@ -8,6 +8,6 @@ services:
       CMDRY_PLUGIN_DIR: /opt/cmdry/plugins
       CMDRY_DATA_DIR: /opt/cmdry/data
     volumes:
-      - /home/sottey/docker-data/cmdry/data:/opt/cmdry/data
+      - /home/sottey/docker-data/cmdry-data:/opt/cmdry/data
       - /home/sottey/docker-data/cmdry/plugins:/opt/cmdry/plugins
     restart: unless-stopped
