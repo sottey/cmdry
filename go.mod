@@ -10,9 +10,7 @@ require (
 	github.com/boombuler/barcode v1.1.0 // indirect
 	github.com/deepteams/webp v1.2.7 // indirect
 	github.com/hhrutter/lzw v1.0.0 // indirect
-	github.com/raceresult/gopdf v1.0.117 // indirect
 	github.com/raceresult/tiff v1.0.1 // indirect
-	golang.org/x/image v0.24.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 )
 

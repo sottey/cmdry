@@ -182,7 +182,8 @@ must be declared in the manifest. Cmdry limits
 the full submitted form body to 6 MiB. Ordinary fields arrive as strings; a
 file arrives as `{name, mime_type, content}` where content is standard base64;
 a multiple field arrives as an array of those objects.
-The Go SDK's `request.File("image")` helper validates and decodes it:
+The Go SDK's `request.File("image")` helper validates and decodes one upload;
+`request.Files("images")` validates and decodes a multiple-file array:
 
 ```json
 {"action":"resize","params":{"image":{"name":"photo.png","mime_type":"image/png","content":"..."}}}
