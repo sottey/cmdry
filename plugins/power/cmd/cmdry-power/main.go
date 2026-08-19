@@ -14,7 +14,7 @@ func main() {
 		Name:            "Battery and Power Inspector",
 		Version:         "0.1.0",
 		Description:     "Inspect local battery charge state and power source.",
-		Category:        "system",
+		Category:        "server",
 		Icon:            "battery",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Power", Default: true, Action: "list"}},
 		Permissions:     []string{"system.read"},

@@ -14,7 +14,7 @@ func main() {
 		Name:            "System Information",
 		Version:         "0.1.0",
 		Description:     "Inspect local operating system, CPU, memory, and hardware facts.",
-		Category:        "system",
+		Category:        "server",
 		Icon:            "computer",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "System", Default: true, Action: "list"}},
 		Permissions:     []string{"system.read"},

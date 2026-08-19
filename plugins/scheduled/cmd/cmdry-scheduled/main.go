@@ -15,7 +15,7 @@ func main() {
 		Name:            "Scheduled Tasks",
 		Version:         "0.1.0",
 		Description:     "Inspect user cron jobs and platform-native scheduled tasks.",
-		Category:        "system",
+		Category:        "server",
 		Icon:            "clock",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Scheduled", Default: true, Action: "list"}},
 		Permissions:     []string{"system.read"},

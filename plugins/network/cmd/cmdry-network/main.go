@@ -15,7 +15,7 @@ func main() {
 		Name:            "Network Interface Inspector",
 		Version:         "0.1.0",
 		Description:     "Inspect local interfaces, assigned addresses, and the default gateway.",
-		Category:        "network",
+		Category:        "server",
 		Icon:            "network",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Network", Default: true, Action: "list"}},
 		Permissions:     []string{"network.read"},

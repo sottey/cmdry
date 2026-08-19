@@ -82,7 +82,7 @@ FALSE,5,Video,Resize Video,Resize videos to different resolutions
 FALSE,5,Video,Rotate Video,Rotate video by specified degrees
 FALSE,5,Video,Trim Video,Trim video by removing unwanted sections
 TRUE,0,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
-TRUE,0,System,Battery and Power Inspector,Inspect local battery charge state and power source.
+TRUE,0,Server,Battery and Power Inspector,Inspect local battery charge state and power source.
 TRUE,0,Text,Bcrypt,Hash strings with Bcrypt
 TRUE,0,Number,Byte Converter,Quickly convert values between byte units
 TRUE,0,CSV,Change CSV Separator,Change CSV file delimiter
@@ -103,7 +103,7 @@ TRUE,0,Time,Crontab Guru,Parse and explain cron expressions in plain English
 TRUE,0,Text,Email Extractor,Extract email addresses from text
 TRUE,0,JSON,Escape JSON,Escape special characters in JSON
 TRUE,0,Text,Extract substring,Extract a portion of text between specified positions
-TRUE,0,System,Filesystem Inspector,Inspect mounted filesystem capacity and available space.
+TRUE,0,Server,Filesystem Inspector,Inspect mounted filesystem capacity and available space.
 TRUE,0,CSV,Find incomplete CSV records,Quickly find rows and columns in CSV that are missing values.
 TRUE,0,List,Find most popular,Find most frequently occurring items
 TRUE,0,List,Find unique,Find unique items in a list
@@ -114,30 +114,30 @@ TRUE,0,Text,Hidden Character Detector,Find hidden Unicode characters in text
 TRUE,0,HTML,HTML Prettifier,Format pasted HTML locally.
 TRUE,0,JavaScript,JavaScript Prettifier,Format pasted JavaScript locally.
 TRUE,0,Text,Join Text,Join text elements with a specified separator
-TRUE,0,System,Journal Viewer,Review the 100 most recent local Linux journal entries.
+TRUE,0,Server,Journal Viewer,Review the 100 most recent local Linux journal entries.
 TRUE,0,JSON,JSON to CSV,Convert JSON to CSV format
 TRUE,0,JSON,Minify JSON,Minify JSON by removing whitespace
-TRUE,0,System,Network Interface Inspector,Inspect local interfaces assigned addresses and the default gateway.
+TRUE,0,Server,Network Interface Inspector,Inspect local interfaces assigned addresses and the default gateway.
 TRUE,0,Text,Password Generator,Generate secure random passwords with custom options
-TRUE,0,Network,Port Inspector,Inspect listening network ports and their owning processes.
+TRUE,0,Server,Port Inspector,Inspect listening network ports and their owning processes.
 TRUE,0,JSON,Prettify JSON,Format and beautify JSON code
-TRUE,0,System,Process Resource Snapshot,Inspect CPU and memory usage of visible local processes.
+TRUE,0,Server,Process Resource Snapshot,Inspect CPU and memory usage of visible local processes.
 TRUE,0,Image,QR Code Generator,Create customized QR codes for various data formats.
 TRUE,0,Number,Random Number Generator,Generate random numbers in custom ranges
 TRUE,0,Text,Remove duplicate lines,Quickly delete all repeated lines from text
 TRUE,0,List,Reverse,Quickly reverse a list
 TRUE,0,Text,Reverse,Reverse any text character by character
-TRUE,0,System,Scheduled Tasks,Inspect user cron jobs and platform-native scheduled tasks.
+TRUE,0,Server,Scheduled Tasks,Inspect user cron jobs and platform-native scheduled tasks.
 TRUE,0,Text,Slug Generator,Generate URL-friendly slugs from text.
 TRUE,0,Text,String URL decoder,Quickly URL-unescape a string.
 TRUE,0,Text,String URL encoder,Quickly URL-escape a string.
 TRUE,0,JSON,Stringify JSON,Convert objects to JSON string
 TRUE,0,Number,Sum,Calculate sum of numbers
-TRUE,0,System,System Information,Inspect local operating system CPU memory and hardware facts.
+TRUE,0,Server,System Information,Inspect local operating system CPU memory and hardware facts.
 TRUE,0,Text,Text Replacer,Quickly replace text in your content
 TRUE,0,Text,Text Statistics,Get statistics about your text
 TRUE,0,JSON,Validate JSON,Validate JSON code for errors
-TRUE,0,System,Wi-Fi Inspector,Inspect the current Wi-Fi connection without exposing saved networks.
+TRUE,0,Server,Wi-Fi Inspector,Inspect the current Wi-Fi connection without exposing saved networks.
 TRUE,0,XML,XML Beautifier,Format and beautify XML code
 TRUE,0,XML,XML Validator,Validate XML code for errors
 TRUE,0,YAML,YAML Prettifier,Format pasted YAML locally.

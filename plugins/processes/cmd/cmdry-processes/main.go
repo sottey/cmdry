@@ -15,7 +15,7 @@ func main() {
 		Name:            "Process Resource Snapshot",
 		Version:         "0.1.0",
 		Description:     "Inspect CPU and memory usage of visible local processes.",
-		Category:        "system",
+		Category:        "server",
 		Icon:            "activity",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Processes", Default: true, Action: "list"}},
 		Permissions:     []string{"process.read"},

@@ -14,7 +14,7 @@ func main() {
 		Name:            "Journal Viewer",
 		Version:         "0.1.0",
 		Description:     "Review the 100 most recent local Linux journal entries.",
-		Category:        "system",
+		Category:        "server",
 		Icon:            "journal",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Journal", Default: true, Action: "list"}},
 		Permissions:     []string{"system.journal.read"},

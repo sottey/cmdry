@@ -15,7 +15,7 @@ func main() {
 		Name:            "Filesystem Inspector",
 		Version:         "0.1.0",
 		Description:     "Inspect mounted filesystem capacity and available space.",
-		Category:        "storage",
+		Category:        "server",
 		Icon:            "storage",
 		Pages:           []cmdry.Page{{ID: "overview", Name: "Filesystems", Default: true, Action: "list"}},
 		Permissions:     []string{"storage.read"},
