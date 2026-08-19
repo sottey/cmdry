@@ -67,6 +67,37 @@ func (r Request) File(name string) (Upload, []byte, error) {
 	return upload, contents, nil
 }
 
+// Files returns uploads from a multiple file form field. Content is held only
+// in this request as standard base64; plugins must never expect host paths.
+func (r Request) Files(name string) ([]Upload, [][]byte, error) {
+	value, ok := r.Params[name]
+	if !ok {
+		return nil, nil, fmt.Errorf("%s is required", name)
+	}
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return nil, nil, fmt.Errorf("read %s: %w", name, err)
+	}
+	var uploads []Upload
+	if err := json.Unmarshal(encoded, &uploads); err != nil {
+		return nil, nil, fmt.Errorf("read %s: %w", name, err)
+	}
+	if len(uploads) == 0 {
+		return nil, nil, fmt.Errorf("%s is required", name)
+	}
+	contents := make([][]byte, len(uploads))
+	for index, upload := range uploads {
+		if upload.Name == "" || upload.MIMEType == "" || upload.Content == "" {
+			return nil, nil, fmt.Errorf("%s is not a valid upload", name)
+		}
+		contents[index], err = base64.StdEncoding.DecodeString(upload.Content)
+		if err != nil {
+			return nil, nil, fmt.Errorf("decode %s: %w", name, err)
+		}
+	}
+	return uploads, contents, nil
+}
+
 type Response struct {
 	OK    bool   `json:"ok"`
 	Data  *View  `json:"data,omitempty"`
@@ -114,6 +145,7 @@ type Field struct {
 	Placeholder string   `json:"placeholder,omitempty"`
 	Description string   `json:"description,omitempty"`
 	Accept      string   `json:"accept,omitempty"`
+	Multiple    bool     `json:"multiple,omitempty"`
 	Required    bool     `json:"required,omitempty"`
 	Options     []Option `json:"options,omitempty"`
 }

@@ -76,6 +76,9 @@ func ValidateResponse(r Response) error {
 				if !ValidID(field.Name) || strings.TrimSpace(field.Label) == "" || (field.Type != "text" && field.Type != "password" && field.Type != "textarea" && field.Type != "number" && field.Type != "checkbox" && field.Type != "select" && field.Type != "file") {
 					return fmt.Errorf("invalid form field")
 				}
+				if field.Multiple && field.Type != "file" {
+					return fmt.Errorf("multiple is only supported for file fields")
+				}
 				if field.Type == "select" && len(field.Options) == 0 {
 					return fmt.Errorf("select field has no options")
 				}

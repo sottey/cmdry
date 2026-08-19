@@ -42,6 +42,58 @@ func RunOpacity() {
 		return download("Image opacity", o)
 	})
 }
+func RunWatermark() {
+	run("watermark-images", "Watermark Images", "Add centered text to one uploaded image locally.", []cmdry.Field{{Name: "image", Label: "Image", Type: "file", Accept: imageAccept, Required: true}, {Name: "text", Label: "Watermark text", Type: "text", Placeholder: "© Your name", Required: true}, {Name: "color", Label: "Text color", Type: "text", Value: "#ffffff", Required: true}, {Name: "opacity", Label: "Opacity (%)", Type: "number", Value: "50", Min: "1", Max: "100", Required: true}}, func(r cmdry.Request) (cmdry.View, error) {
+		_, contents, err := uploaded(r)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		source, _, err := Decode(contents)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		color, err := parseHex(fmt.Sprint(r.Params["color"]))
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		opacity, err := number(r, "opacity")
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		output, err := Watermark(source, fmt.Sprint(r.Params["text"]), color, opacity)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		return download("Watermarked image", output)
+	})
+}
+func RunImagesToPDF() {
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.images-to-pdf", Name: "Images to PDF", Version: "0.1.0", Description: "Convert up to four uploaded images to a local PDF.", Category: "pdf", Icon: "file", SearchTerms: []string{"image", "pdf", "photos", "pages", "convert"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New PDF", Method: "read"}, {ID: "convert", Name: "Create PDF", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": func(cmdry.Request) (cmdry.View, error) {
+		return cmdry.View{Title: "Images to PDF", Components: []cmdry.Component{{Type: "form", Title: "Create a PDF", Description: "Select up to four PNG, JPEG, or GIF images (4 MiB each). They are held only for this request.", Action: "convert", Submit: "Create PDF", Fields: []cmdry.Field{{Name: "images", Label: "Images", Type: "file", Accept: imageAccept, Multiple: true, Required: true}, {Name: "orientation", Label: "Page orientation", Type: "select", Value: "portrait", Options: []cmdry.Option{{Value: "portrait", Label: "Portrait"}, {Value: "landscape", Label: "Landscape"}}}}}}}, nil
+	}, "convert": func(r cmdry.Request) (cmdry.View, error) {
+		uploads, contents, err := r.Files("images")
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		if len(uploads) > maxPDFImages {
+			return cmdry.View{}, fmt.Errorf("select from 1 through %d images", maxPDFImages)
+		}
+		for _, upload := range uploads {
+			if upload.MIMEType != "image/png" && upload.MIMEType != "image/jpeg" && upload.MIMEType != "image/gif" {
+				return cmdry.View{}, fmt.Errorf("upload PNG, JPEG, or GIF images")
+			}
+		}
+		landscape := fmt.Sprint(r.Params["orientation"]) == "landscape"
+		if value := fmt.Sprint(r.Params["orientation"]); value != "portrait" && value != "landscape" {
+			return cmdry.View{}, fmt.Errorf("choose a page orientation")
+		}
+		pdf, err := ImagesToPDF(contents, landscape)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		return cmdry.View{Title: "Images to PDF", Components: []cmdry.Component{{Type: "metric", Label: "Pages", Value: fmt.Sprint(len(contents))}, {Type: "download", Filename: "cmdry-images.pdf", MIMEType: "application/pdf", Content: base64.StdEncoding.EncodeToString(pdf)}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Create another PDF"}}}}}, nil
+	}}})
+}
 func RunPNGCompression() {
 	run("compress-png", "Compress PNG", "Re-encode one uploaded PNG with a selected lossless compression level locally.", []cmdry.Field{{Name: "image", Label: "PNG image", Type: "file", Accept: "image/png", Required: true}, {Name: "compression", Label: "Compression", Type: "select", Value: "default", Options: []cmdry.Option{{Value: "fast", Label: "Fast"}, {Value: "default", Label: "Balanced"}, {Value: "best", Label: "Smallest file"}}}}, func(r cmdry.Request) (cmdry.View, error) {
 		upload, b, e := uploaded(r)

@@ -840,13 +840,14 @@ func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {
 	a.render(w, http.StatusOK, "plugin.html", d)
 }
 
-const maxActionBody = 6 * 1024 * 1024
+const maxActionBody = 18 * 1024 * 1024
 const maxUploadBytes = 4 * 1024 * 1024
+const maxUploadFiles = 4
 
 func actionParams(w http.ResponseWriter, r *http.Request) (map[string]any, error) {
 	r.Body = http.MaxBytesReader(w, r.Body, maxActionBody)
 	if strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
-		if err := r.ParseMultipartForm(maxUploadBytes); err != nil {
+		if err := r.ParseMultipartForm(maxActionBody); err != nil {
 			return nil, err
 		}
 		defer r.MultipartForm.RemoveAll()
@@ -868,23 +869,33 @@ func actionParams(w http.ResponseWriter, r *http.Request) (map[string]any, error
 		return params, nil
 	}
 	for key, files := range r.MultipartForm.File {
-		if !plugins.ValidID(key) || len(files) != 1 || files[0].Size < 1 || files[0].Size > maxUploadBytes {
+		if !plugins.ValidID(key) || len(files) < 1 || len(files) > maxUploadFiles {
 			return nil, fmt.Errorf("invalid upload")
 		}
-		file, err := files[0].Open()
-		if err != nil {
-			return nil, err
+		uploads := make([]plugins.Upload, 0, len(files))
+		for _, header := range files {
+			if header.Size < 1 || header.Size > maxUploadBytes {
+				return nil, fmt.Errorf("invalid upload")
+			}
+			file, err := header.Open()
+			if err != nil {
+				return nil, err
+			}
+			contents, readErr := io.ReadAll(io.LimitReader(file, maxUploadBytes+1))
+			closeErr := file.Close()
+			if readErr != nil {
+				return nil, readErr
+			}
+			if closeErr != nil || len(contents) < 1 || len(contents) > maxUploadBytes {
+				return nil, fmt.Errorf("invalid upload")
+			}
+			uploads = append(uploads, plugins.Upload{Name: path.Base(header.Filename), MIMEType: http.DetectContentType(contents), Content: base64.StdEncoding.EncodeToString(contents)})
 		}
-		contents, readErr := io.ReadAll(io.LimitReader(file, maxUploadBytes+1))
-		closeErr := file.Close()
-		if readErr != nil {
-			return nil, readErr
+		if len(uploads) == 1 {
+			params[key] = uploads[0]
+		} else {
+			params[key] = uploads
 		}
-		if closeErr != nil || len(contents) < 1 || len(contents) > maxUploadBytes {
-			return nil, fmt.Errorf("invalid upload")
-		}
-		mimeType := http.DetectContentType(contents)
-		params[key] = plugins.Upload{Name: path.Base(files[0].Filename), MIMEType: mimeType, Content: base64.StdEncoding.EncodeToString(contents)}
 	}
 	return params, nil
 }

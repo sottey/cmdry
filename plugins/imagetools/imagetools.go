@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 	_ "image/gif"
 	"image/jpeg"
 	"image/png"
@@ -13,6 +14,10 @@ import (
 	"strings"
 
 	"github.com/deepteams/webp"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/gofont/goregular"
+	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/math/fixed"
 )
 
 const MaxDimension = 4096
@@ -91,6 +96,48 @@ func ReplaceColor(source image.Image, from, to color.RGBA, tolerance int, transp
 			out.Set(x, y, c)
 		}
 	}
+	return out, nil
+}
+
+// Watermark draws a centered text watermark over an image without retaining it.
+func Watermark(source image.Image, text string, tint color.RGBA, opacity int) (image.Image, error) {
+	text = strings.TrimSpace(text)
+	if text == "" || len([]rune(text)) > 128 {
+		return nil, fmt.Errorf("watermark text must be between 1 and 128 characters")
+	}
+	if opacity < 1 || opacity > 100 {
+		return nil, fmt.Errorf("opacity must be between 1 and 100")
+	}
+	bounds := source.Bounds()
+	out := image.NewRGBA(image.Rect(0, 0, bounds.Dx(), bounds.Dy()))
+	draw.Draw(out, out.Bounds(), source, bounds.Min, draw.Src)
+	fontData, err := opentype.Parse(goregular.TTF)
+	if err != nil {
+		return nil, fmt.Errorf("load watermark font: %w", err)
+	}
+	size := float64(bounds.Dx()) / 10
+	if bounds.Dy() < bounds.Dx() {
+		size = float64(bounds.Dy()) / 6
+	}
+	if size < 16 {
+		size = 16
+	}
+	if size > 96 {
+		size = 96
+	}
+	face, err := opentype.NewFace(fontData, &opentype.FaceOptions{Size: size, DPI: 72, Hinting: font.HintingFull})
+	if err != nil {
+		return nil, fmt.Errorf("create watermark font: %w", err)
+	}
+	defer face.Close()
+	tint.A = uint8(uint32(tint.A) * uint32(opacity) / 100)
+	drawer := &font.Drawer{Dst: out, Src: image.NewUniform(tint), Face: face}
+	textBounds, _ := drawer.BoundString(text)
+	width := (textBounds.Max.X - textBounds.Min.X).Ceil()
+	x := (bounds.Dx()-width)/2 - textBounds.Min.X.Ceil()
+	y := (bounds.Dy() + face.Metrics().Ascent.Ceil() - face.Metrics().Descent.Ceil()) / 2
+	drawer.Dot = fixed.P(x, y)
+	drawer.DrawString(text)
 	return out, nil
 }
 func abs(n int) int {

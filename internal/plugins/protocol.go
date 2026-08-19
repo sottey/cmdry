@@ -84,6 +84,7 @@ type Field struct {
 	Placeholder string   `json:"placeholder,omitempty"`
 	Description string   `json:"description,omitempty"`
 	Accept      string   `json:"accept,omitempty"`
+	Multiple    bool     `json:"multiple,omitempty"`
 	Required    bool     `json:"required,omitempty"`
 	Options     []Option `json:"options,omitempty"`
 }
