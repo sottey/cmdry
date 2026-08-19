@@ -99,8 +99,8 @@ func ReplaceColor(source image.Image, from, to color.RGBA, tolerance int, transp
 	return out, nil
 }
 
-// Watermark draws a centered text watermark over an image without retaining it.
-func Watermark(source image.Image, text string, tint color.RGBA, opacity int) (image.Image, error) {
+// Watermark draws text at a selected grid position over an image without retaining it.
+func Watermark(source image.Image, text string, tint color.RGBA, opacity int, position string) (image.Image, error) {
 	text = strings.TrimSpace(text)
 	if text == "" || len([]rune(text)) > 128 {
 		return nil, fmt.Errorf("watermark text must be between 1 and 128 characters")
@@ -134,8 +134,27 @@ func Watermark(source image.Image, text string, tint color.RGBA, opacity int) (i
 	drawer := &font.Drawer{Dst: out, Src: image.NewUniform(tint), Face: face}
 	textBounds, _ := drawer.BoundString(text)
 	width := (textBounds.Max.X - textBounds.Min.X).Ceil()
-	x := (bounds.Dx()-width)/2 - textBounds.Min.X.Ceil()
-	y := (bounds.Dy() + face.Metrics().Ascent.Ceil() - face.Metrics().Descent.Ceil()) / 2
+	height := face.Metrics().Height.Ceil()
+	const margin = 12
+	x, y := 0, 0
+	switch position {
+	case "top-left", "middle-left", "bottom-left":
+		x = margin - textBounds.Min.X.Ceil()
+	case "top-center", "middle-center", "bottom-center":
+		x = (bounds.Dx()-width)/2 - textBounds.Min.X.Ceil()
+	case "top-right", "middle-right", "bottom-right":
+		x = bounds.Dx() - width - margin - textBounds.Min.X.Ceil()
+	default:
+		return nil, fmt.Errorf("choose a watermark position")
+	}
+	switch position {
+	case "top-left", "top-center", "top-right":
+		y = margin + face.Metrics().Ascent.Ceil()
+	case "middle-left", "middle-center", "middle-right":
+		y = (bounds.Dy() + face.Metrics().Ascent.Ceil() - face.Metrics().Descent.Ceil()) / 2
+	case "bottom-left", "bottom-center", "bottom-right":
+		y = bounds.Dy() - margin - (height - face.Metrics().Ascent.Ceil())
+	}
 	drawer.Dot = fixed.P(x, y)
 	drawer.DrawString(text)
 	return out, nil

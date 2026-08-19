@@ -234,8 +234,8 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   locally as JPEG, lossless PNG, or WebP with the appropriate quality or
   compression control.
 
-- **Watermark Images**: add centered text with a selected color and opacity to
-  one uploaded image and download a local PNG result.
+- **Watermark Images**: add text at any top/middle/bottom and left/center/right
+  position with a selected color and opacity, then download a local PNG result.
 
 - **Images to PDF**: turn up to four uploaded PNG, JPEG, or GIF images into a
   scaled A4 portrait or landscape PDF entirely in memory.

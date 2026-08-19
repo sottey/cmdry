@@ -84,7 +84,7 @@ func TestWatermarkAndImagesToPDF(t *testing.T) {
 			canvas.Set(x, y, color.RGBA{B: 255, A: 255})
 		}
 	}
-	watermarked, err := Watermark(canvas, "Cmdry", color.RGBA{R: 255, A: 255}, 100)
+	watermarked, err := Watermark(canvas, "Cmdry", color.RGBA{R: 255, A: 255}, 100, "top-left")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,6 +99,9 @@ func TestWatermarkAndImagesToPDF(t *testing.T) {
 	}
 	if !changed {
 		t.Fatal("watermark did not change the image")
+	}
+	if _, err := Watermark(canvas, "Cmdry", color.RGBA{R: 255, A: 255}, 100, "middle"); err == nil {
+		t.Fatal("invalid watermark position was accepted")
 	}
 	contents, err := EncodePNG(canvas)
 	if err != nil {

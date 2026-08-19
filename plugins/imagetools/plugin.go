@@ -43,7 +43,8 @@ func RunOpacity() {
 	})
 }
 func RunWatermark() {
-	run("watermark-images", "Watermark Images", "Add centered text to one uploaded image locally.", []cmdry.Field{{Name: "image", Label: "Image", Type: "file", Accept: imageAccept, Required: true}, {Name: "text", Label: "Watermark text", Type: "text", Placeholder: "© Your name", Required: true}, {Name: "color", Label: "Text color", Type: "text", Value: "#ffffff", Required: true}, {Name: "opacity", Label: "Opacity (%)", Type: "number", Value: "50", Min: "1", Max: "100", Required: true}}, func(r cmdry.Request) (cmdry.View, error) {
+	positions := []cmdry.Option{{Value: "top-left", Label: "Top left"}, {Value: "top-center", Label: "Top center"}, {Value: "top-right", Label: "Top right"}, {Value: "middle-left", Label: "Middle left"}, {Value: "middle-center", Label: "Middle center"}, {Value: "middle-right", Label: "Middle right"}, {Value: "bottom-left", Label: "Bottom left"}, {Value: "bottom-center", Label: "Bottom center"}, {Value: "bottom-right", Label: "Bottom right"}}
+	run("watermark-images", "Watermark Images", "Add text to a chosen position on one uploaded image locally.", []cmdry.Field{{Name: "image", Label: "Image", Type: "file", Accept: imageAccept, Required: true}, {Name: "text", Label: "Watermark text", Type: "text", Placeholder: "© Your name", Required: true}, {Name: "position", Label: "Position", Type: "select", Value: "middle-center", Options: positions}, {Name: "color", Label: "Text color", Type: "text", Value: "#ffffff", Required: true}, {Name: "opacity", Label: "Opacity (%)", Type: "number", Value: "50", Min: "1", Max: "100", Required: true}}, func(r cmdry.Request) (cmdry.View, error) {
 		_, contents, err := uploaded(r)
 		if err != nil {
 			return cmdry.View{}, err
@@ -60,7 +61,7 @@ func RunWatermark() {
 		if err != nil {
 			return cmdry.View{}, err
 		}
-		output, err := Watermark(source, fmt.Sprint(r.Params["text"]), color, opacity)
+		output, err := Watermark(source, fmt.Sprint(r.Params["text"]), color, opacity, fmt.Sprint(r.Params["position"]))
 		if err != nil {
 			return cmdry.View{}, err
 		}
