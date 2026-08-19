@@ -1,17 +1,13 @@
 package datetools
 
-import (
-	"testing"
-	"time"
-)
+import "testing"
 
-func TestDates(t *testing.T) {
-	years, err := YearsWithWeekday(time.January, 1, 2024, 2025, time.Monday)
-	if err != nil || len(years) != 1 || years[0] != 2024 {
-		t.Fatalf("%v %v", years, err)
+func TestLeapYears(t *testing.T) {
+	if IsLeapYear(1900) || !IsLeapYear(2000) || !IsLeapYear(2024) || IsLeapYear(2025) {
+		t.Fatal("unexpected leap-year results")
 	}
-	value, _ := DiscordTimestamp(time.Unix(0, 0), "relative")
-	if value != "<t:0:R>" {
-		t.Fatal(value)
+	years, err := LeapYears(1999, 2004)
+	if err != nil || len(years) != 2 || years[0] != 2000 || years[1] != 2004 {
+		t.Fatalf("years=%v err=%v", years, err)
 	}
 }

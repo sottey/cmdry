@@ -31,3 +31,22 @@ func SlacklineTension(loadKG, sagMetres, spanMetres float64) (float64, error) {
 func finitePositive(value float64) bool {
 	return value > 0 && !math.IsNaN(value) && !math.IsInf(value, 0)
 }
+
+// ArithmeticSequence returns count values beginning at start with step added
+// for each successive value.
+func ArithmeticSequence(start, step float64, count int) ([]float64, error) {
+	if math.IsNaN(start) || math.IsInf(start, 0) || math.IsNaN(step) || math.IsInf(step, 0) {
+		return nil, fmt.Errorf("start and step must be finite numbers")
+	}
+	if count < 1 || count > 10000 {
+		return nil, fmt.Errorf("count must be between 1 and 10,000")
+	}
+	values := make([]float64, count)
+	for index := range values {
+		values[index] = start + float64(index)*step
+		if math.IsInf(values[index], 0) {
+			return nil, fmt.Errorf("sequence exceeds the supported number range")
+		}
+	}
+	return values, nil
+}

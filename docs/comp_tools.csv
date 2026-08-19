@@ -33,16 +33,16 @@ TRUE,2,Text,Unicode Encoder / Decoder,Encode or decode text using Unicode escape
 TRUE,2,List,Unwrap,Unwrap list items from structured format
 TRUE,2,Text,URL Editor,Inspect and edit URL components and query parameters.
 TRUE,2,List,Wrap,Wrap list items with specified criteria
-FALSE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
-FALSE,3,Image,Change colors in image,Quickly swap colors in a image
-FALSE,3,Image,Change image Opacity,Adjust transparency of images
-FALSE,3,Time,Check Leap Years,Check if a year is a leap year
-FALSE,3,Image,Compress Images,Compress one or multiple images at once.
-FALSE,3,PNG,Compress png,Quickly compress a PNG
-FALSE,3,Convert,Convert Images to JPG,Convert images to JPG Format with quality control
-FALSE,3,Convert,Convert Images to WebP,Convert Images to WebP Format with quality control.
-FALSE,3,PNG,Convert JPG to PNG,Quickly convert your JPG images to PNG.
-FALSE,3,Image,Create transparent PNG,Quickly make an image transparent
+TRUE,3,Number,Arithmetic Sequence,Generate arithmetic sequences
+TRUE,3,Image,Change colors in image,Quickly swap colors in one image locally.
+TRUE,3,Image,Change image Opacity,Adjust one image transparency locally.
+TRUE,3,Time,Check Leap Years,Check if a year is a leap year
+TRUE,3,Image,Compress Images,Re-encode one image as JPEG with selected quality locally.
+TRUE,3,PNG,Compress png,Re-encode one PNG with selected lossless compression locally.
+TRUE,3,Convert,Convert Images to JPG,Convert one image to JPG with quality control locally.
+TRUE,3,Convert,Convert Images to WebP,Convert one image to WebP with quality control locally.
+TRUE,3,PNG,Convert JPG to PNG,Convert one JPG image to PNG locally.
+TRUE,3,Image,Create transparent PNG,Make a selected image color transparent in a local PNG.
 TRUE,3,Image,Crop Image,Crop images quickly.
 FALSE,3,PDF,Images to PDF,Convert images to PDF with scale and orientation control
 TRUE,3,Image,Resize Image,Resize one or multiple images at once.

@@ -223,8 +223,16 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
   is explicitly not appropriate for safety, rigging, or equipment decisions.
 - **Truncate Clock Time**: drop smaller units from a signed `HH:MM:SS` or
   `MM:SS` duration locally.
+- **Arithmetic Sequence and Check Leap Years**: generate finite numeric
+  progressions or find Gregorian leap years in a bounded range locally.
 - **Resize Image, Crop Image, and Rotate Image**: transform one uploaded PNG,
   JPEG, or GIF entirely in memory and return a browser-local PNG download.
+- **Image Opacity, Color Replacement, and Transparent PNG**: adjust alpha,
+  replace a matching color, or make a matching color transparent in one
+  uploaded PNG, JPEG, or GIF entirely in memory.
+- **JPEG, PNG, and WebP Conversion/Compression**: re-encode one uploaded image
+  locally as JPEG, lossless PNG, or WebP with the appropriate quality or
+  compression control.
   Uploaded images are limited to 4 MiB and are never exposed to plugins as host
   paths or retained after the request.
 

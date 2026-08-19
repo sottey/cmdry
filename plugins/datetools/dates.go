@@ -33,3 +33,19 @@ func DiscordTimestamp(value time.Time, style string) (string, error) {
 	}
 	return fmt.Sprintf("<t:%d:%s>", value.Unix(), format), nil
 }
+
+// IsLeapYear reports whether a Gregorian calendar year has February 29.
+func IsLeapYear(year int) bool { return year%4 == 0 && (year%100 != 0 || year%400 == 0) }
+
+func LeapYears(start, end int) ([]int, error) {
+	if start < 1 || end > 9999 || start > end {
+		return nil, fmt.Errorf("use a year range from 1 through 9999")
+	}
+	result := make([]int, 0)
+	for year := start; year <= end; year++ {
+		if IsLeapYear(year) {
+			result = append(result, year)
+		}
+	}
+	return result, nil
+}

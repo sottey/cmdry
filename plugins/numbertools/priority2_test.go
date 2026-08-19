@@ -21,3 +21,13 @@ func TestPriority2Calculators(t *testing.T) {
 		t.Fatal("expected sag validation error")
 	}
 }
+
+func TestArithmeticSequence(t *testing.T) {
+	values, err := ArithmeticSequence(2, 0.5, 4)
+	if err != nil || len(values) != 4 || values[0] != 2 || values[3] != 3.5 {
+		t.Fatalf("values=%v err=%v", values, err)
+	}
+	if _, err := ArithmeticSequence(1, 1, 0); err == nil {
+		t.Fatal("expected count validation error")
+	}
+}
