@@ -170,15 +170,18 @@ manifest or Cmdry refuses to execute it.
 A `form` component renders a POST form. Each field needs a safe `name`,
 non-empty `label`, and `type` of `text`, `password`, `textarea`, `number`, `checkbox`, or
 `select`; a select field supplies `options` with `value` and `label`. A `file`
-field may set `accept` to guide browser selection. Cmdry accepts one uploaded
-file per field, holds it only in request memory, removes multipart temporary
-data before returning, and never provides a host path to the plugin. Uploads
-are limited to 4 MiB; the complete multipart action body is limited to 6 MiB.
+field may set `accept` to guide browser selection, and may set `multiple: true`
+when it intentionally accepts up to four files. Cmdry accepts one uploaded file
+per ordinary file field, or up to four for an explicit multiple field; it holds
+them only in request memory, removes multipart temporary data before returning,
+and never provides a host path to the plugin. Each upload is limited to 4 MiB;
+the complete multipart action body is limited to 18 MiB. Use
 Use
 `value`, `min`, `max`, and `required: true` where appropriate. Its `action`
 must be declared in the manifest. Cmdry limits
 the full submitted form body to 6 MiB. Ordinary fields arrive as strings; a
-file arrives as `{name, mime_type, content}` where content is standard base64.
+file arrives as `{name, mime_type, content}` where content is standard base64;
+a multiple field arrives as an array of those objects.
 The Go SDK's `request.File("image")` helper validates and decodes it:
 
 ```json

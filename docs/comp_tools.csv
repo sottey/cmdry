@@ -44,10 +44,10 @@ TRUE,3,Convert,Convert Images to WebP,Convert one image to WebP with quality con
 TRUE,3,PNG,Convert JPG to PNG,Convert one JPG image to PNG locally.
 TRUE,3,Image,Create transparent PNG,Make a selected image color transparent in a local PNG.
 TRUE,3,Image,Crop Image,Crop images quickly.
-FALSE,3,PDF,Images to PDF,Convert images to PDF with scale and orientation control
+TRUE,3,PDF,Images to PDF,Convert up to four images to a scaled portrait or landscape PDF locally.
 TRUE,3,Image,Resize Image,Resize one or multiple images at once.
 TRUE,3,Image,Rotate Image,Rotate an image easily.
-FALSE,3,Image,Watermark Images,Add text watermarks to images
+TRUE,3,Image,Watermark Images,Add centered text watermarks to one image locally.
 FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
 FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
 FALSE,4,Audio,Change audio speed,Change the speed of audio files

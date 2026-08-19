@@ -60,6 +60,12 @@ func TestValidateResponse(t *testing.T) {
 	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "form", Action: "hash", Submit: "Hash", Fields: []Field{{Name: "password", Label: "Password", Type: "password", Required: true}}}}}}); err != nil {
 		t.Fatalf("rejected password form field: %v", err)
 	}
+	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "form", Action: "images", Submit: "Convert", Fields: []Field{{Name: "images", Label: "Images", Type: "file", Multiple: true, Required: true}}}}}}); err != nil {
+		t.Fatalf("rejected multiple file form field: %v", err)
+	}
+	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "form", Action: "text", Submit: "Submit", Fields: []Field{{Name: "text", Label: "Text", Type: "text", Multiple: true}}}}}}); err == nil {
+		t.Fatal("accepted multiple non-file form field")
+	}
 	if err := ValidateResponse(Response{OK: true, Data: &View{Components: []Component{{Type: "download", Filename: "export.csv", MIMEType: "text/csv", Content: "YSxiCg=="}}}}); err != nil {
 		t.Fatalf("rejected download component: %v", err)
 	}

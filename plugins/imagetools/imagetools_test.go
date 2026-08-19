@@ -77,6 +77,42 @@ func TestEncoders(t *testing.T) {
 	}
 }
 
+func TestWatermarkAndImagesToPDF(t *testing.T) {
+	canvas := image.NewRGBA(image.Rect(0, 0, 240, 120))
+	for y := 0; y < 120; y++ {
+		for x := 0; x < 240; x++ {
+			canvas.Set(x, y, color.RGBA{B: 255, A: 255})
+		}
+	}
+	watermarked, err := Watermark(canvas, "Cmdry", color.RGBA{R: 255, A: 255}, 100)
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := false
+	for y := 0; y < 120 && !changed; y++ {
+		for x := 0; x < 240; x++ {
+			if watermarked.At(x, y) != canvas.At(x, y) {
+				changed = true
+				break
+			}
+		}
+	}
+	if !changed {
+		t.Fatal("watermark did not change the image")
+	}
+	contents, err := EncodePNG(canvas)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pdf, err := ImagesToPDF([][]byte{contents, contents}, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pdf) < 8 || string(pdf[:5]) != "%PDF-" {
+		t.Fatalf("unexpected PDF header: %q", pdf[:min(len(pdf), 8)])
+	}
+}
+
 func min(a, b int) int {
 	if a < b {
 		return a

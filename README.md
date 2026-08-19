@@ -233,6 +233,13 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 - **JPEG, PNG, and WebP Conversion/Compression**: re-encode one uploaded image
   locally as JPEG, lossless PNG, or WebP with the appropriate quality or
   compression control.
+
+- **Watermark Images**: add centered text with a selected color and opacity to
+  one uploaded image and download a local PNG result.
+
+- **Images to PDF**: turn up to four uploaded PNG, JPEG, or GIF images into a
+  scaled A4 portrait or landscape PDF entirely in memory.
+
   Uploaded images are limited to 4 MiB and are never exposed to plugins as host
   paths or retained after the request.
 

@@ -57,3 +57,33 @@ func TestMakeGroupsKeepsServerLast(t *testing.T) {
 		t.Fatalf("server plugin count = %d, want 2", len(groups[2].Plugins))
 	}
 }
+
+func TestActionParamsReadsMultipleEphemeralUploads(t *testing.T) {
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	for _, name := range []string{"one.png", "two.png"} {
+		part, err := writer.CreateFormFile("images", name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := part.Write([]byte("image-" + name)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+	req := httptest.NewRequest("POST", "/", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	params, err := actionParams(httptest.NewRecorder(), req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	uploads, ok := params["images"].([]plugins.Upload)
+	if !ok || len(uploads) != 2 {
+		t.Fatalf("uploads=%#v", params["images"])
+	}
+	if uploads[0].Name != "one.png" || uploads[1].Name != "two.png" {
+		t.Fatalf("upload names=%q, %q", uploads[0].Name, uploads[1].Name)
+	}
+}
