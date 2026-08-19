@@ -310,7 +310,13 @@ func makeGroups(entries []plugins.Registered, state map[string]bool) []PluginGro
 	}
 	groups := make([]PluginGroup, 0, len(order))
 	for _, id := range order {
+		if id == "server" {
+			continue
+		}
 		groups = append(groups, *byID[id])
+	}
+	if server := byID["server"]; server != nil {
+		groups = append(groups, *server)
 	}
 	return groups
 }

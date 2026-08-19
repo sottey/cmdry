@@ -38,3 +38,22 @@ func TestActionParamsReadsEphemeralUpload(t *testing.T) {
 		t.Fatalf("contents=%q err=%v", contents, err)
 	}
 }
+
+func TestMakeGroupsKeepsServerLast(t *testing.T) {
+	entries := []plugins.Registered{
+		{Manifest: plugins.Manifest{ID: "com.sottey.ports", Name: "Port Inspector", Category: "server"}},
+		{Manifest: plugins.Manifest{ID: "com.sottey.base64", Name: "Base64", Category: "text"}},
+		{Manifest: plugins.Manifest{ID: "com.sottey.processes", Name: "Processes", Category: "server"}},
+		{Manifest: plugins.Manifest{ID: "com.sottey.sum", Name: "Sum", Category: "number"}},
+	}
+	groups := makeGroups(entries, nil)
+	if len(groups) != 3 {
+		t.Fatalf("group count = %d, want 3", len(groups))
+	}
+	if groups[0].ID != "text" || groups[1].ID != "number" || groups[2].ID != "server" {
+		t.Fatalf("group order = %q, %q, %q", groups[0].ID, groups[1].ID, groups[2].ID)
+	}
+	if len(groups[2].Plugins) != 2 {
+		t.Fatalf("server plugin count = %d, want 2", len(groups[2].Plugins))
+	}
+}
