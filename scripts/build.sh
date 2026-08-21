@@ -18,6 +18,14 @@ export GOTMPDIR="$cache_root/tmp"
 export GOMODCACHE="$cache_root/mod"
 export GOPATH="$cache_root/path"
 
+# The production image is Alpine Linux. Build pure-Go Linux binaries without
+# CGO so plugins staged on the host do not require glibc's dynamic loader in
+# that musl-based container. Keep CGO available on macOS for cmdry-wifi, which
+# links Apple's CoreWLAN framework.
+if [ "$(uname -s)" = "Linux" ]; then
+	export CGO_ENABLED=0
+fi
+
 go build -o "$output_dir/cmdry" "$repo_root"
 
 find "$repo_root/plugins" -type f -path '*/cmd/cmdry-*/main.go' -print | sort |
