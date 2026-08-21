@@ -46,8 +46,8 @@ Port Inspector sees that host’s network namespace rather than the container’
 This is intentional. It listens on host port `8087`:
 
 ```bash
-sudo mkdir -p /home/sottey/docker-data/cmdry/{data,plugins}
-sudo CMDRY_PLUGIN_DIR=/home/sottey/docker-data/cmdry/plugins ./scripts/build.sh
+sudo mkdir -p /home/sottey/docker-data/cmdry-data/plugins
+sudo CMDRY_PLUGIN_DIR=/home/sottey/docker-data/cmdry-data/plugins ./scripts/build.sh
 docker compose up --build -d
 ```
 
