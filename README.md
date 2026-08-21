@@ -46,8 +46,8 @@ Port Inspector sees that host’s network namespace rather than the container’
 This is intentional. It listens on host port `8087`:
 
 ```bash
-sudo mkdir -p /home/sottey/docker-data/cmdry-data/plugins
-sudo CMDRY_PLUGIN_DIR=/home/sottey/docker-data/cmdry-data/plugins ./scripts/build.sh
+sudo mkdir -p /home/sottey/docker-data/cmdry-data
+./scripts/build.sh
 docker compose up --build -d
 ```
 
@@ -260,7 +260,8 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 ## Build bundled binaries
 
 Build the Cmdry core into `dist/` and stage every bundled plugin in
-`dist/plugins/`, which is ready to use as `CMDRY_PLUGIN_DIR`:
+`dist/plugins/`, which is the standard bundled-plugin location for both native
+Cmdry and the provided Compose deployment:
 
 ```bash
 ./scripts/build.sh
@@ -271,10 +272,12 @@ the build script injects it into the Cmdry UI and CLI, every bundled plugin
 manifest, and the macOS Wi-Fi app bundle. For example, `0.21.0` renders as
 `Cmdry v0.21.0` in the UI and is printed by `cmdry version`.
 
-Set `CMDRY_BUILD_DIR` to use a different output directory. To stage plugins
-directly into an existing Cmdry installation, set `CMDRY_PLUGIN_DIR` to that
-installation's configured plugin directory; the script needs write permission
-to it. Restart Cmdry after rebuilding.
+Set `CMDRY_BUILD_DIR` to use a different output directory. The provided Compose
+file bind-mounts `./dist/plugins` into the container, so `./scripts/build.sh`
+updates the exact plugin directory Cmdry discovers in either deployment. To
+use a different external plugin directory, set `CMDRY_PLUGIN_DIR` explicitly;
+the script needs write permission to it. Restart Cmdry after rebuilding the
+core, or use **Refresh plugins** after a plugin-only rebuild.
 
 Run the locally built core with staged plugins using `./scripts/run.sh`. It
 defaults to `127.0.0.1:8080`, `dist/plugins/`, and `.cmdry-data/`; override

@@ -9,7 +9,7 @@ services:
         CMDRY_DATA_DIR: /opt/cmdry/data
       volumes:
         - /home/sottey/docker-data/cmdry-data:/opt/cmdry/data
-        - /home/sottey/docker-data/cmdry-data/plugins:/opt/cmdry/plugins
+        - ./dist/plugins:/opt/cmdry/plugins
       restart: unless-stopped
       labels:
         - homepage.group=Grump
