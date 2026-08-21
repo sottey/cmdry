@@ -1,13 +1,18 @@
 services:
-  cmdry:
-    build: .
-    container_name: 8087-cmdry
-    network_mode: host
-    environment:
-      CMDRY_ADDR: ":8087"
-      CMDRY_PLUGIN_DIR: /opt/cmdry/plugins
-      CMDRY_DATA_DIR: /opt/cmdry/data
-    volumes:
-      - /home/sottey/docker-data/cmdry-data:/opt/cmdry/data
-      - /home/sottey/docker-data/cmdry-data/plugins:/opt/cmdry/plugins
-    restart: unless-stopped
+    cmdry:
+      build: .
+      container_name: 8087-cmdry
+      network_mode: host
+      environment:
+        CMDRY_ADDR: "192.168.7.233:8087"
+        CMDRY_PLUGIN_DIR: /opt/cmdry/plugins
+        CMDRY_DATA_DIR: /opt/cmdry/data
+      volumes:
+        - /home/sottey/docker-data/cmdry-data:/opt/cmdry/data
+        - /home/sottey/docker-data/cmdry-data/plugins:/opt/cmdry/plugins
+      restart: unless-stopped
+      labels:
+        - homepage.group=Grump
+        - homepage.name=(8087) Cmdry
+        - homepage.icon=sh-omnitools.png
+        - homepage.href=http://192.168.7.233:8087
