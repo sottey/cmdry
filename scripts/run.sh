@@ -7,6 +7,8 @@ repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 output_dir=${CMDRY_BUILD_DIR:-"$repo_root/dist"}
 core_binary="$output_dir/cmdry"
 
+printf 'Repo root is %s\n', "$repo_root"
+
 if [ ! -x "$core_binary" ]; then
 	printf 'Cmdry has not been built. Run ./scripts/build.sh first.\n' >&2
 	exit 1
