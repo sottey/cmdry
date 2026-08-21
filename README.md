@@ -153,6 +153,12 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 - **CSV to JSON**: converts pasted header-based CSV into a browser-local JSON
   download on macOS and Linux. All CSV values remain strings to preserve the
   source data exactly.
+- **JSON and TOML**: convert JSON objects to TOML, TOML documents to formatted
+  JSON, or validate and normalize TOML locally.
+- **CSV, TSV, and XLSX**: convert one bounded delimited file to XLSX or the
+  first XLSX worksheet to CSV/TSV. Formula-like cells are treated as text.
+- **Markdown to HTML and JSON to TypeScript**: render local Markdown to an
+  HTML download or generate a TypeScript type alias from one JSON sample.
 - **JSON Compare**: compares two pasted JSON documents structurally on macOS
   and Linux, ignoring object property order and whitespace.
 - **Hidden Character Detector**: finds pasted zero-width, bidirectional,

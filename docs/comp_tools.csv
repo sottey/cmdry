@@ -48,39 +48,45 @@ TRUE,3,PDF,Images to PDF,Convert up to four images to a scaled portrait or lands
 TRUE,3,Image,Resize Image,Resize one or multiple images at once.
 TRUE,3,Image,Rotate Image,Rotate an image easily.
 TRUE,3,Image,Watermark Images,Add a positioned text watermark to one image locally.
-FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
-FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
-FALSE,4,Audio,Change audio speed,Change the speed of audio files
+FALSE,99,Video,Add Audio to Video,Add or replace audio track in video
+FALSE,99,Convert,Audio Converter,Convert audio files to various formats.
+FALSE,99,Audio,Change audio speed,Change the speed of audio files
 TRUE,4,GIF,Change GIF Speed,Adjust a bounded animated GIF playback speed locally.
-FALSE,4,PDF,Compress PDF,Compress PDF files securely in your browser
-FALSE,4,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
-FALSE,4,PDF,Extract Images from PDF,Extract images from a PDF file.
+FALSE,99,PDF,Compress PDF,Compress PDF files securely in your browser
+FALSE,99,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
+FALSE,99,PDF,Extract Images from PDF,Extract images from a PDF file.
 TRUE,4,GIF,Images to GIF,Convert up to four PNG or JPEG images into a local looping GIF.
-FALSE,4,Audio,Loop Audio,Create looping audio files
-FALSE,4,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
-FALSE,4,PDF,Merge PDF,Merge multiple PDF files into a single document
-FALSE,4,PDF,PDF to PNG,Convert PDF into PNG images
-FALSE,4,PDF,Protect PDF,Password protect PDF files securely
-FALSE,4,PDF,Rotate PDF,Rotate pages in a PDF document
-FALSE,4,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
-FALSE,4,PDF,Split PDF,Extract specific pages from a PDF file
-FALSE,4,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
-FALSE,4,Convert,Video to GIF,Convert video to animated GIF
-FALSE,4,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
-FALSE,5,Video,Change Video Speed,Change video playback speed
-FALSE,5,Video,Compress Video,Compress videos by scaling to different resolutions
-FALSE,5,Video,Crop Video,Crop video to remove unwanted areas
-FALSE,5,Video,Flip Video,Flip video horizontally or vertically
-FALSE,5,Image,Image Editor,Edit images with advanced tools and features
-FALSE,5,Image,Image to Text (OCR),Extract text from images using OCR.
-FALSE,5,Video,Loop Video,Create looping video files
-FALSE,5,Video,Merge videos,Append and merge videos easily.
-FALSE,5,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
-FALSE,5,PDF,PDF to EPUB,Convert PDF files to EPUB format
-FALSE,5,Image,Remove Background from Image,Automatically remove backgrounds from images
-FALSE,5,Video,Resize Video,Resize videos to different resolutions
-FALSE,5,Video,Rotate Video,Rotate video by specified degrees
-FALSE,5,Video,Trim Video,Trim video by removing unwanted sections
+FALSE,99,Audio,Loop Audio,Create looping audio files
+FALSE,99,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
+FALSE,99,PDF,Merge PDF,Merge multiple PDF files into a single document
+FALSE,99,PDF,PDF to PNG,Convert PDF into PNG images
+FALSE,99,PDF,Protect PDF,Password protect PDF files securely
+FALSE,99,PDF,Rotate PDF,Rotate pages in a PDF document
+FALSE,99,Image,Split Image into Pages,Split a large image into multiple pages (PDF).
+FALSE,99,PDF,Split PDF,Extract specific pages from a PDF file
+FALSE,99,Audio,Trim Audio,Trim audio files to extract specific time segments with sub-second precision (MP3  AAC  WAV).
+FALSE,99,Convert,Video to GIF,Convert video to animated GIF
+FALSE,99,Number,Volume of a Sphere,Calculate the volume of a sphere using radius or diameter
+FALSE,99,Video,Change Video Speed,Change video playback speed
+FALSE,99,Video,Compress Video,Compress videos by scaling to different resolutions
+FALSE,99,Video,Crop Video,Crop video to remove unwanted areas
+FALSE,99,Video,Flip Video,Flip video horizontally or vertically
+FALSE,99,Image,Image Editor,Edit images with advanced tools and features
+FALSE,99,Image,Image to Text (OCR),Extract text from images using OCR.
+FALSE,99,Video,Loop Video,Create looping video files
+FALSE,99,Video,Merge videos,Append and merge videos easily.
+FALSE,99,PDF,PDF Editor,Edit PDFs with advanced annotation  signing and editing tools
+FALSE,99,PDF,PDF to EPUB,Convert PDF files to EPUB format
+FALSE,99,Image,Remove Background from Image,Automatically remove backgrounds from images
+FALSE,99,Video,Resize Video,Resize videos to different resolutions
+FALSE,99,Video,Rotate Video,Rotate video by specified degrees
+FALSE,99,Video,Trim Video,Trim video by removing unwanted sections
+TRUE,4,Data,JSON and TOML,Convert JSON to TOML, TOML to JSON, or validate and format TOML locally.
+TRUE,4,Data,CSV TSV and XLSX,Convert one bounded CSV, TSV, or XLSX file locally.
+TRUE,4,Developer,Markdown to HTML,Render pasted Markdown as a local HTML download.
+TRUE,4,Developer,JSON to TypeScript,Generate a TypeScript type from one pasted JSON sample.
+FALSE,5,Developer,Data URL and File,Convert between a bounded file and a data URL locally.
+FALSE,5,Image,PNG to ICO,Create a multi-size Windows icon from one PNG locally.
 TRUE,0,Text,Base64 Encoder/Decoder,Encode or decode data using Base64.
 TRUE,0,Server,Battery and Power Inspector,Inspect local battery charge state and power source.
 TRUE,0,Text,Bcrypt,Hash strings with Bcrypt
