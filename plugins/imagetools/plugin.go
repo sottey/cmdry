@@ -68,6 +68,53 @@ func RunWatermark() {
 		return download("Watermarked image", output)
 	})
 }
+func RunGIFSpeed() {
+	run("gif-speed", "Change GIF Speed", "Adjust one animated GIF's playback speed locally.", []cmdry.Field{{Name: "image", Label: "Animated GIF", Type: "file", Accept: "image/gif", Required: true}, {Name: "speed", Label: "Speed", Type: "select", Value: "1", Options: []cmdry.Option{{Value: "0.5", Label: "Half speed"}, {Value: "1", Label: "Normal speed"}, {Value: "2", Label: "2× speed"}, {Value: "4", Label: "4× speed"}}}}, func(r cmdry.Request) (cmdry.View, error) {
+		upload, contents, err := uploaded(r)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		if upload.MIMEType != "image/gif" {
+			return cmdry.View{}, fmt.Errorf("upload a GIF image")
+		}
+		rate, err := strconv.ParseFloat(fmt.Sprint(r.Params["speed"]), 64)
+		if err != nil {
+			return cmdry.View{}, fmt.Errorf("choose a GIF speed")
+		}
+		gif, frames, err := SpeedGIF(contents, rate)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		return gifDownload("GIF speed changed", gif, frames)
+	})
+}
+func RunImagesToGIF() {
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.images-to-gif", Name: "Images to GIF", Version: "0.1.0", Description: "Turn up to four uploaded images into a local looping GIF.", Category: "image", Icon: "image", SearchTerms: []string{"image", "gif", "animate", "frames", "slideshow"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New GIF", Method: "read"}, {ID: "convert", Name: "Create GIF", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": func(cmdry.Request) (cmdry.View, error) {
+		return cmdry.View{Title: "Images to GIF", Components: []cmdry.Component{{Type: "form", Title: "Create an animated GIF", Description: "Select up to four PNG or JPEG images (4 MiB each). They become one looping GIF and are held only for this request.", Action: "convert", Submit: "Create GIF", Fields: []cmdry.Field{{Name: "images", Label: "Images", Type: "file", Accept: "image/png,image/jpeg", Multiple: true, Required: true}, {Name: "duration", Label: "Frame duration (milliseconds)", Type: "number", Value: "500", Min: "10", Max: "10000", Required: true}}}}}, nil
+	}, "convert": func(r cmdry.Request) (cmdry.View, error) {
+		uploads, contents, err := r.Files("images")
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		if len(uploads) > maxMultiImages {
+			return cmdry.View{}, fmt.Errorf("select from 1 through %d images", maxMultiImages)
+		}
+		for _, upload := range uploads {
+			if upload.MIMEType != "image/png" && upload.MIMEType != "image/jpeg" {
+				return cmdry.View{}, fmt.Errorf("upload PNG or JPEG images")
+			}
+		}
+		duration, err := number(r, "duration")
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		gif, frames, err := ImagesToGIF(contents, duration)
+		if err != nil {
+			return cmdry.View{}, err
+		}
+		return gifDownload("Images to GIF", gif, frames)
+	}}})
+}
 func RunImagesToPDF() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.images-to-pdf", Name: "Images to PDF", Version: "0.1.0", Description: "Convert up to four uploaded images to a local PDF.", Category: "pdf", Icon: "file", SearchTerms: []string{"image", "pdf", "photos", "pages", "convert"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New PDF", Method: "read"}, {ID: "convert", Name: "Create PDF", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": func(cmdry.Request) (cmdry.View, error) {
 		return cmdry.View{Title: "Images to PDF", Components: []cmdry.Component{{Type: "form", Title: "Create a PDF", Description: "Select up to four PNG, JPEG, or GIF images (4 MiB each). They are held only for this request.", Action: "convert", Submit: "Create PDF", Fields: []cmdry.Field{{Name: "images", Label: "Images", Type: "file", Accept: imageAccept, Multiple: true, Required: true}, {Name: "orientation", Label: "Page orientation", Type: "select", Value: "portrait", Options: []cmdry.Option{{Value: "portrait", Label: "Portrait"}, {Value: "landscape", Label: "Landscape"}}}}}}}, nil
@@ -76,8 +123,8 @@ func RunImagesToPDF() {
 		if err != nil {
 			return cmdry.View{}, err
 		}
-		if len(uploads) > maxPDFImages {
-			return cmdry.View{}, fmt.Errorf("select from 1 through %d images", maxPDFImages)
+		if len(uploads) > maxMultiImages {
+			return cmdry.View{}, fmt.Errorf("select from 1 through %d images", maxMultiImages)
 		}
 		for _, upload := range uploads {
 			if upload.MIMEType != "image/png" && upload.MIMEType != "image/jpeg" && upload.MIMEType != "image/gif" {
@@ -198,6 +245,9 @@ func RunEncode(id, name, format string) {
 }
 func encodedDownload(title, filename, mimeType string, contents []byte, bounds image.Rectangle) (cmdry.View, error) {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "metric", Label: "Output size", Value: fmt.Sprintf("%d × %d", bounds.Dx(), bounds.Dy())}, {Type: "download", Filename: filename, MIMEType: mimeType, Content: base64.StdEncoding.EncodeToString(contents)}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Transform another image"}}}}}, nil
+}
+func gifDownload(title string, contents []byte, frames int) (cmdry.View, error) {
+	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "metric", Label: "Frames", Value: fmt.Sprint(frames)}, {Type: "download", Filename: "cmdry-animation.gif", MIMEType: "image/gif", Content: base64.StdEncoding.EncodeToString(contents)}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Create another GIF"}}}}}, nil
 }
 
 func run(id, name, description string, fields []cmdry.Field, action cmdry.Handler) {

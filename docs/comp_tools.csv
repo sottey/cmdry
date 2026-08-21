@@ -47,15 +47,15 @@ TRUE,3,Image,Crop Image,Crop images quickly.
 TRUE,3,PDF,Images to PDF,Convert up to four images to a scaled portrait or landscape PDF locally.
 TRUE,3,Image,Resize Image,Resize one or multiple images at once.
 TRUE,3,Image,Rotate Image,Rotate an image easily.
-TRUE,3,Image,Watermark Images,Add centered text watermarks to one image locally.
+TRUE,3,Image,Watermark Images,Add a positioned text watermark to one image locally.
 FALSE,4,Video,Add Audio to Video,Add or replace audio track in video
 FALSE,4,Convert,Audio Converter,Convert audio files to various formats.
 FALSE,4,Audio,Change audio speed,Change the speed of audio files
-FALSE,4,GIF,Change GIF Speed,Change GIF animation speed
+TRUE,4,GIF,Change GIF Speed,Adjust a bounded animated GIF playback speed locally.
 FALSE,4,PDF,Compress PDF,Compress PDF files securely in your browser
 FALSE,4,Audio,Extract Audio from Video,Extract audio from video files (MP4  MOV  etc.) to AAC  MP3  or WAV.
 FALSE,4,PDF,Extract Images from PDF,Extract images from a PDF file.
-FALSE,4,GIF,Images to GIF,Convert multiple images into an animated GIF
+TRUE,4,GIF,Images to GIF,Convert up to four PNG or JPEG images into a local looping GIF.
 FALSE,4,Audio,Loop Audio,Create looping audio files
 FALSE,4,Audio,Merge Audio,Merge multiple audio files into one (MP3  AAC  WAV).
 FALSE,4,PDF,Merge PDF,Merge multiple PDF files into a single document

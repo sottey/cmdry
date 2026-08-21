@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"image"
 	"image/color"
+	"image/color/palette"
+	"image/gif"
 	"image/png"
 	"testing"
 )
@@ -113,6 +115,40 @@ func TestWatermarkAndImagesToPDF(t *testing.T) {
 	}
 	if len(pdf) < 8 || string(pdf[:5]) != "%PDF-" {
 		t.Fatalf("unexpected PDF header: %q", pdf[:min(len(pdf), 8)])
+	}
+}
+
+func TestGIFSpeedAndImagesToGIF(t *testing.T) {
+	first := image.NewPaletted(image.Rect(0, 0, 2, 2), palette.Plan9)
+	first.SetColorIndex(0, 0, 1)
+	second := image.NewPaletted(image.Rect(0, 0, 2, 2), palette.Plan9)
+	second.SetColorIndex(1, 1, 2)
+	var animated bytes.Buffer
+	if err := gif.EncodeAll(&animated, &gif.GIF{Image: []*image.Paletted{first, second}, Delay: []int{10, 20}, LoopCount: 0}); err != nil {
+		t.Fatal(err)
+	}
+	faster, frames, err := SpeedGIF(animated.Bytes(), 2)
+	if err != nil || frames != 2 {
+		t.Fatalf("speed GIF frames=%d err=%v", frames, err)
+	}
+	decoded, err := gif.DecodeAll(bytes.NewReader(faster))
+	if err != nil || decoded.Delay[0] != 5 || decoded.Delay[1] != 10 {
+		t.Fatalf("speed GIF delays=%v err=%v", decoded.Delay, err)
+	}
+	static, err := EncodePNG(source())
+	if err != nil {
+		t.Fatal(err)
+	}
+	assembled, frames, err := ImagesToGIF([][]byte{static, static}, 250)
+	if err != nil || frames != 2 {
+		t.Fatalf("images to GIF frames=%d err=%v", frames, err)
+	}
+	decoded, err = gif.DecodeAll(bytes.NewReader(assembled))
+	if err != nil || len(decoded.Image) != 2 || decoded.Delay[0] != 25 || decoded.LoopCount != 0 {
+		t.Fatalf("assembled GIF=%#v err=%v", decoded, err)
+	}
+	if _, _, err := SpeedGIF(animated.Bytes(), 3); err == nil {
+		t.Fatal("unsupported speed was accepted")
 	}
 }
 

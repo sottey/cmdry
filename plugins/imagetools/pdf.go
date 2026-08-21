@@ -7,13 +7,13 @@ import (
 	"github.com/raceresult/gopdf"
 )
 
-const maxPDFImages = 4
+const maxMultiImages = 4
 const maxPDFBytes = 6 * 1024 * 1024
 
 // ImagesToPDF creates one A4 page per bounded image and keeps the result in memory.
 func ImagesToPDF(contents [][]byte, landscape bool) ([]byte, error) {
-	if len(contents) < 1 || len(contents) > maxPDFImages {
-		return nil, fmt.Errorf("select from 1 through %d images", maxPDFImages)
+	if len(contents) < 1 || len(contents) > maxMultiImages {
+		return nil, fmt.Errorf("select from 1 through %d images", maxMultiImages)
 	}
 	pageWidth, pageHeight := 210.0, 297.0
 	if landscape {

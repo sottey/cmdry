@@ -21,6 +21,7 @@ import (
 	"github.com/sottey/cmdry/internal/pluginnav"
 	"github.com/sottey/cmdry/internal/pluginorder"
 	"github.com/sottey/cmdry/internal/plugins"
+	"github.com/sottey/cmdry/internal/pluginstate"
 	"github.com/sottey/cmdry/internal/workspace"
 )
 
@@ -40,6 +41,9 @@ type App struct {
 	navigation     pluginnav.Store
 	navState       pluginnav.State
 	navMu          sync.RWMutex
+	pluginState    pluginstate.Store
+	disabledIDs    []string
+	pluginStateMu  sync.RWMutex
 	workspace      workspace.Store
 	workspaceState workspace.State
 	workspaceMu    sync.RWMutex
@@ -50,29 +54,31 @@ type App struct {
 	templates      *template.Template
 }
 type pageData struct {
-	Title, Section string
-	Plugins        []plugins.Registered
-	PluginGroups   []PluginGroup
-	Favorites      []plugins.Registered
-	Recents        []plugins.Registered
-	Hidden         []string
-	AllVisible     bool
-	SomeVisible    bool
-	RecentLimit    int
-	ShowFavorites  bool
-	ShowRecents    bool
-	Theme          string
-	ReducedMotion  bool
-	SidebarDensity string
-	DefaultLanding string
-	Diagnostics    []plugins.Diagnostic
-	LastScan       time.Time
-	ScanFailure    string
-	Current        *plugins.Registered
-	View           *plugins.View
-	Error          string
-	Message        string
-	PluginDetail   *PluginDetail
+	Title, Section  string
+	Plugins         []plugins.Registered
+	EnabledPlugins  []plugins.Registered
+	PluginGroups    []PluginGroup
+	Favorites       []plugins.Registered
+	Recents         []plugins.Registered
+	Hidden          []string
+	AllVisible      bool
+	SomeVisible     bool
+	RecentLimit     int
+	ShowFavorites   bool
+	ShowRecents     bool
+	Theme           string
+	ReducedMotion   bool
+	SidebarDensity  string
+	DefaultLanding  string
+	Diagnostics     []plugins.Diagnostic
+	DisabledPlugins []plugins.Registered
+	LastScan        time.Time
+	ScanFailure     string
+	Current         *plugins.Registered
+	View            *plugins.View
+	Error           string
+	Message         string
+	PluginDetail    *PluginDetail
 }
 
 type PluginDetail struct {
@@ -160,12 +166,19 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger, ini
 	if err != nil {
 		return nil, err
 	}
+	stateStore := pluginstate.Store{DataDir: cfg.DataDir}
+	pluginState, err := stateStore.Load()
+	if err != nil {
+		return nil, err
+	}
 	workspaceStore := workspace.Store{DataDir: cfg.DataDir}
 	workspaceState, err := workspaceStore.Load()
 	if err != nil {
 		return nil, err
 	}
-	return &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, workspace: workspaceStore, workspaceState: workspaceState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}, nil
+	app := &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, pluginState: stateStore, disabledIDs: pluginState.Disabled, workspace: workspaceStore, workspaceState: workspaceState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}
+	app.applyDisabledStatuses()
+	return app, nil
 }
 func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/health" {
@@ -198,6 +211,8 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		a.savePluginSidebarVisibility(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/plugins/sidebar-visibility/all":
 		a.saveAllPluginSidebarVisibility(w, r)
+	case r.Method == http.MethodPost && r.URL.Path == "/plugins/status":
+		a.savePluginStatus(w, r)
 	case r.Method == http.MethodGet && r.URL.Path == "/settings":
 		a.settings(w, r)
 	case r.Method == http.MethodPost && r.URL.Path == "/settings/navigation":
@@ -249,9 +264,20 @@ func (a *App) base(title, section string) pageData {
 	a.workspaceMu.RLock()
 	workspaceState := a.workspaceState
 	a.workspaceMu.RUnlock()
-	visibleEntries := entriesWithoutIDs(entries, hiddenIDs)
+	enabledEntries := entriesWithStatus(entries, plugins.StatusEnabled)
+	visibleEntries := entriesWithoutIDs(enabledEntries, hiddenIDs)
 	favorites := entriesByID(visibleEntries, favoriteIDs)
-	return pageData{Title: title, Section: section, Plugins: entries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(entries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding}
+	return pageData{Title: title, Section: section, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
+}
+
+func entriesWithStatus(entries []plugins.Registered, status plugins.Status) []plugins.Registered {
+	result := make([]plugins.Registered, 0, len(entries))
+	for _, entry := range entries {
+		if entry.Status == status {
+			result = append(result, entry)
+		}
+	}
+	return result
 }
 
 func entriesWithoutIDs(entries []plugins.Registered, ids []string) []plugins.Registered {
@@ -326,7 +352,7 @@ func (a *App) dashboard(w http.ResponseWriter, r *http.Request) {
 		defaultLanding, lastPluginID := a.workspaceState.DefaultLanding, a.workspaceState.LastPluginID
 		a.workspaceMu.RUnlock()
 		if defaultLanding == workspace.LandingLastUsed && lastPluginID != "" {
-			if _, ok := a.registry.Get(lastPluginID); ok {
+			if entry, ok := a.registry.Get(lastPluginID); ok && entry.Status == plugins.StatusEnabled {
 				http.Redirect(w, r, "/plugins/"+lastPluginID, http.StatusSeeOther)
 				return
 			}
@@ -354,8 +380,61 @@ func (a *App) refreshPlugins(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/plugins?refresh=failed", http.StatusSeeOther)
 		return
 	}
+	a.applyDisabledStatuses()
 	a.logger.Info("plugins refreshed", "plugins", a.registry.Len())
 	http.Redirect(w, r, "/plugins?refreshed=1", http.StatusSeeOther)
+}
+
+func (a *App) applyDisabledStatuses() {
+	a.pluginStateMu.RLock()
+	ids := append([]string(nil), a.disabledIDs...)
+	a.pluginStateMu.RUnlock()
+	for _, id := range ids {
+		a.registry.SetStatus(id, plugins.StatusDisabled)
+	}
+}
+
+func (a *App) savePluginStatus(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4*1024)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "invalid plugin status request", http.StatusBadRequest)
+		return
+	}
+	id := r.Form.Get("plugin_id")
+	status := plugins.Status(r.Form.Get("status"))
+	if !plugins.ValidID(id) || (status != plugins.StatusEnabled && status != plugins.StatusDisabled) {
+		http.Error(w, "invalid plugin status request", http.StatusBadRequest)
+		return
+	}
+	_, ok := a.registry.Get(id)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+	if err := a.setPluginStatus(id, status); err != nil {
+		a.logger.Error("save plugin status", "plugin", id, "error", err)
+		http.Error(w, "unable to save plugin status", http.StatusInternalServerError)
+		return
+	}
+	http.Redirect(w, r, "/plugins", http.StatusSeeOther)
+}
+
+func (a *App) setPluginStatus(id string, status plugins.Status) error {
+	a.pluginStateMu.Lock()
+	state := pluginstate.State{Disabled: append([]string(nil), a.disabledIDs...)}
+	if status == plugins.StatusDisabled {
+		state.Disabled = appendUnique(state.Disabled, id)
+	} else {
+		state.Disabled = withoutID(state.Disabled, id)
+	}
+	if err := a.pluginState.Save(state); err != nil {
+		a.pluginStateMu.Unlock()
+		return err
+	}
+	a.disabledIDs = state.Disabled
+	a.pluginStateMu.Unlock()
+	a.registry.SetStatus(id, status)
+	return nil
 }
 
 func (a *App) diagnosticsPage(w http.ResponseWriter, r *http.Request) {
@@ -470,8 +549,13 @@ func (a *App) savePluginSidebarVisibility(w http.ResponseWriter, r *http.Request
 		http.Error(w, "invalid plugin", http.StatusBadRequest)
 		return
 	}
-	if _, ok := a.registry.Get(id); !ok {
+	entry, ok := a.registry.Get(id)
+	if !ok {
 		http.NotFound(w, r)
+		return
+	}
+	if entry.Status != plugins.StatusEnabled {
+		http.Error(w, "disabled plugins cannot be shown in the sidebar", http.StatusBadRequest)
 		return
 	}
 	if err := a.setPluginSidebarVisibility(id, r.Form.Get("visible") == "true"); err != nil {
@@ -492,7 +576,9 @@ func (a *App) saveAllPluginSidebarVisibility(w http.ResponseWriter, r *http.Requ
 	ids := make([]string, 0, a.registry.Len())
 	if !visible {
 		for _, entry := range a.registry.All() {
-			ids = append(ids, entry.Manifest.ID)
+			if entry.Status == plugins.StatusEnabled {
+				ids = append(ids, entry.Manifest.ID)
+			}
 		}
 	}
 	if err := a.setAllPluginSidebarVisibility(ids); err != nil {
@@ -727,6 +813,13 @@ func (a *App) pluginPage(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
+	if entry.Status != plugins.StatusEnabled {
+		d := a.base(entry.Manifest.Name, entry.Manifest.Name)
+		d.Current = &entry
+		d.Error = "This plugin is disabled. Re-enable it from the Plugins page before running it."
+		a.render(w, http.StatusForbidden, "plugin.html", d)
+		return
+	}
 	a.recordLastPlugin(entry.Manifest.ID)
 	a.recordRecent(entry.Manifest.ID)
 	d := a.base(entry.Manifest.Name, entry.Manifest.Name)
@@ -820,6 +913,10 @@ func (a *App) pluginAction(w http.ResponseWriter, r *http.Request) {
 	entry, ok := a.registry.Get(parts[0])
 	if !ok {
 		http.NotFound(w, r)
+		return
+	}
+	if entry.Status != plugins.StatusEnabled {
+		http.Error(w, "plugin is disabled", http.StatusForbidden)
 		return
 	}
 	params, err := actionParams(w, r)

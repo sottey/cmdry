@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/sottey/cmdry/internal/plugins"
+	"github.com/sottey/cmdry/internal/pluginstate"
 )
 
 func TestActionParamsReadsEphemeralUpload(t *testing.T) {
@@ -85,5 +86,37 @@ func TestActionParamsReadsMultipleEphemeralUploads(t *testing.T) {
 	}
 	if uploads[0].Name != "one.png" || uploads[1].Name != "two.png" {
 		t.Fatalf("upload names=%q, %q", uploads[0].Name, uploads[1].Name)
+	}
+}
+
+func TestDisabledPluginsStayRegisteredButLeaveNavigation(t *testing.T) {
+	registry := plugins.NewRegistry()
+	registry.Add(plugins.Registered{Manifest: plugins.Manifest{ID: "com.sottey.text", Name: "Text", Category: "text"}, Status: plugins.StatusEnabled})
+	registry.Add(plugins.Registered{Manifest: plugins.Manifest{ID: "com.sottey.ports", Name: "Ports", Category: "server"}, Status: plugins.StatusEnabled})
+	app := &App{registry: registry, groupState: map[string]bool{}, pluginState: pluginstate.Store{DataDir: t.TempDir()}}
+	if err := app.setPluginStatus("com.sottey.ports", plugins.StatusDisabled); err != nil {
+		t.Fatal(err)
+	}
+	ports, ok := registry.Get("com.sottey.ports")
+	if !ok || ports.Status != plugins.StatusDisabled {
+		t.Fatalf("ports status = %#v", ports)
+	}
+	persisted, err := app.pluginState.Load()
+	if err != nil || len(persisted.Disabled) != 1 || persisted.Disabled[0] != "com.sottey.ports" {
+		t.Fatalf("persisted state = %#v, %v", persisted, err)
+	}
+	data := app.base("Cmdry", "Overview")
+	if len(data.Plugins) != 2 || len(data.EnabledPlugins) != 1 || len(data.DisabledPlugins) != 1 {
+		t.Fatalf("plugin sets = all:%d enabled:%d disabled:%d", len(data.Plugins), len(data.EnabledPlugins), len(data.DisabledPlugins))
+	}
+	if len(data.PluginGroups) != 1 || data.PluginGroups[0].ID != "text" {
+		t.Fatalf("visible groups = %#v", data.PluginGroups)
+	}
+	if err := app.setPluginStatus("com.sottey.ports", plugins.StatusEnabled); err != nil {
+		t.Fatal(err)
+	}
+	persisted, err = app.pluginState.Load()
+	if err != nil || len(persisted.Disabled) != 0 {
+		t.Fatalf("re-enabled state = %#v, %v", persisted, err)
 	}
 }

@@ -100,6 +100,10 @@ cmdry.Run(cmdry.Plugin{
 
 Build a future plugin separately, place the executable in `CMDRY_PLUGIN_DIR`, and use **Refresh plugins** from Cmdry’s Plugins page. No Cmdry core modification is needed.
 
+The Plugins page can also disable a registered plugin locally. Disabled plugins
+remain visible in Plugins and Diagnostics but are absent from the sidebar and
+command palette, and Cmdry will not execute them until re-enabled.
+
 See the [plugin development guide](docs/plugin-development.md) for the complete
 v1 manifest, response contract, SDK example, local development workflow, and
 troubleshooting steps.
@@ -239,6 +243,10 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 
 - **Images to PDF**: turn up to four uploaded PNG, JPEG, or GIF images into a
   scaled A4 portrait or landscape PDF entirely in memory.
+
+- **Change GIF Speed and Images to GIF**: adjust the playback rate of one
+  bounded animated GIF, or turn up to four PNG/JPEG images into a local looping
+  GIF with a selected frame duration.
 
   Uploaded images are limited to 4 MiB and are never exposed to plugins as host
   paths or retained after the request.

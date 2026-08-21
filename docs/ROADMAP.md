@@ -40,7 +40,7 @@ Cmdry v0.12.0 provides:
   group expansion state.
 - [x] Add appearance and accessibility settings: system/light/dark theme, reduced
   motion, sidebar density, and an Overview-or-last-used default landing page.
-- Add a persisted enabled/disabled state for installed plugins. Disabled tools
+- [x] Add a persisted enabled/disabled state for installed plugins. Disabled tools
   remain visible in Plugins and Diagnostics and can be re-enabled without
   deleting their binary.
 
@@ -87,7 +87,7 @@ Cmdry v0.12.0 provides:
 
 - Add an explicit, administrator-controlled plugin rescan endpoint or command;
   preserve startup-only discovery as the safe default until this is designed.
-- Persist enabled/disabled state in the data directory, while keeping invalid
+- [x] Persist enabled/disabled state in the data directory, while keeping invalid
   and failed plugins visible as diagnostics.
 - Add bounded per-plugin execution telemetry: invocation count, duration, last
   successful invocation, and last sanitized failure.

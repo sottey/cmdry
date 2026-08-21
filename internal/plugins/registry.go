@@ -81,6 +81,19 @@ func (r *Registry) Len() int {
 	return len(r.entries)
 }
 
+// SetStatus updates a registered plugin without changing its manifest or path.
+func (r *Registry) SetStatus(id string, status Status) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	entry, ok := r.entries[id]
+	if !ok {
+		return false
+	}
+	entry.Status = status
+	r.entries[id] = entry
+	return true
+}
+
 // Replace atomically swaps the registry contents after a complete plugin scan.
 func (r *Registry) Replace(entries []Registered) {
 	next := make(map[string]Registered, len(entries))
