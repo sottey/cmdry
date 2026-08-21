@@ -260,6 +260,11 @@ Build the Cmdry core into `dist/` and stage every bundled plugin in
 ./scripts/build.sh
 ```
 
+`VERSION` is the single release-version source. Set it before a release build;
+the build script injects it into the Cmdry UI and CLI, every bundled plugin
+manifest, and the macOS Wi-Fi app bundle. For example, `0.21.0` renders as
+`Cmdry v0.21.0` in the UI and is printed by `cmdry version`.
+
 Set `CMDRY_BUILD_DIR` to use a different output directory. To stage plugins
 directly into an existing Cmdry installation, set `CMDRY_PLUGIN_DIR` to that
 installation's configured plugin directory; the script needs write permission

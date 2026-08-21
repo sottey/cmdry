@@ -3,9 +3,11 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /out/cmdry . && \
-    CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /out/cmdry-ports ./plugins/ports/cmd/cmdry-ports && \
-    CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o /out/cmdry-journal ./plugins/journal/cmd/cmdry-journal
+RUN version=$(tr -d '\r\n' < VERSION) && \
+    linker_flags="-s -w -X github.com/sottey/cmdry/internal/buildinfo.Version=$version -X github.com/sottey/cmdry/plugin-sdk/go.BuildVersion=$version" && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="$linker_flags" -o /out/cmdry . && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="$linker_flags" -o /out/cmdry-ports ./plugins/ports/cmd/cmdry-ports && \
+    CGO_ENABLED=0 go build -trimpath -ldflags="$linker_flags" -o /out/cmdry-journal ./plugins/journal/cmd/cmdry-journal
 
 FROM alpine:3.22
 RUN apk add --no-cache iproute2

@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/sottey/cmdry/internal/buildinfo"
 	"github.com/sottey/cmdry/internal/config"
 	"github.com/sottey/cmdry/internal/groupstate"
 	"github.com/sottey/cmdry/internal/pluginnav"
@@ -55,6 +56,7 @@ type App struct {
 }
 type pageData struct {
 	Title, Section     string
+	AppVersion         string
 	Plugins            []plugins.Registered
 	EnabledPlugins     []plugins.Registered
 	PluginGroups       []PluginGroup
@@ -268,7 +270,7 @@ func (a *App) base(title, section string) pageData {
 	enabledEntries := entriesWithStatus(entries, plugins.StatusEnabled)
 	visibleEntries := entriesWithoutIDs(enabledEntries, hiddenIDs)
 	favorites := entriesByID(visibleEntries, favoriteIDs)
-	return pageData{Title: title, Section: section, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, FavoritesCollapsed: state["favorites"], Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
+	return pageData{Title: title, Section: section, AppVersion: buildinfo.Version, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, FavoritesCollapsed: state["favorites"], Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
 }
 
 func entriesWithStatus(entries []plugins.Registered, status plugins.Status) []plugins.Registered {

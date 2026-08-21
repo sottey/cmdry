@@ -159,7 +159,12 @@ type Plugin struct {
 	Actions  map[string]Handler
 }
 
+// BuildVersion is set for bundled plugins by the release build. It is empty
+// for independently compiled plugins, which retain their declared version.
+var BuildVersion string
+
 func Run(p Plugin) {
+	p.Manifest = builtManifest(p.Manifest)
 	if len(os.Args) < 2 {
 		fail("USAGE", "expected manifest or execute", 2)
 		return
@@ -191,6 +196,13 @@ func Run(p Plugin) {
 	default:
 		fail("USAGE", "unknown command", 2)
 	}
+}
+
+func builtManifest(manifest Manifest) Manifest {
+	if BuildVersion != "" {
+		manifest.Version = BuildVersion
+	}
+	return manifest
 }
 func fail(code, message string, status int) {
 	write(Response{OK: false, Error: &Error{Code: code, Message: message}})
