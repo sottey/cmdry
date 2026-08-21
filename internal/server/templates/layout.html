@@ -22,7 +22,7 @@
     <a class="brand" href="/"><span class="brand-mark">›_</span> cmdry</a>
     <nav>
       <a href="/overview" {{if eq .Section "Overview"}}class="active"{{end}}>Overview</a>
-      {{if and .ShowFavorites .Favorites}}<p class="nav-label special-label">Favorites</p><div class="plugin-special-list">{{range .Favorites}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">★</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
+      {{if and .ShowFavorites .Favorites}}<section class="plugin-group plugin-special-group" data-group-id="favorites" {{if .FavoritesCollapsed}}data-collapsed="true"{{end}}><button type="button" class="plugin-group-toggle" aria-expanded="{{if .FavoritesCollapsed}}false{{else}}true{{end}}" aria-controls="plugin-group-favorites"><span>Favorites</span><em>{{len .Favorites}}</em><i>⌄</i></button><div id="plugin-group-favorites" class="plugin-group-links plugin-special-list">{{range .Favorites}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">★</span>{{.Manifest.Name}}</a>{{end}}</div></section>{{end}}
       {{if and .ShowRecents .Recents}}<p class="nav-label special-label">Recent tools</p><div class="plugin-special-list">{{range .Recents}}<a href="/plugins/{{.Manifest.ID}}" {{if eq $.Section .Manifest.Name}}class="active"{{end}}><span aria-hidden="true">↗</span>{{.Manifest.Name}}</a>{{end}}</div>{{end}}
       <p class="nav-label">Installed tools</p>
       <div id="plugin-nav" aria-label="Installed tools">

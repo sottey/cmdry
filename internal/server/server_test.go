@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/sottey/cmdry/internal/pluginnav"
 	"github.com/sottey/cmdry/internal/plugins"
 	"github.com/sottey/cmdry/internal/pluginstate"
 )
@@ -118,5 +119,19 @@ func TestDisabledPluginsStayRegisteredButLeaveNavigation(t *testing.T) {
 	persisted, err = app.pluginState.Load()
 	if err != nil || len(persisted.Disabled) != 0 {
 		t.Fatalf("re-enabled state = %#v, %v", persisted, err)
+	}
+}
+
+func TestFavoritesUsePersistedSectionState(t *testing.T) {
+	registry := plugins.NewRegistry()
+	registry.Add(plugins.Registered{Manifest: plugins.Manifest{ID: "com.sottey.text", Name: "Text", Category: "text"}, Status: plugins.StatusEnabled})
+	app := &App{
+		registry:   registry,
+		groupState: map[string]bool{"favorites": true},
+		navState:   pluginnav.State{Favorites: []string{"com.sottey.text"}, ShowFavorites: true},
+	}
+	data := app.base("Cmdry", "Overview")
+	if len(data.Favorites) != 1 || !data.FavoritesCollapsed {
+		t.Fatalf("favorites = %#v, collapsed = %t", data.Favorites, data.FavoritesCollapsed)
 	}
 }

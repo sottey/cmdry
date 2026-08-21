@@ -54,31 +54,32 @@ type App struct {
 	templates      *template.Template
 }
 type pageData struct {
-	Title, Section  string
-	Plugins         []plugins.Registered
-	EnabledPlugins  []plugins.Registered
-	PluginGroups    []PluginGroup
-	Favorites       []plugins.Registered
-	Recents         []plugins.Registered
-	Hidden          []string
-	AllVisible      bool
-	SomeVisible     bool
-	RecentLimit     int
-	ShowFavorites   bool
-	ShowRecents     bool
-	Theme           string
-	ReducedMotion   bool
-	SidebarDensity  string
-	DefaultLanding  string
-	Diagnostics     []plugins.Diagnostic
-	DisabledPlugins []plugins.Registered
-	LastScan        time.Time
-	ScanFailure     string
-	Current         *plugins.Registered
-	View            *plugins.View
-	Error           string
-	Message         string
-	PluginDetail    *PluginDetail
+	Title, Section     string
+	Plugins            []plugins.Registered
+	EnabledPlugins     []plugins.Registered
+	PluginGroups       []PluginGroup
+	Favorites          []plugins.Registered
+	FavoritesCollapsed bool
+	Recents            []plugins.Registered
+	Hidden             []string
+	AllVisible         bool
+	SomeVisible        bool
+	RecentLimit        int
+	ShowFavorites      bool
+	ShowRecents        bool
+	Theme              string
+	ReducedMotion      bool
+	SidebarDensity     string
+	DefaultLanding     string
+	Diagnostics        []plugins.Diagnostic
+	DisabledPlugins    []plugins.Registered
+	LastScan           time.Time
+	ScanFailure        string
+	Current            *plugins.Registered
+	View               *plugins.View
+	Error              string
+	Message            string
+	PluginDetail       *PluginDetail
 }
 
 type PluginDetail struct {
@@ -267,7 +268,7 @@ func (a *App) base(title, section string) pageData {
 	enabledEntries := entriesWithStatus(entries, plugins.StatusEnabled)
 	visibleEntries := entriesWithoutIDs(enabledEntries, hiddenIDs)
 	favorites := entriesByID(visibleEntries, favoriteIDs)
-	return pageData{Title: title, Section: section, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
+	return pageData{Title: title, Section: section, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, FavoritesCollapsed: state["favorites"], Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
 }
 
 func entriesWithStatus(entries []plugins.Registered, status plugins.Status) []plugins.Registered {
@@ -491,6 +492,7 @@ func (a *App) saveGroupState(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	known := map[string]bool{}
+	known["favorites"] = true
 	for _, entry := range a.registry.All() {
 		id := strings.TrimSpace(entry.Manifest.Category)
 		if id == "" {
