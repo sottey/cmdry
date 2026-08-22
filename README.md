@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/cmdry-banner.png" alt="Cmdry — Focused local tools" width="1086">
+</p>
+
 # Cmdry
 
 Cmdry is a small, self-hosted web workbench for focused local tools. The Go core provides navigation, a consistent server-rendered UI, plugin discovery, and strict executable-plugin boundaries. Plugins are separate processes that return versioned JSON—not arbitrary HTML, JavaScript, or shell commands.
