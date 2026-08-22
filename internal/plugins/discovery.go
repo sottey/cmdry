@@ -32,6 +32,9 @@ type Discoverer struct {
 	Directory string
 	Timeout   time.Duration
 	Logger    *slog.Logger
+	// Filter limits which valid manifests enter the registry. A nil filter
+	// accepts every valid plugin.
+	Filter func(Manifest) bool
 }
 
 // Discover scans the plugin directory and atomically replaces the registry only
@@ -78,6 +81,10 @@ func (d Discoverer) scan(ctx context.Context) (*Registry, ScanReport, error) {
 		if err != nil {
 			d.Logger.Warn("invalid plugin", "path", path, "error", err)
 			report.Diagnostics = append(report.Diagnostics, Diagnostic{Path: path, Reason: boundedText(err.Error(), 512), Stderr: stderr, StderrTruncated: stderrTruncated})
+			continue
+		}
+		if d.Filter != nil && !d.Filter(m) {
+			d.Logger.Info("plugin excluded by discovery policy", "id", m.ID, "path", path)
 			continue
 		}
 		if !registry.Add(Registered{Manifest: m, Path: path, Status: StatusEnabled}) {

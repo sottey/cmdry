@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -13,11 +14,16 @@ type Config struct {
 	Addr, PluginDir, DataDir string
 	LogLevel                 slog.Level
 	PluginTimeout            time.Duration
+	DemoMode                 bool
 }
 
 func Load() (Config, error) {
 	dataDir := value("CMDRY_DATA_DIR", "/opt/cmdry/data")
-	cfg := Config{Addr: value("CMDRY_ADDR", "127.0.0.1:8080"), PluginDir: value("CMDRY_PLUGIN_DIR", "/opt/cmdry/plugins"), DataDir: dataDir, PluginTimeout: 8 * time.Second}
+	demoMode, err := boolValue("CMDRY_DEMO_MODE", false)
+	if err != nil {
+		return Config{}, err
+	}
+	cfg := Config{Addr: value("CMDRY_ADDR", "127.0.0.1:8080"), PluginDir: value("CMDRY_PLUGIN_DIR", "/opt/cmdry/plugins"), DataDir: dataDir, PluginTimeout: 8 * time.Second, DemoMode: demoMode}
 	switch strings.ToLower(value("CMDRY_LOG_LEVEL", "info")) {
 	case "debug":
 		cfg.LogLevel = slog.LevelDebug
@@ -35,6 +41,19 @@ func Load() (Config, error) {
 	}
 	return cfg, nil
 }
+
+func boolValue(key string, fallback bool) (bool, error) {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback, nil
+	}
+	parsed, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, fmt.Errorf("invalid %s", key)
+	}
+	return parsed, nil
+}
+
 func value(key, fallback string) string {
 	if v := strings.TrimSpace(os.Getenv(key)); v != "" {
 		return v

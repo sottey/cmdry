@@ -1,0 +1,15 @@
+services:
+  cmdry-demo:
+    build: .
+    container_name: 8088-cmdry-demo
+    network_mode: host
+    environment:
+      CMDRY_ADDR: "127.0.0.1:8088"
+      CMDRY_DEMO_MODE: "true"
+      CMDRY_PLUGIN_DIR: /opt/cmdry/plugins
+      CMDRY_DATA_DIR: /opt/cmdry/data
+    volumes:
+      - ./dist/plugins:/opt/cmdry/plugins:ro
+    tmpfs:
+      - /opt/cmdry/data
+    restart: unless-stopped

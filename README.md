@@ -66,6 +66,7 @@ Configuration is read once at startup:
 | `CMDRY_PLUGIN_DIR` | `/opt/cmdry/plugins` | executable plugin directory |
 | `CMDRY_DATA_DIR` | `/opt/cmdry/data` | Cmdry state directory |
 | `CMDRY_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, or `error` |
+| `CMDRY_DEMO_MODE` | `false` | registers transform-only plugins and makes Cmdry workspace state read-only |
 
 `cmdry serve --addr` and `--plugin-dir` override the matching environment variables.
 
@@ -295,6 +296,33 @@ if the plugin directory cannot be scanned, it keeps the existing registry.
 Drag installed-tool links in the sidebar to reorder them. Cmdry saves the order
 to `plugin-order.json` in `CMDRY_DATA_DIR` and restores it on future starts and
 plugin refreshes. Newly discovered plugins appear after the saved entries.
+
+## Public demo mode
+
+`CMDRY_DEMO_MODE=true` is the public-demo profile. It admits only plugins that
+declare exactly `data.transform`, excludes every `server` category plugin, and
+rejects all Cmdry workspace writes (settings, favorites, navigation, plugin
+administration, and refresh). Tool actions remain available; their uploads and
+results stay in the request/response path and are not retained by Cmdry.
+
+For a local check, build first and then run:
+
+```bash
+./scripts/run-demo.sh
+```
+
+It listens on `127.0.0.1:8088` and keeps its state in `.cmdry-demo-data`. For
+Grump, `docker-compose.demo.yml` provides the same profile and mounts staged
+plugins read-only:
+
+```bash
+./scripts/build.sh
+docker compose -f docker-compose.demo.yml up -d --build
+```
+
+Point the Cloudflare Tunnel public hostname at `http://127.0.0.1:8088`, not the
+normal Cmdry service. The demo uses a temporary container data directory and
+does not expose host-inspection plugins.
 
 ## Future ideas
 

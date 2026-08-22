@@ -73,6 +73,7 @@ type pageData struct {
 	ReducedMotion      bool
 	SidebarDensity     string
 	DefaultLanding     string
+	DemoMode           bool
 	Diagnostics        []plugins.Diagnostic
 	DisabledPlugins    []plugins.Registered
 	LastScan           time.Time
@@ -179,7 +180,7 @@ func New(cfg config.Config, registry *plugins.Registry, logger *slog.Logger, ini
 	if err != nil {
 		return nil, err
 	}
-	app := &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, pluginState: stateStore, disabledIDs: pluginState.Disabled, workspace: workspaceStore, workspaceState: workspaceState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}
+	app := &App{cfg: cfg, registry: registry, discovery: plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger, Filter: demoPluginFilter(cfg.DemoMode)}, order: order, orderIDs: orderIDs, groups: groups, groupState: groupState, navigation: navigation, navState: navState, pluginState: stateStore, disabledIDs: pluginState.Disabled, workspace: workspaceStore, workspaceState: workspaceState, diagnostics: initialReport, runner: plugins.Runner{Timeout: cfg.PluginTimeout}, logger: logger, templates: t}
 	app.applyDisabledStatuses()
 	return app, nil
 }
@@ -191,6 +192,10 @@ func (a *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if strings.HasPrefix(r.URL.Path, "/static/") {
 		http.FileServer(http.FS(assets)).ServeHTTP(w, r)
+		return
+	}
+	if a.cfg.DemoMode && r.Method == http.MethodPost && !strings.Contains(r.URL.Path, "/actions/") {
+		http.Error(w, "Cmdry demo mode keeps workspace settings read-only", http.StatusForbidden)
 		return
 	}
 	switch {
@@ -270,7 +275,16 @@ func (a *App) base(title, section string) pageData {
 	enabledEntries := entriesWithStatus(entries, plugins.StatusEnabled)
 	visibleEntries := entriesWithoutIDs(enabledEntries, hiddenIDs)
 	favorites := entriesByID(visibleEntries, favoriteIDs)
-	return pageData{Title: title, Section: section, AppVersion: buildinfo.Version, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, FavoritesCollapsed: state["favorites"], Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
+	return pageData{Title: title, Section: section, AppVersion: buildinfo.Version, Plugins: entries, EnabledPlugins: enabledEntries, PluginGroups: makeGroups(visibleEntries, state), Favorites: favorites, FavoritesCollapsed: state["favorites"], Recents: entriesByIDExcluding(visibleEntries, recentIDs, favoriteIDs), Hidden: hiddenIDs, AllVisible: len(visibleEntries) == len(enabledEntries), SomeVisible: len(visibleEntries) > 0, RecentLimit: recentLimit, ShowFavorites: showFavorites, ShowRecents: showRecents, Theme: workspaceState.Theme, ReducedMotion: workspaceState.ReducedMotion, SidebarDensity: workspaceState.SidebarDensity, DefaultLanding: workspaceState.DefaultLanding, DemoMode: a.cfg.DemoMode, DisabledPlugins: entriesWithStatus(entries, plugins.StatusDisabled)}
+}
+
+func demoPluginFilter(demoMode bool) func(plugins.Manifest) bool {
+	if !demoMode {
+		return nil
+	}
+	return func(manifest plugins.Manifest) bool {
+		return manifest.Category != "server" && len(manifest.Permissions) == 1 && manifest.Permissions[0] == "data.transform"
+	}
 }
 
 func entriesWithStatus(entries []plugins.Registered, status plugins.Status) []plugins.Registered {
@@ -594,6 +608,9 @@ func (a *App) saveAllPluginSidebarVisibility(w http.ResponseWriter, r *http.Requ
 }
 
 func (a *App) recordRecent(id string) {
+	if a.cfg.DemoMode {
+		return
+	}
 	a.navMu.Lock()
 	defer a.navMu.Unlock()
 	state := a.navState
@@ -890,6 +907,9 @@ func (a *App) pluginDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) recordLastPlugin(id string) {
+	if a.cfg.DemoMode {
+		return
+	}
 	a.workspaceMu.Lock()
 	defer a.workspaceMu.Unlock()
 	if a.workspaceState.LastPluginID == id {

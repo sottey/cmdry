@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/sottey/cmdry/internal/config"
 	"github.com/sottey/cmdry/internal/pluginnav"
 	"github.com/sottey/cmdry/internal/plugins"
 	"github.com/sottey/cmdry/internal/pluginstate"
@@ -38,6 +39,16 @@ func TestActionParamsReadsEphemeralUpload(t *testing.T) {
 	contents, err := base64.StdEncoding.DecodeString(upload.Content)
 	if err != nil || string(contents) != "\x89PNG\r\n\x1a\ncontent" {
 		t.Fatalf("contents=%q err=%v", contents, err)
+	}
+}
+
+func TestDemoModeRejectsWorkspaceWrites(t *testing.T) {
+	app := &App{cfg: config.Config{DemoMode: true}}
+	req := httptest.NewRequest("POST", "/settings/appearance", nil)
+	response := httptest.NewRecorder()
+	app.ServeHTTP(response, req)
+	if response.Code != 403 {
+		t.Fatalf("status = %d, want 403", response.Code)
 	}
 }
 

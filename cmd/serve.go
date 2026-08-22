@@ -33,7 +33,7 @@ var serveCmd = &cobra.Command{
 
 		logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: cfg.LogLevel}))
 		registry := plugins.NewRegistry()
-		discovery := plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger}
+		discovery := plugins.Discoverer{Directory: cfg.PluginDir, Timeout: cfg.PluginTimeout, Logger: logger, Filter: demoPluginAllowed(cfg.DemoMode)}
 		initialReport, _ := discovery.DiscoverWithDiagnostics(context.Background(), registry)
 
 		app, err := server.New(cfg, registry, logger, initialReport)
@@ -54,6 +54,21 @@ var serveCmd = &cobra.Command{
 		defer cancel()
 		return httpServer.Shutdown(ctx)
 	},
+}
+
+// Demo mode intentionally allows only transform-only plugins. This prevents a
+// public demo from exposing information about the host, even if the normal
+// plugin directory also contains server plugins.
+func demoPluginAllowed(demoMode bool) func(plugins.Manifest) bool {
+	if !demoMode {
+		return nil
+	}
+	return func(manifest plugins.Manifest) bool {
+		if manifest.Category == "server" || len(manifest.Permissions) != 1 {
+			return false
+		}
+		return manifest.Permissions[0] == "data.transform"
+	}
 }
 
 func init() {

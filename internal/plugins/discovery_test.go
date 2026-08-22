@@ -47,6 +47,29 @@ func TestLimitedBufferBoundsStderr(t *testing.T) {
 	}
 }
 
+func TestDiscoverWithFilterSkipsExcludedPlugin(t *testing.T) {
+	dir := t.TempDir()
+	writeExecutable(t, filepath.Join(dir, "cmdry-transform"), "#!/bin/sh\nprintf '%s' '{\"protocol_version\":1,\"id\":\"com.example.transform\",\"name\":\"Transform\",\"version\":\"1.0.0\",\"category\":\"text\",\"permissions\":[\"data.transform\"],\"actions\":[{\"id\":\"list\",\"name\":\"List\",\"method\":\"read\"}],\"pages\":[{\"id\":\"main\",\"name\":\"Main\",\"default\":true}]}'\n")
+	writeExecutable(t, filepath.Join(dir, "cmdry-server"), "#!/bin/sh\nprintf '%s' '{\"protocol_version\":1,\"id\":\"com.example.server\",\"name\":\"Server\",\"version\":\"1.0.0\",\"category\":\"server\",\"permissions\":[\"system.read\"],\"actions\":[{\"id\":\"list\",\"name\":\"List\",\"method\":\"read\"}],\"pages\":[{\"id\":\"main\",\"name\":\"Main\",\"default\":true}]}'\n")
+
+	registry := NewRegistry()
+	discoverer := Discoverer{Directory: dir, Timeout: time.Second, Logger: slog.New(slog.NewTextHandler(io.Discard, nil)), Filter: func(manifest Manifest) bool {
+		return manifest.Category != "server" && len(manifest.Permissions) == 1 && manifest.Permissions[0] == "data.transform"
+	}}
+	if _, err := discoverer.DiscoverWithDiagnostics(context.Background(), registry); err != nil {
+		t.Fatal(err)
+	}
+	if registry.Len() != 1 {
+		t.Fatalf("registered plugins = %d, want 1", registry.Len())
+	}
+	if _, ok := registry.Get("com.example.transform"); !ok {
+		t.Fatal("transform plugin was not registered")
+	}
+	if _, ok := registry.Get("com.example.server"); ok {
+		t.Fatal("server plugin was registered")
+	}
+}
+
 func writeExecutable(t *testing.T, path, contents string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(contents), 0700); err != nil {
