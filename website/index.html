@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cmdry is a self-hosted workbench for focused local tools.">
+  <title>Cmdry · focused local tools</title>
+  <style>
+    :root { color-scheme: dark; --ink: #e9eee9; --muted: #aebbb2; --paper: #101916; --panel: #17241f; --line: #294237; --mint: #8de0bd; --gold: #f4c86a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    main { width: min(900px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 72px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 20px; border-bottom: 1px solid var(--line); padding-bottom: 22px; }
+    .brand { color: var(--mint); font-size: 1.25rem; font-weight: 800; text-decoration: none; letter-spacing: -.08em; }
+    nav { display: flex; gap: 18px; flex-wrap: wrap; }
+    a { color: var(--mint); }
+    nav a { color: var(--muted); text-decoration: none; }
+    nav a:hover { color: var(--mint); }
+    .hero { padding: 84px 0 64px; }
+    .eyebrow { color: var(--gold); font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { max-width: 780px; margin: 12px 0 18px; font: 800 clamp(2.5rem, 7vw, 5.4rem)/.98 system-ui, sans-serif; letter-spacing: -.06em; }
+    h2 { font: 700 1.45rem/1.2 system-ui, sans-serif; letter-spacing: -.03em; }
+    .hero p { max-width: 660px; color: var(--muted); font-size: 1.15rem; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 30px; }
+    .button { display: inline-block; border: 1px solid var(--mint); border-radius: 4px; padding: 10px 15px; color: #092117; background: var(--mint); font-weight: 800; text-decoration: none; }
+    .button.secondary { color: var(--mint); background: transparent; }
+    section { margin-top: 48px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .card { border: 1px solid var(--line); border-radius: 6px; padding: 18px; background: var(--panel); }
+    .card p, .docs p, li { color: var(--muted); }
+    code { color: var(--gold); }
+    footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; margin-top: 64px; padding-top: 22px; }
+    @media (max-width: 620px) { header { align-items: flex-start; flex-direction: column; } .hero { padding-top: 58px; } .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="brand" href="/">›_ cmdry</a>
+      <nav aria-label="Primary navigation">
+        <a href="#about">About</a>
+        <a href="#docs">Documentation</a>
+        <a href="https://github.com/sottey/cmdry">GitHub</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Focused local tools</div>
+      <h1>Small utilities. One useful workbench.</h1>
+      <p>Cmdry is a self-hosted web workbench for formatting text, converting data, working with images, generating values, and inspecting your own server.</p>
+      <div class="actions">
+        <a class="button" href="https://cmdry.cott.us">Open the demo →</a>
+        <a class="button secondary" href="https://github.com/sottey/cmdry">View on GitHub</a>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="eyebrow">What it does</div>
+      <div class="grid">
+        <article class="card"><h2>Transform</h2><p>Format JSON, convert CSV, clean up lists, encode text, and handle everyday data chores.</p></article>
+        <article class="card"><h2>Create</h2><p>Generate hashes, GUIDs, passwords, QR codes, timestamps, and other useful values.</p></article>
+        <article class="card"><h2>Run locally</h2><p>Keep tools close to your own environment. Plugins are separate executables with structured responses.</p></article>
+      </div>
+    </section>
+
+    <section id="docs" class="docs">
+      <div class="eyebrow">Quick start</div>
+      <h2>Run Cmdry yourself</h2>
+      <p>Clone the repository, build the core and bundled plugins, then run it locally.</p>
+      <pre><code>git clone https://github.com/sottey/cmdry.git
+cd cmdry
+./scripts/build.sh
+./scripts/run.sh</code></pre>
+      <p>Cmdry listens on <code>http://127.0.0.1:8080</code> by default. See the <a href="https://github.com/sottey/cmdry#readme">README</a> for plugins, Docker, and public-demo setup.</p>
+    </section>
+
+    <footer>Cmdry · self-hosted utilities without the clutter</footer>
+  </main>
+</body>
+</html>
