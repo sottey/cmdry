@@ -1,0 +1,297 @@
+// Package cryptopriority2 provides bounded, local-only cryptographic utilities.
+package cryptopriority2
+
+import (
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/sha512"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/pem"
+	"fmt"
+	"hash"
+	"math"
+	"math/big"
+	"strings"
+	"time"
+	"unicode"
+
+	bip39 "github.com/luxfi/go-bip39"
+	"golang.org/x/crypto/scrypt"
+)
+
+const encryptionVersion = "cmdry:v1"
+
+func GenerateToken(bytes int, encoding string) (string, error) {
+	if bytes < 16 || bytes > 64 {
+		return "", fmt.Errorf("token size must be between 16 and 64 bytes")
+	}
+	value := make([]byte, bytes)
+	if _, err := rand.Read(value); err != nil {
+		return "", fmt.Errorf("generate token: %w", err)
+	}
+	switch encoding {
+	case "base64url":
+		return base64.RawURLEncoding.EncodeToString(value), nil
+	case "hex":
+		return hex.EncodeToString(value), nil
+	default:
+		return "", fmt.Errorf("unsupported token encoding")
+	}
+}
+
+// GenerateULID creates a sortable ULID using the current timestamp and 80 random bits.
+func GenerateULID(now time.Time) (string, error) {
+	if now.UnixMilli() < 0 || now.UnixMilli() >= 1<<48 {
+		return "", fmt.Errorf("current time is outside the ULID range")
+	}
+	value := make([]byte, 16)
+	milliseconds := uint64(now.UnixMilli())
+	for index := 5; index >= 0; index-- {
+		value[index] = byte(milliseconds)
+		milliseconds >>= 8
+	}
+	if _, err := rand.Read(value[6:]); err != nil {
+		return "", fmt.Errorf("generate ULID randomness: %w", err)
+	}
+	return crockfordBase32(value), nil
+}
+
+func crockfordBase32(value []byte) string {
+	const alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+	number := new(big.Int).SetBytes(value)
+	base, remainder := big.NewInt(32), new(big.Int)
+	encoded := make([]byte, 26)
+	for index := len(encoded) - 1; index >= 0; index-- {
+		number.DivMod(number, base, remainder)
+		encoded[index] = alphabet[remainder.Int64()]
+	}
+	return string(encoded)
+}
+
+// EncryptText uses scrypt-derived AES-256-GCM and returns a versioned portable payload.
+func EncryptText(plaintext, passphrase string) (string, error) {
+	if plaintext == "" || len(plaintext) > 1<<20 {
+		return "", fmt.Errorf("text must contain between 1 and 1,048,576 bytes")
+	}
+	if len(passphrase) < 8 || len(passphrase) > 1024 {
+		return "", fmt.Errorf("passphrase must contain between 8 and 1,024 characters")
+	}
+	salt := make([]byte, 16)
+	if _, err := rand.Read(salt); err != nil {
+		return "", fmt.Errorf("generate encryption salt: %w", err)
+	}
+	key, err := deriveKey(passphrase, salt)
+	if err != nil {
+		return "", err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", fmt.Errorf("create AES cipher: %w", err)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return "", fmt.Errorf("create AES-GCM: %w", err)
+	}
+	nonce := make([]byte, gcm.NonceSize())
+	if _, err := rand.Read(nonce); err != nil {
+		return "", fmt.Errorf("generate encryption nonce: %w", err)
+	}
+	ciphertext := gcm.Seal(nil, nonce, []byte(plaintext), nil)
+	return strings.Join([]string{encryptionVersion, base64.RawStdEncoding.EncodeToString(salt), base64.RawStdEncoding.EncodeToString(nonce), base64.RawStdEncoding.EncodeToString(ciphertext)}, ":"), nil
+}
+
+func DecryptText(payload, passphrase string) (string, error) {
+	if len(payload) == 0 || len(payload) > 2<<20 {
+		return "", fmt.Errorf("encrypted payload must contain between 1 and 2,097,152 bytes")
+	}
+	if len(passphrase) < 8 || len(passphrase) > 1024 {
+		return "", fmt.Errorf("passphrase must contain between 8 and 1,024 characters")
+	}
+	parts := strings.Split(payload, ":")
+	if len(parts) != 5 || parts[0]+":"+parts[1] != encryptionVersion {
+		return "", fmt.Errorf("encrypted payload is not a supported Cmdry v1 value")
+	}
+	salt, saltErr := base64.RawStdEncoding.DecodeString(parts[2])
+	nonce, nonceErr := base64.RawStdEncoding.DecodeString(parts[3])
+	ciphertext, cipherErr := base64.RawStdEncoding.DecodeString(parts[4])
+	if saltErr != nil || nonceErr != nil || cipherErr != nil || len(salt) != 16 {
+		return "", fmt.Errorf("encrypted payload is malformed")
+	}
+	key, err := deriveKey(passphrase, salt)
+	if err != nil {
+		return "", err
+	}
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return "", fmt.Errorf("create AES cipher: %w", err)
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil || len(nonce) != gcm.NonceSize() {
+		return "", fmt.Errorf("encrypted payload has an invalid nonce")
+	}
+	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return "", fmt.Errorf("decrypt payload: incorrect passphrase or modified data")
+	}
+	return string(plaintext), nil
+}
+
+func deriveKey(passphrase string, salt []byte) ([]byte, error) {
+	key, err := scrypt.Key([]byte(passphrase), salt, 32768, 8, 1, 32)
+	if err != nil {
+		return nil, fmt.Errorf("derive encryption key: %w", err)
+	}
+	return key, nil
+}
+
+func GenerateMnemonic(words int) (string, error) {
+	bitsByWords := map[int]int{12: 128, 15: 160, 18: 192, 21: 224, 24: 256}
+	bits, ok := bitsByWords[words]
+	if !ok {
+		return "", fmt.Errorf("choose 12, 15, 18, 21, or 24 words")
+	}
+	entropy, err := bip39.NewEntropy(bits)
+	if err != nil {
+		return "", fmt.Errorf("generate BIP39 entropy: %w", err)
+	}
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		return "", fmt.Errorf("generate BIP39 mnemonic: %w", err)
+	}
+	return mnemonic, nil
+}
+
+func HMAC(message, secret, algorithm string) (string, error) {
+	if message == "" || len(message) > 1<<20 {
+		return "", fmt.Errorf("message must contain between 1 and 1,048,576 bytes")
+	}
+	if secret == "" || len(secret) > 4096 {
+		return "", fmt.Errorf("secret must contain between 1 and 4,096 bytes")
+	}
+	var constructor func() hash.Hash
+	switch algorithm {
+	case "sha256":
+		constructor = sha256.New
+	case "sha512":
+		constructor = sha512.New
+	default:
+		return "", fmt.Errorf("unsupported HMAC algorithm")
+	}
+	mac := hmac.New(constructor, []byte(secret))
+	_, _ = mac.Write([]byte(message))
+	return hex.EncodeToString(mac.Sum(nil)), nil
+}
+
+func GenerateRSAKeyPair(bits int) (privatePEM, publicPEM string, err error) {
+	if bits != 2048 && bits != 3072 {
+		return "", "", fmt.Errorf("RSA key size must be 2048 or 3072 bits")
+	}
+	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		return "", "", fmt.Errorf("generate RSA key pair: %w", err)
+	}
+	privatePEM = string(pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}))
+	publicDER, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return "", "", fmt.Errorf("encode RSA public key: %w", err)
+	}
+	publicPEM = string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: publicDER}))
+	return privatePEM, publicPEM, nil
+}
+
+type PasswordStrength struct {
+	Score    int
+	Label    string
+	Entropy  float64
+	Feedback []string
+}
+
+// AnalyzePassword estimates strength without storing or returning the password.
+func AnalyzePassword(password string) (PasswordStrength, error) {
+	length := len([]rune(password))
+	if length == 0 || length > 1024 {
+		return PasswordStrength{}, fmt.Errorf("password must contain between 1 and 1,024 characters")
+	}
+	classes, pool := 0, 0.0
+	hasLower, hasUpper, hasDigit, hasSymbol := false, false, false, false
+	for _, character := range password {
+		switch {
+		case unicode.IsLower(character):
+			hasLower = true
+		case unicode.IsUpper(character):
+			hasUpper = true
+		case unicode.IsDigit(character):
+			hasDigit = true
+		default:
+			hasSymbol = true
+		}
+	}
+	if hasLower {
+		classes++
+		pool += 26
+	}
+	if hasUpper {
+		classes++
+		pool += 26
+	}
+	if hasDigit {
+		classes++
+		pool += 10
+	}
+	if hasSymbol {
+		classes++
+		pool += 33
+	}
+	entropy := float64(length) * math.Log2(pool)
+	score := 0
+	if length >= 8 {
+		score++
+	}
+	if length >= 12 {
+		score++
+	}
+	if classes >= 3 {
+		score++
+	}
+	if length >= 16 && classes >= 4 {
+		score++
+	}
+	feedback := []string{}
+	lower := strings.ToLower(password)
+	if containsCommonPattern(lower) {
+		score = max(0, score-2)
+		entropy *= 0.45
+		feedback = append(feedback, "Avoid common words, keyboard sequences, and repeated characters.")
+	}
+	if length < 12 {
+		feedback = append(feedback, "Use at least 12 characters.")
+	}
+	if classes < 3 {
+		feedback = append(feedback, "Mix uppercase, lowercase, numbers, and symbols.")
+	}
+	labels := []string{"Very weak", "Weak", "Fair", "Strong", "Very strong"}
+	if len(feedback) == 0 {
+		feedback = append(feedback, "This estimate is stronger when the password is unique and not reused.")
+	}
+	return PasswordStrength{Score: score, Label: labels[score], Entropy: entropy, Feedback: feedback}, nil
+}
+
+func containsCommonPattern(value string) bool {
+	for _, pattern := range []string{"password", "qwerty", "123456", "letmein", "admin", "welcome", "abcdef"} {
+		if strings.Contains(value, pattern) {
+			return true
+		}
+	}
+	for index := 2; index < len(value); index++ {
+		if value[index] == value[index-1] && value[index] == value[index-2] {
+			return true
+		}
+	}
+	return false
+}

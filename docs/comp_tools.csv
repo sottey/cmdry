@@ -152,13 +152,13 @@ TRUE,2,List,Sort,Sort list items in specified order
 TRUE,2,JSON,Sort JSON,Sort JSON arrays by value or object keys alphabetically
 TRUE,2,Text,Split,Split text into multiple parts using a separator
 TRUE,2,Time,Time Between Dates,Calculate time between two dates
-FALSE,2,Crypto,Token Generator,Generate bounded cryptographically secure tokens locally.
-FALSE,2,Crypto,ULID Generator,Generate sortable ULID values locally.
-FALSE,2,Crypto,Encrypt and Decrypt Text,Encrypt or decrypt pasted text with an explicit local-only key workflow.
-FALSE,2,Crypto,BIP39 Passphrase Generator,Generate a bounded BIP39 mnemonic locally with clear secret-handling guidance.
-FALSE,2,Crypto,HMAC Generator,Create an HMAC digest from pasted text and a secret key without retaining either value.
-FALSE,2,Crypto,RSA Key Pair Generator,Generate a bounded RSA key pair locally and return browser downloads only.
-FALSE,2,Crypto,Password Strength Analyzer,Estimate password strength locally without storing the input.
+TRUE,2,Crypto,Token Generator,Generate bounded cryptographically secure tokens locally.
+TRUE,2,Crypto,ULID Generator,Generate sortable ULID values locally.
+TRUE,2,Crypto,Encrypt and Decrypt Text,Encrypt or decrypt pasted text with an explicit local-only key workflow.
+TRUE,2,Crypto,BIP39 Passphrase Generator,Generate a bounded BIP39 mnemonic locally with clear secret-handling guidance.
+TRUE,2,Crypto,HMAC Generator,Create an HMAC digest from pasted text and a secret key without retaining either value.
+TRUE,2,Crypto,RSA Key Pair Generator,Generate a bounded RSA key pair locally and return browser downloads only.
+TRUE,2,Crypto,Password Strength Analyzer,Estimate password strength locally without storing the input.
 FALSE,2,PDF,PDF Signature Checker,Inspect signed PDF metadata and signature state from one bounded uploaded PDF.
 TRUE,2,Converter,Integer Base Converter,Convert integers between binary octal decimal and hexadecimal.
 TRUE,2,Converter,Roman Numeral Converter,Convert whole numbers to and from Roman numerals.
