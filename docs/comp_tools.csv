@@ -197,9 +197,9 @@ TRUE,2,Network,IPv4 Range Expander,Expand a bounded IPv4 CIDR or range into addr
 TRUE,2,Network,MAC Address Lookup,Look up a MAC address prefix in a bundled offline vendor table.
 TRUE,2,Network,MAC Address Generator,Generate locally administered random MAC addresses.
 TRUE,2,Network,IPv6 ULA Generator,Generate a locally administered IPv6 unique-local prefix.
-FALSE,2,Math,Math Evaluator,Evaluate a bounded arithmetic expression without arbitrary code execution.
-FALSE,2,Math,ETA Calculator,Estimate completion time from elapsed work and progress values.
-FALSE,2,Math,Percentage Calculator,Calculate percentages changes and percentage differences.
+TRUE,2,Math,Math Evaluator,Evaluate a bounded arithmetic expression without arbitrary code execution.
+TRUE,2,Math,ETA Calculator,Estimate completion time from elapsed work and progress values.
+TRUE,2,Math,Percentage Calculator,Calculate percentages changes and percentage differences.
 FALSE,2,Measurement,Chronometer,Provide a browser-local elapsed-time stopwatch after a browser-capability review.
 FALSE,2,Measurement,Temperature Converter,Convert temperatures between Celsius Fahrenheit and Kelvin.
 FALSE,2,Measurement,Benchmark Builder,Provide a bounded local benchmark-plan builder without executing host commands.
