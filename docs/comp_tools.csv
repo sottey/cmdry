@@ -163,8 +163,8 @@ FALSE,2,PDF,PDF Signature Checker,Inspect signed PDF metadata and signature stat
 TRUE,2,Converter,Integer Base Converter,Convert integers between binary octal decimal and hexadecimal.
 TRUE,2,Converter,Roman Numeral Converter,Convert whole numbers to and from Roman numerals.
 TRUE,2,Converter,Color Converter,Convert color values between hex RGB and HSL.
-FALSE,2,Text,NATO Alphabet Converter,Encode or decode pasted text using the NATO phonetic alphabet.
-FALSE,2,Text,ASCII Binary Converter,Convert pasted text to or from ASCII binary bytes.
+TRUE,2,Text,NATO Alphabet Converter,Encode or decode pasted text using the NATO phonetic alphabet.
+TRUE,2,Text,ASCII Binary Converter,Convert pasted text to or from ASCII binary bytes.
 FALSE,2,Data,YAML Family Converter,Convert YAML to JSON or TOML and convert JSON or TOML to YAML locally.
 FALSE,2,List,List Delimiter Converter,Convert pasted lists between newline comma tab and custom delimiters.
 FALSE,2,Data,XML to JSON,Convert a simple pasted XML document to JSON locally.
@@ -203,10 +203,10 @@ FALSE,2,Math,Percentage Calculator,Calculate percentages changes and percentage 
 FALSE,2,Measurement,Chronometer,Provide a browser-local elapsed-time stopwatch after a browser-capability review.
 FALSE,2,Measurement,Temperature Converter,Convert temperatures between Celsius Fahrenheit and Kelvin.
 FALSE,2,Measurement,Benchmark Builder,Provide a bounded local benchmark-plan builder without executing host commands.
-FALSE,2,Text,Lorem Ipsum Generator,Generate bounded Lorem ipsum placeholder text locally.
-FALSE,2,Text,Emoji Picker,Select and copy Unicode emoji from a bundled local catalog.
-FALSE,2,Text,String Obfuscator,Apply a clearly reversible local text obfuscation transform with prominent limitations.
-FALSE,2,Text,Numeronym Generator,Create numeronyms such as i18n from pasted words.
-FALSE,2,Text,ASCII Art Text Generator,Render bounded text as ASCII art using bundled fonts.
+TRUE,2,Text,Lorem Ipsum Generator,Generate bounded Lorem ipsum placeholder text locally.
+TRUE,2,Text,Emoji Picker,Select and copy Unicode emoji from a bundled local catalog.
+TRUE,2,Text,String Obfuscator,Apply a clearly reversible local text obfuscation transform with prominent limitations.
+TRUE,2,Text,Numeronym Generator,Create numeronyms such as i18n from pasted words.
+TRUE,2,Text,ASCII Art Text Generator,Render bounded text as ASCII art using bundled fonts.
 FALSE,2,Data,Phone Parser and Formatter,Parse and format phone numbers with clear region and validation limits.
 FALSE,2,Data,IBAN Validator and Parser,Validate an IBAN checksum and show parsed country and bank fields locally.
