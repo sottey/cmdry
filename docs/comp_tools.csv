@@ -180,8 +180,8 @@ FALSE,2,Web,User Agent Parser,Parse a pasted user-agent string into browser devi
 FALSE,2,Web,HTTP Status Reference,Look up HTTP status codes and their standard meanings.
 FALSE,2,Web,Outlook Safe Link Decoder,Extract the original destination from a pasted Outlook Safe Links URL.
 FALSE,2,Web,HTML WYSIWYG Editor,Edit bounded HTML in a safe isolated rich-text surface after a dedicated protocol review.
-FALSE,2,Image,Wi-Fi QR Code Generator,Generate a Wi-Fi connection QR code without persisting network credentials.
-FALSE,2,Image,SVG Placeholder Generator,Generate a simple SVG placeholder image from local dimensions and labels.
+TRUE,2,Image,Wi-Fi QR Code Generator,Generate a Wi-Fi connection QR code without persisting network credentials.
+TRUE,2,Image,SVG Placeholder Generator,Generate a simple SVG placeholder image from local dimensions and labels.
 FALSE,2,Image,Camera Recorder,Capture media only after a dedicated browser-permission and privacy design.
 TRUE,2,Developer,Git Cheatsheet,Provide a searchable reference for common Git commands and concepts.
 TRUE,2,Developer,Crontab Generator,Build a cron expression from bounded scheduling fields and explain the result.
