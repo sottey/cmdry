@@ -12,7 +12,7 @@ import (
 
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
-		ProtocolVersion: 1, ID: "com.sottey.tsv-json", Name: "TSV to JSON", Version: "0.1.0", Description: "Convert pasted tab-separated data to JSON locally.", Category: "data", Icon: "convert",
+		ProtocolVersion: 1, ID: "com.sottey.tsv-json", Name: "TSV to JSON", Version: "0.1.0", Description: "Convert pasted tab-separated data to JSON locally.", Category: "converter", Icon: "convert",
 		SearchTerms: []string{"tsv", "json", "tab separated", "convert", "spreadsheet"}, Pages: []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"},
 		Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "convert", Name: "Convert to JSON", Method: "write"}},
 	}, Actions: map[string]cmdry.Handler{"overview": overview, "convert": convert}})

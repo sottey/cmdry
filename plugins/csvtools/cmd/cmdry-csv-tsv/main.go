@@ -9,7 +9,7 @@ import (
 
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
-		ProtocolVersion: 1, ID: "com.sottey.csv-tsv", Name: "CSV to TSV", Version: "0.1.0", Description: "Convert pasted comma-separated CSV data to tab-separated values locally.", Category: "data", Icon: "convert",
+		ProtocolVersion: 1, ID: "com.sottey.csv-tsv", Name: "CSV to TSV", Version: "0.1.0", Description: "Convert pasted comma-separated CSV data to tab-separated values locally.", Category: "converter", Icon: "convert",
 		SearchTerms: []string{"csv", "tsv", "tab", "convert", "delimiter", "spreadsheet"}, Pages: []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"},
 		Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "convert", Name: "Convert to TSV", Method: "write"}},
 	}, Actions: map[string]cmdry.Handler{"overview": overview, "convert": convert}})

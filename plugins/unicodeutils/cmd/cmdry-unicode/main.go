@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
-		ProtocolVersion: 1, ID: "com.sottey.unicode", Name: "Unicode Encoder / Decoder", Version: "0.1.0", Description: "Encode text as Unicode escapes or decode Unicode escapes locally.", Category: "text", Icon: "text",
+		ProtocolVersion: 1, ID: "com.sottey.unicode", Name: "Unicode Encoder / Decoder", Version: "0.1.0", Description: "Encode text as Unicode escapes or decode Unicode escapes locally.", Category: "converter", Icon: "text",
 		SearchTerms: []string{"unicode", "encode", "decode", "escape", "utf-16", "code point"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"},
 		Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Transform Unicode", Method: "write"}},
 	}, Actions: map[string]cmdry.Handler{"overview": form, "run": transform}})

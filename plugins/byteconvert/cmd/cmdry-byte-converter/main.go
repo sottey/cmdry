@@ -13,7 +13,7 @@ import (
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
 		ProtocolVersion: 1, ID: "com.sottey.byte-converter", Name: "Byte Converter", Version: "0.1.0",
-		Description: "Convert byte values between binary and decimal storage units.", Category: "developer", Icon: "convert",
+		Description: "Convert byte values between binary and decimal storage units.", Category: "converter", Icon: "convert",
 		SearchTerms: []string{"bytes", "storage", "kilobytes", "megabytes", "gigabytes", "kib", "mib", "gib"},
 		Pages:       []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}},
 		Permissions: []string{"data.transform"},

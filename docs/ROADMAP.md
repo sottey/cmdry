@@ -158,6 +158,30 @@ separate security and interaction review.
 | TRUE | JSON Compare | Compare two pasted JSON documents structurally | Built-in JSON decoding | Cross-platform and one-shot; object key order and whitespace are ignored, array order is preserved. |
 | TRUE | Hidden Character Detector | Identify invisible Unicode formatting and non-standard whitespace in pasted text | Built-in Unicode tables | Cross-platform and one-shot; normal spaces, tabs, and line breaks are excluded. |
 
+### Comparative utility backlog
+
+The following distinct candidates were identified in a review of a similar
+utility workbench. Existing Cmdry tools already cover the overlapping items
+(for example Bcrypt, UUIDs, Base64 text, URL tooling, JSON/XML/YAML formatting,
+QR generation, and text/JSON comparison). The remaining candidates are tracked
+at priority 99 in `docs/comp_tools.csv`; they are ideas, not implementation
+commitments.
+
+- **Crypto:** tokens, ULIDs, encryption/decryption, BIP39 phrases, HMACs, RSA
+  key pairs, password-strength analysis, and PDF signature checks.
+- **Converters:** integer bases, Roman numerals, colors, NATO alphabet, ASCII
+  binary, YAML-family conversions, list delimiters, and XML-to-JSON.
+- **Web/developer:** HTML entities, Basic Auth, Open Graph metadata, OTP,
+  MIME lookup, JWT inspection, keycodes, user agents, HTTP status reference,
+  Safe Links decoding, SQL formatting, chmod math, Docker Run conversion,
+  email normalization, and regular expressions.
+- **Network/math/data/text:** IP and MAC utilities, IPv6 ULAs, math/ETA/
+  percentage calculators, temperature conversion, phone and IBAN parsing,
+  Lorem ipsum, emoji selection, obfuscation, numeronyms, and ASCII art.
+- **Browser-capability candidates:** device information, a chronometer,
+  benchmark builder, camera recorder, and a WYSIWYG editor. These need a
+  separate privacy and protocol design before implementation.
+
 ## Candidate selection criteria
 
 Prioritize a candidate when it:

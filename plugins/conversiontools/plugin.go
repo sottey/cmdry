@@ -10,23 +10,23 @@ import (
 )
 
 func RunTOMLTools() {
-	cmdry.Run(plugin("toml-tools", "JSON and TOML", "Convert JSON and TOML, or validate and format TOML locally.", []string{"toml", "json", "convert", "format", "validate"}, tomlForm, tomlRun))
+	cmdry.Run(plugin("converter", "toml-tools", "JSON and TOML", "Convert JSON and TOML, or validate and format TOML locally.", []string{"toml", "json", "convert", "format", "validate"}, tomlForm, tomlRun))
 }
 
 func RunSpreadsheetConverter() {
-	cmdry.Run(plugin("spreadsheet-converter", "CSV, TSV, and XLSX", "Convert one bounded CSV, TSV, or XLSX file locally.", []string{"csv", "tsv", "xlsx", "excel", "spreadsheet", "convert"}, spreadsheetForm, spreadsheetRun))
+	cmdry.Run(plugin("converter", "spreadsheet-converter", "CSV, TSV, and XLSX", "Convert one bounded CSV, TSV, or XLSX file locally.", []string{"csv", "tsv", "xlsx", "excel", "spreadsheet", "convert"}, spreadsheetForm, spreadsheetRun))
 }
 
 func RunMarkdownHTML() {
-	cmdry.Run(plugin("markdown-html", "Markdown to HTML", "Render pasted Markdown as a local HTML download.", []string{"markdown", "md", "html", "render", "convert"}, markdownForm, markdownRun))
+	cmdry.Run(plugin("converter", "markdown-html", "Markdown to HTML", "Render pasted Markdown as a local HTML download.", []string{"markdown", "md", "html", "render", "convert"}, markdownForm, markdownRun))
 }
 
 func RunJSONTypeScript() {
-	cmdry.Run(plugin("json-typescript", "JSON to TypeScript", "Generate a TypeScript type from one pasted JSON sample.", []string{"json", "typescript", "ts", "types", "interface", "schema"}, typeScriptForm, typeScriptRun))
+	cmdry.Run(plugin("developer", "json-typescript", "JSON to TypeScript", "Generate a TypeScript type from one pasted JSON sample.", []string{"json", "typescript", "ts", "types", "interface", "schema"}, typeScriptForm, typeScriptRun))
 }
 
-func plugin(id, name, description string, terms []string, overview, action cmdry.Handler) cmdry.Plugin {
-	return cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "developer", Icon: "convert", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "convert", Name: "Convert", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "convert": action}}
+func plugin(category, id, name, description string, terms []string, overview, action cmdry.Handler) cmdry.Plugin {
+	return cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: category, Icon: "convert", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "convert", Name: "Convert", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "convert": action}}
 }
 
 func tomlForm(cmdry.Request) (cmdry.View, error) {

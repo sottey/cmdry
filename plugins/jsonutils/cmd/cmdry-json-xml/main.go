@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.json-xml", Name: "JSON to XML", Version: "0.1.0", Description: "Convert JSON to a simple XML document locally.", Category: "data", Icon: "convert", SearchTerms: []string{"json", "xml", "convert"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "run", Name: "Convert to XML", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": form, "run": run}})
+	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey.json-xml", Name: "JSON to XML", Version: "0.1.0", Description: "Convert JSON to a simple XML document locally.", Category: "converter", Icon: "convert", SearchTerms: []string{"json", "xml", "convert"}, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New conversion", Method: "read"}, {ID: "run", Name: "Convert to XML", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": form, "run": run}})
 }
 func form(cmdry.Request) (cmdry.View, error) {
 	return cmdry.View{Title: "JSON to XML", Components: []cmdry.Component{{Type: "form", Title: "Paste JSON", Action: "run", Submit: "Convert", Fields: []cmdry.Field{{Name: "input", Label: "JSON input", Type: "textarea", Required: true}}}}}, nil

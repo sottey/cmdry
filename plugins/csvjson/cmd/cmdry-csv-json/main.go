@@ -13,7 +13,7 @@ import (
 func main() {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{
 		ProtocolVersion: 1, ID: "com.sottey.csv-json", Name: "CSV to JSON", Version: "0.1.0",
-		Description: "Convert pasted header-based CSV data to a local JSON download.", Category: "data", Icon: "convert",
+		Description: "Convert pasted header-based CSV data to a local JSON download.", Category: "converter", Icon: "convert",
 		SearchTerms: []string{"csv", "json", "convert", "spreadsheet"},
 		Pages:       []cmdry.Page{{ID: "overview", Name: "Convert", Default: true, Action: "overview"}},
 		Permissions: []string{"data.transform"},
