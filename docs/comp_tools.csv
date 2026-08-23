@@ -165,9 +165,9 @@ TRUE,2,Converter,Roman Numeral Converter,Convert whole numbers to and from Roman
 TRUE,2,Converter,Color Converter,Convert color values between hex RGB and HSL.
 TRUE,2,Text,NATO Alphabet Converter,Encode or decode pasted text using the NATO phonetic alphabet.
 TRUE,2,Text,ASCII Binary Converter,Convert pasted text to or from ASCII binary bytes.
-FALSE,2,Data,YAML Family Converter,Convert YAML to JSON or TOML and convert JSON or TOML to YAML locally.
+TRUE,2,Data,YAML Family Converter,Convert YAML to JSON or TOML and convert JSON or TOML to YAML locally.
 FALSE,2,List,List Delimiter Converter,Convert pasted lists between newline comma tab and custom delimiters.
-FALSE,2,Data,XML to JSON,Convert a simple pasted XML document to JSON locally.
+TRUE,2,Data,XML to JSON,Convert a simple pasted XML document to JSON locally.
 FALSE,2,Web,HTML Entity Encoder Decoder,Encode or decode HTML entities in pasted text locally.
 FALSE,2,Web,Client Device Information,Show browser-provided device and viewport facts with an explicit privacy notice.
 FALSE,2,Web,BASIC Auth Generator,Generate a Basic Authorization header from locally entered credentials without retention.
@@ -183,14 +183,14 @@ FALSE,2,Web,HTML WYSIWYG Editor,Edit bounded HTML in a safe isolated rich-text s
 FALSE,2,Image,Wi-Fi QR Code Generator,Generate a Wi-Fi connection QR code without persisting network credentials.
 FALSE,2,Image,SVG Placeholder Generator,Generate a simple SVG placeholder image from local dimensions and labels.
 FALSE,2,Image,Camera Recorder,Capture media only after a dedicated browser-permission and privacy design.
-FALSE,2,Developer,Git Cheatsheet,Provide a searchable reference for common Git commands and concepts.
-FALSE,2,Developer,Crontab Generator,Build a cron expression from bounded scheduling fields and explain the result.
-FALSE,2,Developer,SQL Prettifier,Format pasted SQL locally without connecting to a database.
-FALSE,2,Developer,Chmod Calculator,Translate symbolic and octal Unix file permission modes.
-FALSE,2,Developer,Docker Run to Compose Converter,Convert a bounded docker run command into a Compose service draft without executing it.
-FALSE,2,Developer,Email Normalizer,Normalize a pasted email address and explain any safe transformations.
-FALSE,2,Developer,Regex Tester,Test a bounded regular expression against pasted text with explicit execution limits.
-FALSE,2,Developer,Regex Cheatsheet,Provide a searchable regular-expression syntax reference.
+TRUE,2,Developer,Git Cheatsheet,Provide a searchable reference for common Git commands and concepts.
+TRUE,2,Developer,Crontab Generator,Build a cron expression from bounded scheduling fields and explain the result.
+TRUE,2,Developer,SQL Prettifier,Format pasted SQL locally without connecting to a database.
+TRUE,2,Developer,Chmod Calculator,Translate symbolic and octal Unix file permission modes.
+TRUE,2,Developer,Docker Run to Compose Converter,Convert a bounded docker run command into a Compose service draft without executing it.
+TRUE,2,Developer,Email Normalizer,Normalize a pasted email address and explain any safe transformations.
+TRUE,2,Developer,Regex Tester,Test a bounded regular expression against pasted text with explicit execution limits.
+TRUE,2,Developer,Regex Cheatsheet,Provide a searchable regular-expression syntax reference.
 TRUE,2,Network,IPv4 Subnet Calculator,Calculate IPv4 network mask range and usable hosts from an address and prefix.
 TRUE,2,Network,IPv4 Address Converter,Convert IPv4 addresses between dotted decimal integer binary and hexadecimal forms.
 TRUE,2,Network,IPv4 Range Expander,Expand a bounded IPv4 CIDR or range into addresses with strict result limits.
@@ -208,5 +208,5 @@ TRUE,2,Text,Emoji Picker,Select and copy Unicode emoji from a bundled local cata
 TRUE,2,Text,String Obfuscator,Apply a clearly reversible local text obfuscation transform with prominent limitations.
 TRUE,2,Text,Numeronym Generator,Create numeronyms such as i18n from pasted words.
 TRUE,2,Text,ASCII Art Text Generator,Render bounded text as ASCII art using bundled fonts.
-FALSE,2,Data,Phone Parser and Formatter,Parse and format phone numbers with clear region and validation limits.
-FALSE,2,Data,IBAN Validator and Parser,Validate an IBAN checksum and show parsed country and bank fields locally.
+TRUE,2,Data,Phone Parser and Formatter,Parse and format phone numbers with clear region and validation limits.
+TRUE,2,Data,IBAN Validator and Parser,Validate an IBAN checksum and show parsed country and bank fields locally.
