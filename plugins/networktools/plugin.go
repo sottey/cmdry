@@ -95,7 +95,7 @@ func lookupRun(request cmdry.Request) (cmdry.View, error) {
 }
 
 func generatorForm(cmdry.Request) (cmdry.View, error) {
-	return form("MAC Address Generator", "Generate a cryptographically random, locally administered unicast MAC address.", "Generate MAC address", nil), nil
+	return oneClickView("MAC Address Generator", "Generate a cryptographically random, locally administered unicast MAC address.", "Generate MAC address"), nil
 }
 
 func generatorRun(cmdry.Request) (cmdry.View, error) {
@@ -107,7 +107,7 @@ func generatorRun(cmdry.Request) (cmdry.View, error) {
 }
 
 func ulaForm(cmdry.Request) (cmdry.View, error) {
-	return form("IPv6 ULA Generator", "Generate a random locally assigned RFC 4193 unique-local IPv6 /48 prefix.", "Generate ULA prefix", nil), nil
+	return oneClickView("IPv6 ULA Generator", "Generate a random locally assigned RFC 4193 unique-local IPv6 /48 prefix.", "Generate ULA prefix"), nil
 }
 
 func ulaRun(cmdry.Request) (cmdry.View, error) {
@@ -121,6 +121,10 @@ func ulaRun(cmdry.Request) (cmdry.View, error) {
 
 func form(title, description, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: title, Description: description + " Your data never leaves this device.", Action: "run", Submit: submit, Fields: fields}}}
+}
+
+func oneClickView(title, description, button string) cmdry.View {
+	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "text", Title: title, Text: description + " Your data never leaves this device."}, {Type: "actions", Actions: []cmdry.Action{{ID: "run", Name: button, Method: "write"}}}}}
 }
 
 func tableResult(title, message, id string, rows []map[string]any) cmdry.View {
