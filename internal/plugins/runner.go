@@ -68,6 +68,10 @@ func ValidateResponse(r Response) error {
 	for _, c := range r.Data.Components {
 		switch c.Type {
 		case "metric", "text", "alert", "table", "actions", "code":
+		case "chronometer":
+			if strings.TrimSpace(c.ID) == "" {
+				return fmt.Errorf("invalid chronometer component")
+			}
 		case "form":
 			if !ValidID(c.Action) || strings.TrimSpace(c.Submit) == "" || len(c.Fields) == 0 {
 				return fmt.Errorf("invalid form component")

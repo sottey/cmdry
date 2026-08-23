@@ -32,6 +32,16 @@ const copyText = async (text) => {
   if (!copied) throw new Error("clipboard unavailable");
 };
 
+document.querySelectorAll("[data-chronometer]").forEach((timer) => {
+  const output = timer.querySelector("output"), start = timer.querySelector("[data-chronometer-start]"), lap = timer.querySelector("[data-chronometer-lap]"), reset = timer.querySelector("[data-chronometer-reset]"), laps = timer.querySelector("[data-chronometer-laps]");
+  let startedAt = 0, elapsed = 0, frame = 0;
+  const format = (milliseconds) => { const hundredths = Math.floor(milliseconds / 10) % 100, seconds = Math.floor(milliseconds / 1000) % 60, minutes = Math.floor(milliseconds / 60000); return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(hundredths).padStart(2, "0")}`; };
+  const render = () => { const value = elapsed + (startedAt ? performance.now() - startedAt : 0); output.textContent = format(value); if (startedAt) frame = requestAnimationFrame(render); };
+  start.addEventListener("click", () => { if (startedAt) { elapsed += performance.now() - startedAt; startedAt = 0; start.textContent = "Resume"; cancelAnimationFrame(frame); render(); } else { startedAt = performance.now(); start.textContent = "Pause"; render(); } lap.disabled = reset.disabled = false; });
+  lap.addEventListener("click", () => { const value = elapsed + (startedAt ? performance.now() - startedAt : 0), item = document.createElement("li"); item.textContent = `Lap ${laps.children.length + 1}: ${format(value)}`; laps.prepend(item); });
+  reset.addEventListener("click", () => { startedAt = 0; elapsed = 0; cancelAnimationFrame(frame); output.textContent = "00:00.00"; start.textContent = "Start"; lap.disabled = reset.disabled = true; laps.replaceChildren(); });
+});
+
 document.querySelectorAll(".copy-code").forEach((button) => {
   button.addEventListener("click", async () => {
     const code = button.closest(".code-panel")?.querySelector("code");

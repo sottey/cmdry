@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/static/plugin-visibility.css">
   <link rel="stylesheet" href="/static/appearance.css">
   <link rel="stylesheet" href="/static/plugin-details.css">
+  <link rel="stylesheet" href="/static/chronometer.css">
 </head>
 <body data-theme="{{.Theme}}" data-sidebar-density="{{.SidebarDensity}}" {{if .ReducedMotion}}data-reduced-motion="true"{{end}}>
   <aside>
@@ -97,6 +98,8 @@
       {{range .View.Components}}
         {{if eq .Type "metric"}}
           <section class="metric"><p>{{.Label}}</p><strong>{{.Value}}</strong>{{if .Description}}<span>{{.Description}}</span>{{end}}</section>
+        {{else if eq .Type "chronometer"}}
+          <section class="panel chronometer" data-chronometer id="{{.ID}}"><p class="eyebrow">Browser-local stopwatch</p><output aria-live="polite">00:00.00</output><div><button type="button" data-chronometer-start>Start</button><button type="button" class="button-muted" data-chronometer-lap disabled>Lap</button><button type="button" class="button-muted" data-chronometer-reset disabled>Reset</button></div><ol data-chronometer-laps></ol><p>Timing stays in this browser tab and is discarded when you leave or reload the page.</p></section>
         {{else if eq .Type "text"}}
           <section class="panel"><h2>{{.Title}}</h2><p>{{.Text}}</p></section>
         {{else if eq .Type "code"}}
