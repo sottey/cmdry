@@ -168,17 +168,17 @@ TRUE,2,Text,ASCII Binary Converter,Convert pasted text to or from ASCII binary b
 TRUE,2,Data,YAML Family Converter,Convert YAML to JSON or TOML and convert JSON or TOML to YAML locally.
 FALSE,2,List,List Delimiter Converter,Convert pasted lists between newline comma tab and custom delimiters.
 TRUE,2,Data,XML to JSON,Convert a simple pasted XML document to JSON locally.
-FALSE,2,Web,HTML Entity Encoder Decoder,Encode or decode HTML entities in pasted text locally.
+TRUE,2,Web,HTML Entity Encoder Decoder,Encode or decode HTML entities in pasted text locally.
 FALSE,2,Web,Client Device Information,Show browser-provided device and viewport facts with an explicit privacy notice.
-FALSE,2,Web,BASIC Auth Generator,Generate a Basic Authorization header from locally entered credentials without retention.
-FALSE,2,Web,Open Graph Meta Generator,Generate Open Graph meta tags from bounded local form fields.
-FALSE,2,Web,OTP Code Generator,Generate time-based one-time codes locally from a supplied secret without persistence.
-FALSE,2,Web,MIME Type Lookup,Look up common MIME types by extension or media type.
-FALSE,2,Web,JWT Inspector,Decode and inspect JWT header and claims without verifying or retaining the token.
+TRUE,2,Web,BASIC Auth Generator,Generate a Basic Authorization header from locally entered credentials without retention.
+TRUE,2,Web,Open Graph Meta Generator,Generate Open Graph meta tags from bounded local form fields.
+TRUE,2,Web,OTP Code Generator,Generate time-based one-time codes locally from a supplied secret without persistence.
+TRUE,2,Web,MIME Type Lookup,Look up common MIME types by extension or media type.
+TRUE,2,Web,JWT Inspector,Decode and inspect JWT header and claims without verifying or retaining the token.
 FALSE,2,Web,Keycode Reference,Show browser key code details from an explicit keyboard event capture.
-FALSE,2,Web,User Agent Parser,Parse a pasted user-agent string into browser device and operating-system fields.
-FALSE,2,Web,HTTP Status Reference,Look up HTTP status codes and their standard meanings.
-FALSE,2,Web,Outlook Safe Link Decoder,Extract the original destination from a pasted Outlook Safe Links URL.
+TRUE,2,Web,User Agent Parser,Parse a pasted user-agent string into browser device and operating-system fields.
+TRUE,2,Web,HTTP Status Reference,Look up HTTP status codes and their standard meanings.
+TRUE,2,Web,Outlook Safe Link Decoder,Extract the original destination from a pasted Outlook Safe Links URL.
 FALSE,2,Web,HTML WYSIWYG Editor,Edit bounded HTML in a safe isolated rich-text surface after a dedicated protocol review.
 TRUE,2,Image,Wi-Fi QR Code Generator,Generate a Wi-Fi connection QR code without persisting network credentials.
 TRUE,2,Image,SVG Placeholder Generator,Generate a simple SVG placeholder image from local dimensions and labels.
