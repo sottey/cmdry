@@ -1,12 +1,19 @@
 package cryptopriority2
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"math/big"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
 
 	bip39 "github.com/luxfi/go-bip39"
+	"golang.org/x/crypto/ssh"
 )
 
 func TestTokenAndULID(t *testing.T) {
@@ -17,6 +24,42 @@ func TestTokenAndULID(t *testing.T) {
 	ulid, err := GenerateULID(time.UnixMilli(1724371200000))
 	if err != nil || !regexp.MustCompile(`^[0-9ABCDEFGHJKMNPQRSTVWXYZ]{26}$`).MatchString(ulid) {
 		t.Fatalf("ulid=%q err=%v", ulid, err)
+	}
+}
+
+func TestCertificateCSRAndSSHParsers(t *testing.T) {
+	key, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		t.Fatal(err)
+	}
+	template := &x509.Certificate{SerialNumber: big.NewInt(7), Subject: pkix.Name{CommonName: "example.test"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour), DNSNames: []string{"example.test"}, KeyUsage: x509.KeyUsageDigitalSignature}
+	der, err := x509.CreateCertificate(rand.Reader, template, template, &key.PublicKey, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	certificate := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der}))
+	info, _, err := ParseCertificate(certificate)
+	if err != nil || info.Subject == "" || info.DNSNames[0] != "example.test" {
+		t.Fatalf("certificate=%#v err=%v", info, err)
+	}
+	if _, err := PublicKeyFromCertificate(certificate); err != nil {
+		t.Fatal(err)
+	}
+	csrDER, err := x509.CreateCertificateRequest(rand.Reader, &x509.CertificateRequest{Subject: pkix.Name{CommonName: "csr.example.test"}, DNSNames: []string{"csr.example.test"}}, key)
+	if err != nil {
+		t.Fatal(err)
+	}
+	csr, err := ParseCSR(string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrDER})))
+	if err != nil || !csr.SignatureValid {
+		t.Fatalf("csr=%#v err=%v", csr, err)
+	}
+	sshKey, err := ssh.NewPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	host, err := ParseSSHHostKey("example.test " + string(ssh.MarshalAuthorizedKey(sshKey)))
+	if err != nil || host.KeyType != "ssh-rsa" {
+		t.Fatalf("host=%#v err=%v", host, err)
 	}
 }
 

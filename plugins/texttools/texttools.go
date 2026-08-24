@@ -87,6 +87,15 @@ func RunTextCensor() {
 func RunTextQuoter() {
 	run("text-quoter", "Text Quoter", "Add a selected quote style around pasted text lines locally.", []string{"quote", "text", "wrap", "lines"}, quoterForm, quoterAction)
 }
+func RunWhitespaceRemover() {
+	run("remove-all-whitespace", "Remove All Whitespace", "Remove Unicode or ASCII whitespace from pasted text locally.", []string{"whitespace", "spaces", "tabs", "newlines", "remove", "unicode"}, whitespaceForm, removeWhitespaceAction)
+}
+func RunLineNumberAdder() {
+	run("add-line-numbers", "Add Line Numbers", "Add configurable prefixes to pasted text lines locally.", []string{"line", "numbers", "number", "prefix", "text"}, addLineNumbersForm, addLineNumbersAction)
+}
+func RunLineNumberRemover() {
+	run("remove-line-numbers", "Remove Line Numbers", "Remove recognized line-number prefixes from pasted text locally.", []string{"line", "numbers", "remove", "prefix", "text"}, removeLineNumbersForm, removeLineNumbersAction)
+}
 
 func run(id, name, description string, terms []string, overview cmdry.Handler, action cmdry.Handler) {
 	cmdry.Run(cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "text", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}})
@@ -165,6 +174,15 @@ func censorForm(cmdry.Request) (cmdry.View, error) {
 }
 func quoterForm(cmdry.Request) (cmdry.View, error) {
 	return form("Text Quoter", "Quote each non-blank line", "Add quotes", []cmdry.Field{{Name: "input", Label: "Text lines", Type: "textarea", Required: true}, {Name: "style", Label: "Quote style", Type: "select", Value: "double", Options: []cmdry.Option{{Value: "double", Label: "Double quotes"}, {Value: "single", Label: "Single quotes"}, {Value: "curly", Label: "Curly quotes"}}}}), nil
+}
+func whitespaceForm(cmdry.Request) (cmdry.View, error) {
+	return form("Remove All Whitespace", "Remove whitespace", "Remove whitespace", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "mode", Label: "Whitespace to remove", Type: "select", Value: "unicode", Options: []cmdry.Option{{Value: "unicode", Label: "All Unicode whitespace"}, {Value: "ascii", Label: "ASCII whitespace only"}}}}), nil
+}
+func addLineNumbersForm(cmdry.Request) (cmdry.View, error) {
+	return form("Add Line Numbers", "Add a prefix to each text line", "Add line numbers", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}, {Name: "start", Label: "Starting number", Type: "number", Value: "1", Min: "1", Required: true}, {Name: "separator", Label: "Text after each number", Type: "text", Value: ". "}}), nil
+}
+func removeLineNumbersForm(cmdry.Request) (cmdry.View, error) {
+	return form("Remove Line Numbers", "Remove recognized prefixes such as 1. , 1: , 1) , or 1 - ", "Remove line numbers", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
 }
 func form(title, heading, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: heading, Action: "run", Submit: submit, Fields: fields}}}
@@ -390,6 +408,29 @@ func quoterAction(r cmdry.Request) (cmdry.View, error) {
 	return cmdry.View{Title: "Quoted text", Components: []cmdry.Component{{Type: "metric", Label: "Lines quoted", Value: fmt.Sprint(count)}, {Type: "code", Title: "Quoted text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Quote more text"}}}}}, nil
 }
 
+func removeWhitespaceAction(r cmdry.Request) (cmdry.View, error) {
+	mode := fmt.Sprint(r.Params["mode"])
+	output, removed, err := RemoveWhitespace(fmt.Sprint(r.Params["input"]), mode)
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return cmdry.View{Title: "Whitespace removed", Components: []cmdry.Component{{Type: "metric", Label: "Whitespace characters removed", Value: fmt.Sprint(removed)}, {Type: "code", Title: "Text without whitespace", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Start over"}}}}}, nil
+}
+
+func addLineNumbersAction(r cmdry.Request) (cmdry.View, error) {
+	start, err := strconv.Atoi(fmt.Sprint(r.Params["start"]))
+	if err != nil || start < 1 {
+		return cmdry.View{}, fmt.Errorf("starting number must be a positive whole number")
+	}
+	output, count := AddLineNumbers(fmt.Sprint(r.Params["input"]), start, fmt.Sprint(r.Params["separator"]))
+	return cmdry.View{Title: "Numbered lines", Components: []cmdry.Component{{Type: "metric", Label: "Lines numbered", Value: fmt.Sprint(count)}, {Type: "code", Title: "Numbered text", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Start over"}}}}}, nil
+}
+
+func removeLineNumbersAction(r cmdry.Request) (cmdry.View, error) {
+	output, removed := RemoveLineNumbers(fmt.Sprint(r.Params["input"]))
+	return cmdry.View{Title: "Line numbers removed", Components: []cmdry.Component{{Type: "metric", Label: "Line prefixes removed", Value: fmt.Sprint(removed)}, {Type: "code", Title: "Text without line numbers", Text: output}, {Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Start over"}}}}}, nil
+}
+
 var emailPattern = regexp.MustCompile(`(?i)[a-z0-9.!#$%&'*+/=?^_{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+`)
 
 // ExtractEmails finds standard domain-qualified email addresses and preserves
@@ -424,6 +465,61 @@ func DeduplicateLines(input string) (string, int) {
 		unique = append(unique, line)
 	}
 	return strings.Join(unique, "\n"), removed
+}
+
+// RemoveWhitespace removes Unicode whitespace, or only ASCII whitespace when
+// mode is "ascii". It returns the transformed text and removed rune count.
+func RemoveWhitespace(input, mode string) (string, int, error) {
+	if mode != "unicode" && mode != "ascii" {
+		return "", 0, fmt.Errorf("unsupported whitespace mode")
+	}
+	removed := 0
+	output := strings.Map(func(value rune) rune {
+		isWhitespace := unicode.IsSpace(value)
+		if mode == "ascii" {
+			isWhitespace = value == ' ' || (value >= '\t' && value <= '\r')
+		}
+		if isWhitespace {
+			removed++
+			return -1
+		}
+		return value
+	}, input)
+	return output, removed, nil
+}
+
+// AddLineNumbers prefixes each logical line. A final newline is preserved and
+// does not create an additional empty numbered line.
+func AddLineNumbers(input string, start int, separator string) (string, int) {
+	lines := strings.Split(input, "\n")
+	trailingNewline := len(lines) > 1 && lines[len(lines)-1] == ""
+	if trailingNewline {
+		lines = lines[:len(lines)-1]
+	}
+	for index, line := range lines {
+		lines[index] = strconv.Itoa(start+index) + separator + line
+	}
+	output := strings.Join(lines, "\n")
+	if trailingNewline {
+		output += "\n"
+	}
+	return output, len(lines)
+}
+
+var lineNumberPrefix = regexp.MustCompile(`^\s*\d+\s*(?:(?:[.:)\]])\s*|-\s+)`)
+
+// RemoveLineNumbers removes conventional numeric prefixes while preserving
+// all content that follows the recognized delimiter and every line ending.
+func RemoveLineNumbers(input string) (string, int) {
+	lines := strings.Split(input, "\n")
+	removed := 0
+	for index, line := range lines {
+		if location := lineNumberPrefix.FindStringIndex(line); location != nil {
+			lines[index] = line[location[1]:]
+			removed++
+		}
+	}
+	return strings.Join(lines, "\n"), removed
 }
 
 // ReplaceAll returns the transformed text and number of exact replacements.

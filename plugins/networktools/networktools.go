@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"net/netip"
+	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -152,6 +154,85 @@ func GenerateULAPrefix() (prefix, globalID string, err error) {
 	globalID = strings.ToUpper(hex.EncodeToString(id[:]))
 	prefix = fmt.Sprintf("fd%02x:%02x%02x:%02x%02x::/48", id[0], id[1], id[2], id[3], id[4])
 	return prefix, globalID, nil
+}
+
+// ExtractIPAddresses finds valid IPv4 and IPv6 literals, normalizes them, and
+// preserves first-seen order. It deliberately does not resolve hostnames.
+func ExtractIPAddresses(input string) []string {
+	type foundAddress struct {
+		index   int
+		address netip.Addr
+	}
+	found := make([]foundAddress, 0)
+	for _, match := range ipv4AddressPattern.FindAllStringSubmatchIndex(input, -1) {
+		address, err := netip.ParseAddr(input[match[2]:match[3]])
+		if err == nil && address.Is4() {
+			found = append(found, foundAddress{index: match[2], address: address})
+		}
+	}
+	for start, end := 0, 0; start < len(input); start = end {
+		for start < len(input) && !isIPCharacter(input[start]) {
+			start++
+		}
+		end = start
+		for end < len(input) && isIPCharacter(input[end]) {
+			end++
+		}
+		if start == end {
+			continue
+		}
+		candidate := strings.Trim(input[start:end], ".")
+		address, err := netip.ParseAddr(candidate)
+		if err == nil && address.Is6() {
+			found = append(found, foundAddress{index: start, address: address})
+		}
+	}
+	sort.Slice(found, func(left, right int) bool { return found[left].index < found[right].index })
+	seen := make(map[netip.Addr]struct{})
+	addresses := make([]string, 0, len(found))
+	for _, value := range found {
+		address := value.address.Unmap()
+		if _, exists := seen[address]; exists {
+			continue
+		}
+		seen[address] = struct{}{}
+		addresses = append(addresses, address.String())
+	}
+	return addresses
+}
+
+var ipv4AddressPattern = regexp.MustCompile(`(?:^|[^0-9A-Za-z])((?:[0-9]{1,3}\.){3}[0-9]{1,3})(?:$|[^0-9A-Za-z])`)
+var macAddressPattern = regexp.MustCompile(`(?i)(?:[0-9a-f]{2}[:-]){5}[0-9a-f]{2}|(?:[0-9a-f]{4}\.){2}[0-9a-f]{4}`)
+
+func isIPCharacter(value byte) bool {
+	return (value >= '0' && value <= '9') || (value >= 'a' && value <= 'f') || (value >= 'A' && value <= 'F') || value == ':' || value == '.'
+}
+
+// ExtractMACAddresses finds common MAC-address spellings, normalizes them to
+// uppercase colon-separated form, and preserves first-seen order.
+func ExtractMACAddresses(input string) []string {
+	matches := macAddressPattern.FindAllStringIndex(input, -1)
+	seen := make(map[string]struct{}, len(matches))
+	addresses := make([]string, 0, len(matches))
+	for _, match := range matches {
+		if (match[0] > 0 && isHex(input[match[0]-1])) || (match[1] < len(input) && isHex(input[match[1]])) {
+			continue
+		}
+		canonical, _, err := NormalizeMAC(input[match[0]:match[1]])
+		if err != nil {
+			continue
+		}
+		if _, exists := seen[canonical]; exists {
+			continue
+		}
+		seen[canonical] = struct{}{}
+		addresses = append(addresses, canonical)
+	}
+	return addresses
+}
+
+func isHex(value byte) bool {
+	return (value >= '0' && value <= '9') || (value >= 'a' && value <= 'f') || (value >= 'A' && value <= 'F')
 }
 
 func parseIPv4(input string) (netip.Addr, error) {

@@ -20,3 +20,12 @@ func TestBenchmarkPlan(t *testing.T) {
 		t.Fatalf("plan=%#v err=%v", plan, err)
 	}
 }
+func TestKitchenMeasurements(t *testing.T) {
+	value, err := ConvertKitchen(1, "cup", "ml")
+	if err != nil || value < 236.58 || value > 236.59 {
+		t.Fatalf("cup=%v err=%v", value, err)
+	}
+	if _, err := ConvertKitchen(1, "g", "ml"); err == nil {
+		t.Fatal("accepted mass-to-volume conversion")
+	}
+}

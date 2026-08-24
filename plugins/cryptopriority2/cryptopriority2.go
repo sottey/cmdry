@@ -23,9 +23,115 @@ import (
 
 	bip39 "github.com/luxfi/go-bip39"
 	"golang.org/x/crypto/scrypt"
+	"golang.org/x/crypto/ssh"
 )
 
 const encryptionVersion = "cmdry:v1"
+
+type CertificateInfo struct {
+	Subject, Issuer, Serial, NotBefore, NotAfter, PublicKeyAlgorithm, SignatureAlgorithm, SHA256 string
+	DNSNames                                                                                     []string
+	ExtensionCount                                                                               int
+}
+
+func decodePEMOrDER(input string, allowed ...string) ([]byte, error) {
+	input = strings.TrimSpace(input)
+	if len(input) > 1<<20 {
+		return nil, fmt.Errorf("input must not exceed 1 MiB")
+	}
+	if block, rest := pem.Decode([]byte(input)); block != nil {
+		if strings.TrimSpace(string(rest)) != "" {
+			return nil, fmt.Errorf("enter exactly one PEM block")
+		}
+		for _, kind := range allowed {
+			if block.Type == kind {
+				return block.Bytes, nil
+			}
+		}
+		return nil, fmt.Errorf("unsupported PEM block type %q", block.Type)
+	}
+	der, err := base64.StdEncoding.DecodeString(strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, input))
+	if err != nil {
+		return nil, fmt.Errorf("enter PEM or Base64-encoded DER")
+	}
+	return der, nil
+}
+func ParseCertificate(input string) (CertificateInfo, *x509.Certificate, error) {
+	der, err := decodePEMOrDER(input, "CERTIFICATE", "X509 CERTIFICATE")
+	if err != nil {
+		return CertificateInfo{}, nil, err
+	}
+	cert, err := x509.ParseCertificate(der)
+	if err != nil {
+		return CertificateInfo{}, nil, fmt.Errorf("parse certificate: %w", err)
+	}
+	digest := sha256.Sum256(der)
+	info := CertificateInfo{Subject: cert.Subject.String(), Issuer: cert.Issuer.String(), Serial: cert.SerialNumber.String(), NotBefore: cert.NotBefore.UTC().Format(time.RFC3339), NotAfter: cert.NotAfter.UTC().Format(time.RFC3339), PublicKeyAlgorithm: cert.PublicKeyAlgorithm.String(), SignatureAlgorithm: cert.SignatureAlgorithm.String(), SHA256: strings.ToUpper(hex.EncodeToString(digest[:])), DNSNames: cert.DNSNames, ExtensionCount: len(cert.Extensions)}
+	return info, cert, nil
+}
+func PublicKeyFromCertificate(input string) (string, error) {
+	_, cert, err := ParseCertificate(input)
+	if err != nil {
+		return "", err
+	}
+	der, err := x509.MarshalPKIXPublicKey(cert.PublicKey)
+	if err != nil {
+		return "", fmt.Errorf("encode public key: %w", err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der})), nil
+}
+
+type CSRInfo struct {
+	Subject, SignatureAlgorithm, PublicKeyAlgorithm string
+	DNSNames                                        []string
+	SignatureValid                                  bool
+}
+
+func ParseCSR(input string) (CSRInfo, error) {
+	der, err := decodePEMOrDER(input, "CERTIFICATE REQUEST", "NEW CERTIFICATE REQUEST")
+	if err != nil {
+		return CSRInfo{}, err
+	}
+	request, err := x509.ParseCertificateRequest(der)
+	if err != nil {
+		return CSRInfo{}, fmt.Errorf("parse CSR: %w", err)
+	}
+	err = request.CheckSignature()
+	return CSRInfo{Subject: request.Subject.String(), SignatureAlgorithm: request.SignatureAlgorithm.String(), PublicKeyAlgorithm: request.PublicKeyAlgorithm.String(), DNSNames: request.DNSNames, SignatureValid: err == nil}, err
+}
+
+type SSHHostKeyInfo struct{ Marker, Hosts, KeyType, Fingerprint, Comment string }
+
+func ParseSSHHostKey(input string) (SSHHostKeyInfo, error) {
+	fields := strings.Fields(strings.TrimSpace(input))
+	if len(fields) < 3 || strings.Contains(strings.ToUpper(input), "PRIVATE KEY") {
+		return SSHHostKeyInfo{}, fmt.Errorf("enter a public known_hosts or authorized-key line, not a private key")
+	}
+	info := SSHHostKeyInfo{}
+	index := 0
+	if strings.HasPrefix(fields[index], "@") {
+		info.Marker = fields[index]
+		index++
+	}
+	if len(fields) < index+3 {
+		return SSHHostKeyInfo{}, fmt.Errorf("enter a complete public host-key line")
+	}
+	info.Hosts = fields[index]
+	index++
+	key, comment, _, _, err := ssh.ParseAuthorizedKey([]byte(strings.Join(fields[index:], " ")))
+	if err != nil {
+		return SSHHostKeyInfo{}, fmt.Errorf("parse SSH public key: %w", err)
+	}
+	info.KeyType = key.Type()
+	info.Fingerprint = ssh.FingerprintSHA256(key)
+	info.Comment = comment
+	return info, nil
+}
 
 func GenerateToken(bytes int, encoding string) (string, error) {
 	if bytes < 16 || bytes > 64 {

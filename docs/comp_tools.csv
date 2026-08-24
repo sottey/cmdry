@@ -210,3 +210,25 @@ TRUE,2,Text,Numeronym Generator,Create numeronyms such as i18n from pasted words
 TRUE,2,Text,ASCII Art Text Generator,Render bounded text as ASCII art using bundled fonts.
 TRUE,2,Data,Phone Parser and Formatter,Parse and format phone numbers with clear region and validation limits.
 TRUE,2,Data,IBAN Validator and Parser,Validate an IBAN checksum and show parsed country and bank fields locally.
+TRUE,2,Crypto,Certificate Parser,Parse a pasted PEM or Base64-encoded DER X.509 certificate locally without trust claims.
+FALSE,2,Image,Colorblindness Simulator,Render bounded local image previews for selected color-vision deficiency approximations.
+FALSE,2,Developer,Markdown Preview,Render bounded pasted Markdown in a sandboxed escaped local preview.
+FALSE,2,Developer,XPath Tester,Evaluate a bounded XPath expression against pasted XML without external entity or network access.
+FALSE,2,Crypto,Public Key from Private Key,Derive a public key from locally supplied private-key material without retaining or logging it.
+TRUE,2,Crypto,Public Key from Certificate,Extract a PEM public key from a pasted certificate locally.
+TRUE,2,Crypto,CSR Parser,Parse a pasted PEM or Base64-encoded DER PKCS 10 certificate signing request locally.
+TRUE,2,Crypto,SSH Host Key Parser,Parse a public OpenSSH known_hosts or authorized-key line without accepting private keys.
+FALSE,2,Web,HTTP Request and Response Viewer,Send an explicitly configured HTTP request and show a bounded redacted response after dedicated outbound-network and SSRF design.
+TRUE,2,Text,Remove All Whitespace,Remove Unicode or ASCII whitespace from pasted text locally.
+TRUE,2,Text,Add Line Numbers,Add configurable prefixes to pasted text lines locally.
+TRUE,2,Text,Remove Line Numbers,Remove recognized line-number prefixes from pasted text locally.
+TRUE,2,Measurement,Kitchen Measurement Converter,Convert common mass or US-volume kitchen units locally without crossing dimensions.
+TRUE,2,Text,IP Address Extractor,Extract unique valid IPv4 and IPv6 literals from pasted text locally.
+TRUE,2,Text,MAC Address Extractor,Extract and normalize unique common MAC-address formats from pasted text locally.
+FALSE,2,Text,Domain Extractor,Extract candidate domains from pasted text and URLs with IDN and public-suffix caveats.
+FALSE,2,Text,File Path Extractor,Extract heuristic POSIX Windows-drive and UNC file paths from pasted text.
+FALSE,2,Text,Date Extractor,Extract candidate dates and times while making locale timezone and ambiguity explicit.
+FALSE,2,Image,EXIF Metadata Extractor,Show available EXIF XMP and IPTC metadata from one bounded local image upload.
+FALSE,2,Audio,Audio Metadata Extractor,Show container codec duration bitrate tags and artwork presence from one bounded local audio upload.
+FALSE,2,Image,Blur Image,Apply a configurable local blur to one bounded image and return a browser-local download.
+FALSE,2,Data,Magic Byte File Type Detector,Identify a bounded upload from a bundled versioned magic-byte signature table without executing or unpacking it.

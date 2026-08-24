@@ -31,6 +31,18 @@ func RunRSAKeyPairGenerator() {
 func RunPasswordStrengthAnalyzer() {
 	cmdry.Run(plugin("password-strength-analyzer", "Password Strength Analyzer", "Estimate password strength locally without storing or returning the password.", []string{"password", "strength", "entropy", "security", "analyze"}, strengthForm, strengthRun))
 }
+func RunCertificateParser() {
+	cmdry.Run(plugin("certificate-parser", "Certificate Parser", "Inspect a pasted PEM or Base64-encoded DER X.509 certificate locally.", []string{"x509", "certificate", "pem", "der", "tls"}, certificateForm, certificateRun))
+}
+func RunPublicKeyFromCertificate() {
+	cmdry.Run(plugin("public-key-from-certificate", "Public Key from Certificate", "Extract a PEM public key from a pasted certificate locally.", []string{"certificate", "public key", "x509", "pem"}, certificateForm, publicKeyFromCertificateRun))
+}
+func RunCSRParser() {
+	cmdry.Run(plugin("csr-parser", "CSR Parser", "Inspect a pasted PEM or Base64-encoded PKCS#10 request locally.", []string{"csr", "pkcs10", "certificate request", "pem"}, csrForm, csrRun))
+}
+func RunSSHHostKeyParser() {
+	cmdry.Run(plugin("ssh-host-key-parser", "SSH Host Key Parser", "Inspect a pasted public known_hosts or authorized-key line locally.", []string{"ssh", "host key", "known_hosts", "fingerprint"}, sshHostKeyForm, sshHostKeyRun))
+}
 
 func plugin(id, name, description string, terms []string, overview, action cmdry.Handler) cmdry.Plugin {
 	return cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "crypto", Icon: "lock", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}}
@@ -132,6 +144,46 @@ func strengthRun(request cmdry.Request) (cmdry.View, error) {
 	}
 	rows := []map[string]any{{"field": "Estimate", "value": strength.Label}, {"field": "Score", "value": fmt.Sprintf("%d / 4", strength.Score)}, {"field": "Approximate entropy", "value": fmt.Sprintf("%.0f bits", strength.Entropy)}, {"field": "Guidance", "value": strings.Join(strength.Feedback, " ")}}
 	return tableResult("Password strength", "The password itself is not shown or retained.", "password-strength", rows, "Analyze another password"), nil
+}
+func certificateForm(cmdry.Request) (cmdry.View, error) {
+	return form("Certificate Parser", "Paste exactly one PEM certificate or Base64-encoded DER. This reports certificate contents only, not trust or revocation status.", "Parse certificate", []cmdry.Field{{Name: "input", Label: "Certificate", Type: "textarea", Required: true}}), nil
+}
+func certificateRun(r cmdry.Request) (cmdry.View, error) {
+	info, _, err := ParseCertificate(fmt.Sprint(r.Params["input"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	rows := []map[string]any{{"field": "Subject", "value": info.Subject}, {"field": "Issuer", "value": info.Issuer}, {"field": "Serial number", "value": info.Serial}, {"field": "Valid from", "value": info.NotBefore}, {"field": "Valid until", "value": info.NotAfter}, {"field": "Public key", "value": info.PublicKeyAlgorithm}, {"field": "Signature", "value": info.SignatureAlgorithm}, {"field": "SHA-256 fingerprint", "value": info.SHA256}, {"field": "DNS names", "value": strings.Join(info.DNSNames, ", ")}, {"field": "Extensions", "value": fmt.Sprint(info.ExtensionCount)}}
+	return tableResult("Certificate details", "Certificate fields were parsed locally. Trust and revocation were not checked.", "certificate", rows, "Parse another certificate"), nil
+}
+func publicKeyFromCertificateRun(r cmdry.Request) (cmdry.View, error) {
+	key, err := PublicKeyFromCertificate(fmt.Sprint(r.Params["input"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	return codeResult("Public key", "The public key was extracted locally.", key, "Extract another public key"), nil
+}
+func csrForm(cmdry.Request) (cmdry.View, error) {
+	return form("CSR Parser", "Paste exactly one PEM CSR or Base64-encoded DER PKCS#10 request.", "Parse CSR", []cmdry.Field{{Name: "input", Label: "Certificate signing request", Type: "textarea", Required: true}}), nil
+}
+func csrRun(r cmdry.Request) (cmdry.View, error) {
+	info, err := ParseCSR(fmt.Sprint(r.Params["input"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	rows := []map[string]any{{"field": "Subject", "value": info.Subject}, {"field": "Public key", "value": info.PublicKeyAlgorithm}, {"field": "Signature", "value": info.SignatureAlgorithm}, {"field": "Signature valid", "value": fmt.Sprint(info.SignatureValid)}, {"field": "DNS names", "value": strings.Join(info.DNSNames, ", ")}}
+	return tableResult("CSR details", "The request was parsed and its embedded signature checked locally.", "csr", rows, "Parse another CSR"), nil
+}
+func sshHostKeyForm(cmdry.Request) (cmdry.View, error) {
+	return form("SSH Host Key Parser", "Paste one public known_hosts or authorized-key line. Private keys are rejected.", "Parse SSH host key", []cmdry.Field{{Name: "input", Label: "Public key line", Type: "textarea", Required: true}}), nil
+}
+func sshHostKeyRun(r cmdry.Request) (cmdry.View, error) {
+	info, err := ParseSSHHostKey(fmt.Sprint(r.Params["input"]))
+	if err != nil {
+		return cmdry.View{}, err
+	}
+	rows := []map[string]any{{"field": "Marker", "value": info.Marker}, {"field": "Hosts", "value": info.Hosts}, {"field": "Key type", "value": info.KeyType}, {"field": "SHA-256 fingerprint", "value": info.Fingerprint}, {"field": "Comment", "value": info.Comment}}
+	return tableResult("SSH host key", "The public key was parsed locally.", "ssh-host-key", rows, "Parse another host key"), nil
 }
 
 func form(title, description, submit string, fields []cmdry.Field) cmdry.View {

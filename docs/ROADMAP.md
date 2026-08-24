@@ -14,7 +14,7 @@ Cmdry v0.12.0 provides:
 - A version-1 JSON manifest and action protocol.
 - Structured, escaped UI components rather than plugin-supplied HTML or script.
 - The Port Inspector plugin, using `ss` on Linux and `lsof` on macOS.
-- 99 focused bundled plugins spanning host inspection and local data, text,
+- 109 focused bundled plugins spanning host inspection and local data, text,
   list, time, and calculator transformations.
 - Persistent local navigation preferences, including favorites, recents,
   ordering, group expansion, sidebar visibility, and appearance settings.
@@ -157,6 +157,43 @@ separate security and interaction review.
 | TRUE | CSV to JSON | Convert pasted header-based CSV records to a browser-local JSON download | Built-in CSV and JSON encoding | Cross-platform and one-shot; values remain strings rather than inferred types. |
 | TRUE | JSON Compare | Compare two pasted JSON documents structurally | Built-in JSON decoding | Cross-platform and one-shot; object key order and whitespace are ignored, array order is preserved. |
 | TRUE | Hidden Character Detector | Identify invisible Unicode formatting and non-standard whitespace in pasted text | Built-in Unicode tables | Cross-platform and one-shot; normal spaces, tabs, and line breaks are excluded. |
+
+### New plugin-idea intake (2026-08-24)
+
+The following requests are captured for later selection. Unless specifically
+noted, each should be a bounded, local-only, one-shot transformation or
+inspection; it must not retain uploaded files or entered key material.
+
+| Candidate | Initial scope and constraints |
+| --- | --- |
+| Certificate parser | Parse a pasted PEM or DER X.509 certificate; show subject, issuer, validity, SANs, serial number, fingerprints, public-key details, extensions, and parse errors. Do not make trust or revocation claims. |
+| Public key from private key | Derive and display/export the public key from a locally supplied private key. Treat the input as secret: do not persist, log, or echo it unnecessarily. |
+| Public key from certificate | Extract the Subject Public Key Info from a pasted or uploaded certificate, preserving the key algorithm and encoding. |
+| CSR parser | Parse a PEM or DER PKCS#10 CSR and show subject, requested SANs/extensions, public-key details, signature algorithm, and validation result. |
+| SSH host-key parser | Parse an OpenSSH known_hosts entry or public host-key line, including marker, hosts, key type, fingerprint, and comment; never accept a private key for this tool. |
+| Colorblindness simulator | Render bounded image previews for the selected color-vision deficiency model, clearly labeling the model as an approximation. |
+| Markdown preview | Render pasted Markdown in a sandboxed, escaped local preview. This complements the existing Markdown-to-HTML download tool. |
+| XPath tester | Evaluate a bounded XPath expression against pasted XML and return matching nodes/values and clear syntax errors. Block external entity resolution and network access. |
+| HTTP request and response viewer | Send an explicitly configured HTTP request and display a bounded, redacted response. This needs a dedicated outbound-network, SSRF, redirect, header-secret, timeout, and response-size design before implementation. |
+| Remove all whitespace | Remove Unicode whitespace from pasted text, with an explicit option for ASCII-only behavior. |
+| Add line numbers / Remove line numbers | Add configurable line-number prefixes or remove recognized prefixes from pasted text without modifying the content after the prefix. |
+| Kitchen measurement converter | Convert among oz, g, lb, kg, mL, cL, dL, L, tsp, tbsp, cup, pt, qt, and gal. Separate mass from volume and require an explicit ingredient/density when crossing between them. |
+| IP-address extractor | Extract and deduplicate IPv4 and IPv6 literals from text, distinguishing valid addresses from loose matches. |
+| Email-address extractor | Existing **Email Extractor** covers this request; consider optional deduplication, normalization, and validation modes only if they remain local. |
+| MAC-address extractor | Extract and normalize common colon-, hyphen-, and dotted-MAC representations from text. |
+| Domain extractor | Extract candidate domain names from text and URLs, with clear handling for public suffixes, IDNs, and non-registrable hostnames. |
+| File-path extractor | Extract platform-specific POSIX, Windows-drive, and UNC paths from pasted text; label heuristic matches rather than asserting they exist. |
+| Date extractor | Extract candidate dates/times from text and display the assumed locale, timezone, and ambiguous-date interpretations. |
+| EXIF metadata extractor | Read bounded image uploads and show available EXIF/XMP/IPTC metadata, including the absence of metadata; no geolocation lookup. |
+| Audio metadata extractor | Read bounded audio uploads and show container, codec, duration, bitrate, tags, and embedded artwork presence where supported. |
+| Blur image | Apply a configurable local blur to a bounded image and return a browser-local download. |
+| Magic-byte file-type detector | Inspect bounded uploaded bytes and report the best supported signature match, MIME type, confidence/ambiguity, and offset. It must not execute, unpack, or otherwise open the file. Support is intended to cover the supplied signature inventory (from `123d` through `zlib`), using a bundled, versioned signature table and fixtures; the source reference is [Wikipedia's file-signature list](https://en.wikipedia.org/wiki/List_of_file_signatures). |
+| Regex tester | Existing **Regex Tester** covers this request; retain explicit execution and input limits. |
+| Lorem generator | Existing **Lorem Ipsum Generator** covers this request; keep output bounded and local. |
+
+Before selecting file, image, audio, or certificate candidates, confirm the
+file-field protocol supports the required MIME types, upload limits, and
+browser-local download behavior. Do not expand the protocol implicitly.
 
 ### Comparative utility backlog
 

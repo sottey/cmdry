@@ -117,3 +117,25 @@ func TestCreatePalindrome(t *testing.T) {
 		t.Fatalf("palindrome = %q, want %q", got, want)
 	}
 }
+
+func TestWhitespaceAndLineNumberTools(t *testing.T) {
+	output, removed, err := RemoveWhitespace("A B\tC\u00a0D", "unicode")
+	if err != nil || output != "ABCD" || removed != 3 {
+		t.Fatalf("unicode whitespace = %q, %d, %v", output, removed, err)
+	}
+	output, removed, err = RemoveWhitespace("A\u00a0B\tC", "ascii")
+	if err != nil || output != "A\u00a0BC" || removed != 1 {
+		t.Fatalf("ASCII whitespace = %q, %d, %v", output, removed, err)
+	}
+	if _, _, err := RemoveWhitespace("text", "invalid"); err == nil {
+		t.Fatal("accepted an invalid whitespace mode")
+	}
+	numbered, count := AddLineNumbers("Ada\r\nLin\n", 7, ". ")
+	if numbered != "7. Ada\r\n8. Lin\n" || count != 2 {
+		t.Fatalf("numbered = %q, count = %d", numbered, count)
+	}
+	unnumbered, removedPrefixes := RemoveLineNumbers("7. Ada\n8: Lin\n9) Jo\n10 - Nia\n2026 revenue")
+	if unnumbered != "Ada\nLin\nJo\nNia\n2026 revenue" || removedPrefixes != 4 {
+		t.Fatalf("unnumbered = %q, removed = %d", unnumbered, removedPrefixes)
+	}
+}

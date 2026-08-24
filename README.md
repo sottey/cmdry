@@ -176,6 +176,16 @@ Parser tests use representative `ss` fixtures and never depend on your host’s 
 - **Email Extractor, Remove Duplicate Lines, and Text Replacer**: extract
   unique addresses, preserve unique lines, or make exact text replacements
   locally on macOS and Linux.
+- **Whitespace and Line Numbers**: remove Unicode or ASCII whitespace, add
+  configurable line-number prefixes, or remove conventional numeric prefixes
+  locally on macOS and Linux.
+- **IP Address and MAC Address Extractors**: extract unique valid IPv4/IPv6
+  literals or normalize common MAC-address spellings from pasted text locally.
+- **Certificate and Key Inspectors**: parse PEM or Base64-encoded DER X.509
+  certificates and CSRs, extract public keys, or inspect public SSH host-key
+  lines locally. Certificate trust and revocation are not checked.
+- **Kitchen Measurement Converter**: converts common mass and US-volume units
+  locally, while requiring an ingredient density for mass-to-volume conversion.
 - **Uppercase, Lowercase, URL Encoder, and URL Decoder**: change Unicode text
   case or encode/decode URL query values locally on macOS and Linux.
 - **Unix Date Converter**: converts whole-second Unix timestamps and RFC 3339

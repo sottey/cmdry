@@ -32,6 +32,14 @@ func RunIPv6ULAGenerator() {
 	cmdry.Run(plugin("ipv6-ula-generator", "IPv6 ULA Generator", "Generate a random RFC 4193 IPv6 unique-local /48 prefix locally.", []string{"ipv6", "ula", "unique local", "rfc 4193", "prefix"}, ulaForm, ulaRun))
 }
 
+func RunIPAddressExtractor() {
+	cmdry.Run(plugin("ip-address-extractor", "IP Address Extractor", "Extract unique valid IPv4 and IPv6 addresses from pasted text locally.", []string{"ip", "ipv4", "ipv6", "extract", "address", "network"}, ipExtractorForm, ipExtractorRun))
+}
+
+func RunMACAddressExtractor() {
+	cmdry.Run(plugin("mac-address-extractor", "MAC Address Extractor", "Extract and normalize unique MAC addresses from pasted text locally.", []string{"mac", "extract", "ethernet", "address", "network"}, macExtractorForm, macExtractorRun))
+}
+
 func plugin(id, name, description string, terms []string, overview, action cmdry.Handler) cmdry.Plugin {
 	return cmdry.Plugin{Manifest: cmdry.Manifest{ProtocolVersion: 1, ID: "com.sottey." + id, Name: name, Version: "0.1.0", Description: description, Category: "network", Icon: "network", SearchTerms: terms, Pages: []cmdry.Page{{ID: "overview", Name: "Tool", Default: true, Action: "overview"}}, Permissions: []string{"data.transform"}, Actions: []cmdry.Action{{ID: "overview", Name: "New operation", Method: "read"}, {ID: "run", Name: "Run", Method: "write"}}}, Actions: map[string]cmdry.Handler{"overview": overview, "run": action}}
 }
@@ -119,6 +127,24 @@ func ulaRun(cmdry.Request) (cmdry.View, error) {
 	return tableResult("Generated IPv6 ULA", "The random Global ID was generated locally.", "ipv6-ula", []map[string]any{{"field": "Unique-local prefix", "value": prefix}, {"field": "Global ID", "value": globalID}, {"field": "First subnet", "value": firstSubnet}}), nil
 }
 
+func ipExtractorForm(cmdry.Request) (cmdry.View, error) {
+	return form("IP Address Extractor", "Extract unique valid IPv4 and IPv6 address literals. Hostnames are not resolved.", "Extract IP addresses", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+
+func ipExtractorRun(request cmdry.Request) (cmdry.View, error) {
+	addresses := ExtractIPAddresses(fmt.Sprint(request.Params["input"]))
+	return extractorResult("IP addresses", "IP address", addresses), nil
+}
+
+func macExtractorForm(cmdry.Request) (cmdry.View, error) {
+	return form("MAC Address Extractor", "Extract common MAC-address formats and normalize them to uppercase colon-separated form.", "Extract MAC addresses", []cmdry.Field{{Name: "input", Label: "Text", Type: "textarea", Required: true}}), nil
+}
+
+func macExtractorRun(request cmdry.Request) (cmdry.View, error) {
+	addresses := ExtractMACAddresses(fmt.Sprint(request.Params["input"]))
+	return extractorResult("MAC addresses", "MAC address", addresses), nil
+}
+
 func form(title, description, submit string, fields []cmdry.Field) cmdry.View {
 	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "form", Title: title, Description: description + " Your data never leaves this device.", Action: "run", Submit: submit, Fields: fields}}}
 }
@@ -133,4 +159,11 @@ func tableResult(title, message, id string, rows []map[string]any) cmdry.View {
 
 func restart() cmdry.Component {
 	return cmdry.Component{Type: "actions", Actions: []cmdry.Action{{ID: "overview", Name: "Start over"}}}
+}
+
+func extractorResult(title, singular string, addresses []string) cmdry.View {
+	if len(addresses) == 0 {
+		return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "alert", Level: "info", Title: "No matches found", Message: "No valid " + strings.ToLower(singular) + "es were detected in this text."}, restart()}}
+	}
+	return cmdry.View{Title: title, Components: []cmdry.Component{{Type: "metric", Label: "Unique " + title, Value: strconv.Itoa(len(addresses))}, {Type: "code", Title: title, Text: strings.Join(addresses, "\n")}, restart()}}
 }

@@ -7,6 +7,31 @@ import (
 	"strings"
 )
 
+type KitchenUnit struct {
+	Name, Dimension string
+	Factor          float64
+}
+
+var kitchenUnits = map[string]KitchenUnit{
+	"g": {"grams", "mass", 1}, "kg": {"kilograms", "mass", 1000}, "lb": {"pounds", "mass", 453.59237}, "oz": {"ounces", "mass", 28.349523125},
+	"ml": {"milliliters", "volume", 1}, "cl": {"centiliters", "volume", 10}, "dl": {"deciliters", "volume", 100}, "l": {"liters", "volume", 1000}, "tsp": {"teaspoons", "volume", 4.92892159375}, "tbsp": {"tablespoons", "volume", 14.78676478125}, "cup": {"US cups", "volume", 236.5882365}, "pt": {"US pints", "volume", 473.176473}, "qt": {"US quarts", "volume", 946.352946}, "gal": {"US gallons", "volume", 3785.411784},
+}
+
+func ConvertKitchen(value float64, from, to string) (float64, error) {
+	if math.IsNaN(value) || math.IsInf(value, 0) {
+		return 0, fmt.Errorf("value must be finite")
+	}
+	fromUnit, fromOK := kitchenUnits[from]
+	toUnit, toOK := kitchenUnits[to]
+	if !fromOK || !toOK {
+		return 0, fmt.Errorf("choose supported source and target units")
+	}
+	if fromUnit.Dimension != toUnit.Dimension {
+		return 0, fmt.Errorf("mass and volume cannot be converted without an ingredient density")
+	}
+	return value * fromUnit.Factor / toUnit.Factor, nil
+}
+
 func ConvertTemperature(value float64, from, to string) (float64, error) {
 	if math.IsNaN(value) || math.IsInf(value, 0) {
 		return 0, fmt.Errorf("temperature must be finite")

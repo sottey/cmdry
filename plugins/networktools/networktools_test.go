@@ -62,3 +62,14 @@ func TestGenerateULAPrefix(t *testing.T) {
 		t.Fatalf("unexpected ULA: %q / %q", prefix, globalID)
 	}
 }
+
+func TestExtractAddresses(t *testing.T) {
+	ips := ExtractIPAddresses("IPv6 [2001:0db8::1], IPv4 192.168.1.5:443, repeated 2001:db8::1, invalid 999.2.3.4.")
+	if got, want := strings.Join(ips, "|"), "2001:db8::1|192.168.1.5"; got != want {
+		t.Fatalf("IP addresses = %q, want %q", got, want)
+	}
+	macs := ExtractMACAddresses("VM 00-50-56-aa-bb-cc, dotted 0011.2233.4455, repeated 00:50:56:AA:BB:CC, ignore x001122334455y")
+	if got, want := strings.Join(macs, "|"), "00:50:56:AA:BB:CC|00:11:22:33:44:55"; got != want {
+		t.Fatalf("MAC addresses = %q, want %q", got, want)
+	}
+}
