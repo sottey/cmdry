@@ -19,4 +19,4 @@ export CMDRY_PLUGIN_DIR=${CMDRY_PLUGIN_DIR:-"$output_dir/plugins"}
 export CMDRY_DATA_DIR=${CMDRY_DATA_DIR:-"$repo_root/.cmdry-demo-data"}
 export CMDRY_ADDR=${CMDRY_ADDR:-"127.0.0.1:8088"}
 
-nohup exec ../dist/cmdry serve "$@" &
+nohup exec "$core_binary" serve "$@" &
