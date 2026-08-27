@@ -256,6 +256,12 @@ func shellWords(input string) ([]string, error) {
 	}
 	for _, char := range input {
 		if escaped {
+			// A backslash immediately followed by a line break is a shell line
+			// continuation, not an escaped newline within an argument.
+			if char == '\n' || char == '\r' {
+				escaped = false
+				continue
+			}
 			word.WriteRune(char)
 			escaped = false
 			continue

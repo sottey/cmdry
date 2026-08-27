@@ -26,6 +26,16 @@ func TestDeveloperTransforms(t *testing.T) {
 	if err != nil || !strings.Contains(draft.YAML, "image: \"nginx:alpine\"") || !strings.Contains(draft.YAML, "\"8080:80\"") {
 		t.Fatalf("draft=%q err=%v", draft.YAML, err)
 	}
+	multilineDraft, err := DockerRunToCompose(`docker run --name pdfding \
+    -p 8000:8000 \
+    -v sqlite_data:/home/nonroot/pdfding/db -v media:/home/nonroot/pdfding/media \
+    -e HOST_NAME=127.0.0.1 -e SECRET_KEY=some_secret \
+    -e CSRF_COOKIE_SECURE=FALSE -e SESSION_COOKIE_SECURE=FALSE \
+    -d \
+    mrmn/pdfding:latest`)
+	if err != nil || !strings.Contains(multilineDraft.YAML, "image: \"mrmn/pdfding:latest\"") || strings.Count(multilineDraft.YAML, "      - ") != 7 {
+		t.Fatalf("multiline draft=%q err=%v", multilineDraft.YAML, err)
+	}
 	email, err := NormalizeEmail(" Ada.Example@EXAMPLE.COM ")
 	if err != nil || email.Normalized != "Ada.Example@example.com" {
 		t.Fatalf("email=%#v err=%v", email, err)
