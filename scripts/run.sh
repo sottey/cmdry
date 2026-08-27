@@ -16,6 +16,6 @@ fi
 
 export CMDRY_PLUGIN_DIR=${CMDRY_PLUGIN_DIR:-"$output_dir/plugins"}
 export CMDRY_DATA_DIR=${CMDRY_DATA_DIR:-"$repo_root/.cmdry-data"}
-export CMDRY_ADDR=${CMDRY_ADDR:-"127.0.0.1:8080"}
+export CMDRY_ADDR=${CMDRY_ADDR:-"127.0.0.1:8087"}
 
 exec "$core_binary" serve "$@"
