@@ -14,6 +14,11 @@ if [ ! -x "$core_binary" ]; then
 	exit 1
 fi
 
+if [[ "$1" == "demo" ]]; then
+    export CMDRY_DEMO_MODE=true
+    shift
+fi
+
 export CMDRY_PLUGIN_DIR=${CMDRY_PLUGIN_DIR:-"$output_dir/plugins"}
 export CMDRY_DATA_DIR=${CMDRY_DATA_DIR:-"$repo_root/.cmdry-data"}
 export CMDRY_ADDR=${CMDRY_ADDR:-"127.0.0.1:8087"}
