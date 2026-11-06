@@ -18,8 +18,6 @@ services:
       - homepage.name=(8087) Cmdry
       - homepage.icon=sh-omnitools.png
       - homepage.href=http://192.168.7.233:8087
-    ports:
-      - "0.0.0.0:8087:8087"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://192.168.7.233:8087"]
       interval: 30s
@@ -46,8 +44,6 @@ services:
       - homepage.name=(8088) Cmdry Demo (cmdry.cott.us)
       - homepage.icon=sh-omnitools.png
       - homepage.href=https://cmdry.cott.us
-    ports:
-      - "0.0.0.0:8088:8088"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://192.168.7.233:8088/"]
       interval: 30s
