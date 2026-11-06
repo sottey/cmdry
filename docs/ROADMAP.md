@@ -219,6 +219,41 @@ commitments.
   benchmark builder, camera recorder, and a WYSIWYG editor. These need a
   separate privacy and protocol design before implementation.
 
+## Comparative utility additions (2026-11-06)
+
+The following candidates came from a later comparison with a similar utility
+workbench. They are tracked in `docs/comp_tools.csv`; priorities reflect both
+user value and the amount of parser or browser-surface work required.
+
+### Priority 1
+
+- CSS formatter and minifier
+- HTML-to-JSX converter
+- QR-code decoder
+- Base64 image and Data URL converter
+- Backslash escape/unescape
+- JSON-to-code generator
+- String inspector
+
+### Priority 2
+
+- cURL-to-code converter
+- PHP/JSON conversion
+- PHP serialize/unserialize
+- HTML, JavaScript, and XML minifiers
+
+### Priority 3: dedicated browser/UI work
+
+- Sandboxed HTML preview
+- Sandboxed Markdown preview
+- HTML WYSIWYG editor
+
+## If requested enough
+
+ERB, LESS, and SCSS formatting/minification are intentionally deferred. They
+need syntax-aware parsers and preservation guarantees; a generic whitespace
+formatter would be unreliable and can damage templates or stylesheet source.
+
 ## Candidate selection criteria
 
 Prioritize a candidate when it:

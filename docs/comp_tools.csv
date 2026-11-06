@@ -179,7 +179,7 @@ FALSE,2,Web,Keycode Reference,Show browser key code details from an explicit key
 TRUE,2,Web,User Agent Parser,Parse a pasted user-agent string into browser device and operating-system fields.
 TRUE,2,Web,HTTP Status Reference,Look up HTTP status codes and their standard meanings.
 TRUE,2,Web,Outlook Safe Link Decoder,Extract the original destination from a pasted Outlook Safe Links URL.
-FALSE,2,Web,HTML WYSIWYG Editor,Edit bounded HTML in a safe isolated rich-text surface after a dedicated protocol review.
+FALSE,3,Web,HTML WYSIWYG Editor,Edit bounded HTML in a safe isolated rich-text surface after a dedicated protocol review.
 TRUE,2,Image,Wi-Fi QR Code Generator,Generate a Wi-Fi connection QR code without persisting network credentials.
 TRUE,2,Image,SVG Placeholder Generator,Generate a simple SVG placeholder image from local dimensions and labels.
 FALSE,2,Image,Camera Recorder,Capture media only after a dedicated browser-permission and privacy design.
@@ -212,7 +212,7 @@ TRUE,2,Data,Phone Parser and Formatter,Parse and format phone numbers with clear
 TRUE,2,Data,IBAN Validator and Parser,Validate an IBAN checksum and show parsed country and bank fields locally.
 TRUE,2,Crypto,Certificate Parser,Parse a pasted PEM or Base64-encoded DER X.509 certificate locally without trust claims.
 FALSE,2,Image,Colorblindness Simulator,Render bounded local image previews for selected color-vision deficiency approximations.
-FALSE,2,Developer,Markdown Preview,Render bounded pasted Markdown in a sandboxed escaped local preview.
+FALSE,3,Developer,Markdown Preview,Render bounded pasted Markdown in a sandboxed escaped local preview.
 FALSE,2,Developer,XPath Tester,Evaluate a bounded XPath expression against pasted XML without external entity or network access.
 FALSE,2,Crypto,Public Key from Private Key,Derive a public key from locally supplied private-key material without retaining or logging it.
 TRUE,2,Crypto,Public Key from Certificate,Extract a PEM public key from a pasted certificate locally.
@@ -232,3 +232,18 @@ FALSE,2,Image,EXIF Metadata Extractor,Show available EXIF XMP and IPTC metadata 
 FALSE,2,Audio,Audio Metadata Extractor,Show container codec duration bitrate tags and artwork presence from one bounded local audio upload.
 FALSE,2,Image,Blur Image,Apply a configurable local blur to one bounded image and return a browser-local download.
 FALSE,2,Data,Magic Byte File Type Detector,Identify a bounded upload from a bundled versioned magic-byte signature table without executing or unpacking it.
+TRUE,1,Web,CSS Formatter and Minifier,Format or minify bounded pasted CSS locally without changing its semantics.
+TRUE,1,Converter,HTML to JSX Converter,Convert bounded pasted HTML to JSX syntax locally with explicit unsupported-syntax notes.
+TRUE,1,Image,QR Code Decoder,Decode one bounded uploaded QR-code image locally without retaining it.
+TRUE,1,Converter,Base64 Image and Data URL Converter,Convert a bounded image upload or data URL locally without retaining the file contents.
+TRUE,1,Text,Backslash Escape Unescape,Escape or unescape pasted text using explicitly selected generic slash-escape rules.
+TRUE,1,Developer,JSON to Code Generator,Generate bounded type or model definitions from JSON for an explicitly selected target language.
+TRUE,1,Text,String Inspector,Inspect bounded pasted text for length lines characters words Unicode and encoding facts locally.
+FALSE,2,Developer,cURL to Code Converter,Convert a bounded pasted curl command into a request example for an explicitly selected target language without executing it.
+FALSE,2,Converter,PHP JSON Converter,Convert bounded PHP-array syntax and JSON locally without executing PHP.
+FALSE,2,Converter,PHP Serialize Unserialize,Parse or serialize bounded PHP serialized values locally without executing PHP.
+FALSE,2,Web,HTML JavaScript and XML Minifiers,Minify bounded pasted HTML JavaScript or XML with format-aware parsing and clear syntax errors.
+FALSE,3,Web,HTML Preview,Render bounded pasted HTML in a sandboxed local preview without same-origin access.
+FALSE,99,If requested enough,ERB Formatter and Minifier,Format or minify bounded ERB templates only after a reliable parser and syntax-preservation design.
+FALSE,99,If requested enough,LESS Formatter and Minifier,Format or minify bounded LESS stylesheets only after a reliable parser and syntax-preservation design.
+FALSE,99,If requested enough,SCSS Formatter and Minifier,Format or minify bounded SCSS stylesheets only after a reliable parser and syntax-preservation design.

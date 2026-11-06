@@ -16,6 +16,7 @@ require (
 require (
 	github.com/boombuler/barcode v1.1.0 // indirect
 	github.com/hhrutter/lzw v1.0.0 // indirect
+	github.com/makiuchi-d/gozxing v0.1.1 // indirect
 	github.com/raceresult/tiff v1.0.1 // indirect
 	github.com/richardlehane/mscfb v1.0.6 // indirect
 	github.com/richardlehane/msoleps v1.0.6 // indirect
@@ -23,6 +24,7 @@ require (
 	github.com/xuri/efp v0.0.1 // indirect
 	github.com/xuri/nfp v0.0.2-0.20250530014748-2ddeb826f9a9 // indirect
 	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
 require (
